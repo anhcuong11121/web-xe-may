@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chi tiết loại xe - motor chất</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <style>
+    .category-header {
+      background: linear-gradient(135deg, #c82333 0%, #e74c3c 100%);
+      color: white;
+      padding: 40px 0;
+      margin-bottom: 40px;
+    }
+
+    .category-header h1 {
+      font-size: 42px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .category-header p {
+      font-size: 16px;
+      opacity: 0.95;
+    }
+
+    .back-button {
+      display: inline-block;
+      color: white;
+      text-decoration: none;
+      margin-bottom: 20px;
+      transition: opacity 0.3s ease;
+    }
+
+    .back-button:hover {
+      opacity: 0.8;
+      color: white;
+    }
+
+    .bike-card {
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+      height: 100%;
+    }
+
+    .bike-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .bike-image {
+      width: 100%;
+      height: 240px;
+      object-fit: cover;
+      background: #f5f5f5;
+    }
+
+    .bike-info {
+      padding: 20px;
+    }
+
+    .bike-name {
+      font-size: 18px;
+      font-weight: 600;
+      color: #212529;
+      margin-bottom: 8px;
+    }
+
+    .bike-description {
+      font-size: 14px;
+      color: #6c757d;
+      margin-bottom: 15px;
+      line-height: 1.5;
+    }
+
+    .bike-features {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+
+    .feature-tag {
+      background: #f0f0f0;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      color: #666;
+    }
+
+    .bike-specs {
+      font-size: 13px;
+      color: #999;
+      line-height: 1.6;
+      margin-bottom: 15px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .bike-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .bike-price {
+      font-size: 16px;
+      font-weight: 600;
+      color: #c82333;
+    }
+
+    .bike-btn {
+      background: #c82333;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.3s ease;
+    }
+
+    .bike-btn:hover {
+      background: #a01b28;
+    }
+
+    .bikes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+
+    @media (max-width: 767px) {
+      .bikes-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+      }
+
+      .category-header h1 {
+        font-size: 28px;
+      }
+
+      .category-header p {
+        font-size: 14px;
+      }
+    }
+
+    .no-bikes {
+      text-align: center;
+      padding: 60px 20px;
+      color: #6c757d;
+    }
+
+    .no-bikes i {
+      font-size: 48px;
+      margin-bottom: 20px;
+      opacity: 0.5;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">motor <span class="brand-highlight">chất</span></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto align-items-lg-center">
+          <li class="nav-item"><a class="nav-link" href="index.html">Trang chủ</a></li>
+          <li class="nav-item"><a class="nav-link active" href="sanpham.html">Sản phẩm</a></li>
+          <li class="nav-item"><a class="nav-link" href="tasks.html">Quản lý xe</a></li>
+          <li class="nav-item"><a class="nav-link" href="about.html">Thống kê</a></li>
+          <li class="nav-item"><a class="nav-link" href="lienhe.html">Liên hệ</a></li>
+          <li class="nav-item"><a class="nav-link" href="login.html">Đăng nhập</a></li>
+          <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
+            <button class="btn btn-outline-light dark-toggle" onclick="toggleDarkMode()"><i class="fa-solid fa-moon"></i></button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="category-header">
+    <div class="container">
+      <a href="sanpham.html" class="back-button"><i class="fa-solid fa-arrow-left me-2"></i>Quay lại</a>
+      <h1 id="categoryTitle">Xe Ga</h1>
+      <p id="categoryDesc">Khám phá các loại xe ga chất lượng cao từ các thương hiệu hàng đầu</p>
+    </div>
+  </div>
+
+  <main class="container">
+    <div class="bikes-grid" id="bikesContainer">
+      <!-- Các xe sẽ được render ở đây -->
+    </div>
+  </main>
+
+  <footer class="py-4">
+    <div class="container text-center">
+      <p class="mb-1">&copy; 2026 motor chất. Điện thoại: 0987888888 | Email: motorchat@gmail.com</p>
+      <small>Được phát triển bởi Lê Cương, Minh Đức.</small>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="assets/js/app.js"></script>
+  <script>
+    // Data chi tiết xe theo danh mục
+    const bikeCategories = {
+      'xe-ga': {
+        name: 'Xe Ga',
+        desc: 'Thoải mái, an toàn cho chạy phố',
+        bikes: [
+          {
+            id: 1,
+            name: 'Honda Airblade',
+            desc: 'Xe ga tự động tiên tiến, tiết kiệm xăng, lái mát tay',
+            image: 'assets/img/xe-ga/airblade.jpg',
+            price: '45,500,000₫',
+            cc: '125cc-160cc',
+            power: '10.3kW',
+            features: ['Tự động', 'Tiết kiệm xăng', 'Đôi kính'],
+            specs: 'Động cơ 4 kỳ, khởi động điện'
+          },
+          {
+            id: 2,
+            name: 'Honda Vision',
+            desc: 'Xe ga cơ bản, tin cậy, phù hợp cho mọi người',
+            image: 'assets/img/xe-ga/vision.png',
+            price: '35,000,000₫',
+            cc: '110cc',
+            power: '7.4kW',
+            features: ['Cơ bản', 'Nhẹ', 'Rẻ'],
+            specs: 'Động cơ 4 kỳ, khởi động tay/điện'
+          },
+          {
+            id: 3,
+            name: 'Yamaha Janus',
+            desc: 'Xe ga cao cấp, nhiều tính năng hiện đại',
+            image: 'assets/img/xe-ga/jannus.png',
+            price: '29,900,000₫',
+            cc: '125cc',
+            power: '8.0kW',
+            features: ['Hiện đại', 'Thoải mái', 'Tinh tế'],
+            specs: 'Động cơ 4 kỳ, khởi động điện'
+          },
+          {
+            id: 4,
+            name: 'Suzuki Address',
+            desc: 'Xe ga thể thao, thiết kế bắt mắt, tiết kiệm xăng',
+            image: 'assets/img/xe-ga/suzukiaddress.jpg',
+            price: '31,770,500₫',
+            cc: '113cc',
+            power: '9.2kW',
+            features: ['Thể thao', 'Bắt mắt', 'Tiết kiệm xăng'],
+            specs: 'Động cơ 4 kỳ, khởi động điện'
+          },
+          {
+            id: 5,
+            name: 'Yamaha Grande',
+            desc: 'Xe tay ga thời trang, thiết kế thanh lịch với đường cong uyển chuyển và đèn LED hiện đại nổi bật.',
+            image: 'assets/img/xe-ga/grande.png',
+            price: 'Liên hệ',
+            cc: '125cc',
+            power: '8.3kW',
+            features: ['Thời trang', 'LED', 'Thanh lịch'],
+            specs: 'Động cơ 4 kỳ, phun xăng điện tử'
+          }
+        ]
+      },
+      'xe-so': {
+        name: 'Xe Số',
+        desc: 'Độc đáo, linh hoạt, tiết kiệm xăng',
+        bikes: [
+          {
+            id: 1,
+            name: 'Honda CT125',
+            desc: 'Xe số đậm chất khám phá, khụng khiếu và phóng khoáng trên mọi cụng đường.',
+            image: 'assets/img/xe-so/CT125.png',
+            price: '85,801,091₫',
+            cc: '125cc',
+            power: '6.9kW',
+            features: ['Khám phá', 'ABS', 'LED'],
+            specs: 'Động cơ 4 kỳ 125cc PGM-FI, khởi động điện'
+          },
+          {
+            id: 2,
+            name: 'Honda Wave Alpha',
+            desc: 'Xe số năng động, trẻ trung với động cơ 110cc bền bỉ và thiết kế tem mới phóng khoáng.',
+            image: 'assets/img/xe-so/wave-den.png',
+            price: '17,859,273₫',
+            cc: '110cc',
+            power: '5.9kW',
+            features: ['Trẻ trung', 'Tiết kiệm', 'Năng động'],
+            specs: 'Động cơ 4 kỳ 110cc, khởi động điện'
+          },
+        ]
+      },
+      'xe-con-tay': {
+        name: 'Xe Côn Tay',
+        desc: 'Mạnh mẽ, thể thao, dễ điều khiển',
+        bikes: [
+          {
+            id: 1,
+            name: 'Honda Winner R',
+            desc: 'Xe côn tay thể thao thế hệ mới, thiết kế uy lực cùng động cơ 150cc DOHC làm mát bằng chất lỏng.',
+            image: 'assets/img/xe-con-tay/winnerR.png',
+            price: '50,060,000₫',
+            cc: '150cc',
+            power: '11.2kW',
+            features: ['Thể thao', 'ABS', 'LED'],
+            specs: 'Động cơ 150cc DOHC PGM-FI, khởi động điện'
+          },
+          {
+            id: 2,
+            name: 'Honda CBR150R',
+            desc: 'Sportbike 150cc với động cơ DOHC uy lực, phanh ABS 2 kênh và thiết kế mang tinh thần đua trường thuần chủng.',
+            image: 'assets/img/xe-con-tay/cbr150r-do.png',
+            price: '72,290,000₫',
+            cc: '150cc',
+            power: '12.8kW',
+            features: ['Sportbike', 'ABS', 'ESS'],
+            specs: 'Động cơ 150cc DOHC, hộp số 6 cấp, khởi động điện'
+          },
+        ]
+      },
+      'xe-pkl': {
+        name: 'Xe PKL',
+        desc: 'Đa dụng, tiện lợi cho công việc',
+        bikes: [
+          {
+            id: 1,
+            name: 'Yamaha YZF-R15',
+            desc: 'Sportbike 155cc với DNA từ YZF-R1, trang bị công nghệ VVA, ABS và kết nối Y-Connect hiện đại.',
+            image: 'assets/img/xe-pkl/YZF-R15.png',
+            price: '78,000,000₫',
+            cc: '155cc',
+            power: '11.3kW',
+            features: ['Sportbike', 'VVA', 'Y-Connect'],
+            specs: 'Động cơ 155cc SOHC VVA, hộp số 6 cấp, khởi động điện'
+          },
+          {
+            id: 2,
+            name: 'Honda Rebel 1100 2025',
+            desc: 'Cruiser 1.084cc DCT với Throttle By Wire, HSTC và đồng hồ TFT 5 inch sắc nét — phong cách đường phố độc nhất.',
+            image: 'assets/img/xe-pkl/rebel1100.png',
+            price: '399,990,000₫',
+            cc: '1084cc',
+            power: '87kW',
+            features: ['Cruiser', 'DCT', 'TFT 5"'],
+            specs: 'Động cơ 2 xy-lanh, Throttle By Wire, hộp số DCT'
+          },
+          {
+            id: 4,
+            name: 'Honda NX500',
+            desc: 'Crossover Adventure 471cc 2 xi-lanh, HSTC thông minh, màn hình TFT 5 inch — linh hoạt mọi địa hình.',
+            image: 'assets/img/xe-pkl/nx500-trang-den.png',
+            price: '194,290,000₫',
+            cc: '471cc',
+            power: '46kW',
+            features: ['Adventure', 'HSTC', 'TFT 5"'],
+            specs: 'Động cơ 2 xi-lanh song song, ly hợp trượt, ABS 2 kênh'
+          }
+        ]
+      },
+      'xe-dien': {
+        name: 'Xe Điện',
+        desc: 'Thân thiện môi trường, hiện đại',
+        bikes: [
+          {
+            id: 1,
+            name: 'Vinfast EVO',
+            desc: 'Xe máy điện thông minh, pin LFP, chống nước IP67, hành trình lên tới 165km mỗi lần sạc.',
+            image: 'assets/img/xe-dien/vin-evo-do.png',
+            price: '25,600,000₫',
+            cc: 'Điện',
+            power: '5.8kW',
+            features: ['Pin LFP', 'IP67', '165km'],
+            specs: 'Pin LFP, chống nước IP67, đổi pin nhanh'
+          },
+          {
+            id: 2,
+            name: 'Honda Feliz',
+            desc: 'PHONG CÁCH SÀNH ĐIỆU CHINH PHỤC MỌI CUNG ĐƯỜNG.',
+            image: 'assets/img/xe-dien/feliz-den.png',
+            price: '30,500,000₫',
+            cc: 'Điện',
+            power: '-',
+            features: ['Pin LFP', 'IP67', '156km'],
+            specs: 'Pin LFP, chống nước IP67, 2 chế độ Eco & Sport'
+          }
+        ]
+      }
+    };
+
+    function renderBikes() {
+      const categoryId = sessionStorage.getItem('selectedCategory') || 'xe-ga';
+      const categoryData = bikeCategories[categoryId];
+
+      if (!categoryData) {
+        showNoBikes();
+        return;
+      }
+
+      // Update header
+      document.getElementById('categoryTitle').textContent = categoryData.name;
+      document.getElementById('categoryDesc').textContent = categoryData.desc;
+
+      // Render bikes
+      const container = document.getElementById('bikesContainer');
+      container.innerHTML = categoryData.bikes.map(bike => `
+        <div class="bike-card" onclick="viewBikeDetail(${bike.id}, '${categoryId}')">
+          <img src="${bike.image}" alt="${bike.name}" class="bike-image" onerror="this.src='assets/img/banner.jpg'">
+          <div class="bike-info">
+            <div class="bike-name">${bike.name}</div>
+            <div class="bike-description">${bike.desc}</div>
+            <div class="bike-features">
+              ${bike.features.map(f => `<span class="feature-tag">${f}</span>`).join('')}
+            </div>
+            <div class="bike-specs">
+              <div><strong>Dung tích:</strong> ${bike.cc}</div>
+              <div><strong>Công suất:</strong> ${bike.power}</div>
+            </div>
+            <div class="bike-footer">
+              <div class="bike-price">${bike.price}</div>
+              <button class="bike-btn" onclick="event.stopPropagation(); addToBike(${bike.id}, '${bike.name}')">
+                <i class="fa-solid fa-plus me-1"></i>VIEWxe
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function showNoBikes() {
+      const container = document.getElementById('bikesContainer');
+      container.innerHTML = `
+        <div class="no-bikes" style="grid-column: 1 / -1;">
+          <i class="fa-solid fa-motorcycle"></i>
+          <h3>Không có xe nào</h3>
+          <p>Danh mục này hiện chưa có xe.</p>
+          <a href="sanpham.html" class="btn btn-primary mt-3">Quay lại sản phẩm</a>
+        </div>
+      `;
+    }
+
+    function viewBikeDetail(bikeId, categoryId) {
+      // Chuyển đến trang chi tiết sản phẩm với thông tin xe
+      const categoryData = bikeCategories[categoryId];
+      const bike = categoryData.bikes.find(b => b.id === bikeId);
+
+      if (bike) {
+        // Lưu thông tin xe vào sessionStorage để trang chi tiết sử dụng
+        sessionStorage.setItem('selectedBikeDetail', JSON.stringify(bike));
+        sessionStorage.setItem('selectedCategory', categoryId);
+
+        const bikeName = bike.name.toLowerCase();
+        const productKey = bikeName.includes('vision')
+          ? 'vision'
+          : bikeName.includes('janus') || bikeName.includes('jannus')
+            ? 'janus'
+            : bikeName.includes('address') || bikeName.includes('suzuki')
+              ? 'address'
+              : bikeName.includes('grande')
+                ? 'grande'
+                : bikeName.includes('ct125') || bikeName.includes('ct 125')
+                  ? 'ct125'
+                  : bikeName.includes('wave')
+                    ? 'wave'
+                    : bikeName.includes('winner')
+                      ? 'winnerr'
+                      : bikeName.includes('cbr150r') || bikeName.includes('cbr150') || bikeName.includes('cbr 150')
+                        ? 'cbr150r'
+                        : bikeName.includes('yzf-r15') || bikeName.includes('yzfr15') || bikeName.includes('r15')
+                          ? 'yzfr15'
+                          : bikeName.includes('rebel')
+                            ? 'rebel1100'
+                            : bikeName.includes('nx500') || bikeName.includes('nx 500')
+                              ? 'nx500'
+                              : bikeName.includes('vinfast') || bikeName.includes('evo')
+                                ? 'vinevo'
+                                : bikeName.includes('feliz')
+                                  ? 'feliz'
+              : 'airblade';
+
+        // Chuyển đến trang chi tiết sản phẩm
+        window.location.href = `chi-tiet-san-pham.html?bike=${productKey}`;
+      }
+    }
+
+    function addToBike(bikeId, bikeName) {
+      // Thêm xe vào danh sách quản lý
+      alert(`Đã thêm ${bikeName} vào danh sách quản lý!`);
+      // Có thể redirect đến tasks.html với xe đã chọn
+      sessionStorage.setItem('selectedBike', bikeId);
+      window.location.href = 'tasks.html';
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      if (document.body.classList.contains('bg-dark') || localStorage.getItem('darkMode') === 'true') {
+        document.body.classList.add('bg-dark', 'text-white');
+      }
+      updateNavbar();
+      renderBikes();
+    });
+  </script>
+</body>
+</html>

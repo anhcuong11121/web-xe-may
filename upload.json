@@ -1,0 +1,66 @@
+[
+  {
+    "id": 1680000000001,
+    "title": "Honda Vision 2026",
+    "description": "Xe tay ga Honda Vision đời mới, động cơ eSP+ 110cc, tiết kiệm xăng, an toàn, phù hợp đô thị.",
+    "deadline": 2026,
+    "priority": "Honda",
+    "status": "Available"
+  },
+  {
+    "id": 1680000000002,
+    "title": "Honda Airblade 160",
+    "description": "Airblade 160 phiên bản thể thao, phanh ABS, thiết kế cá tính, động cơ mạnh mẽ, lý tưởng cho đường dài & đô thị.",
+    "deadline": 2026,
+    "priority": "Honda",
+    "status": "Available"
+  },
+  {
+    "id": 1680000000003,
+    "title": "Honda CT125",
+    "description": "CT125 phong cách retro, động cơ 125cc, bền bỉ, phù hợp đi phượt, offroad nhẹ và nhu cầu di chuyển hàng ngày.",
+    "deadline": 2026,
+    "priority": "Honda",
+    "status": "Sold"
+  },
+  {
+    "id": 1680000000004,
+    "title": "Honda Winner X / Winner R",
+    "description": "Winner X (Winner R) thể thao côn tay, 150cc, 6 số, dáng dấp đua, phù hợp người trẻ đam mê tốc độ.",
+    "deadline": 2026,
+    "priority": "Honda",
+    "status": "Available"
+  },
+  {
+    "id": 1680000000005,
+    "title": "Yamaha Exciter 155",
+    "description": "Exciter 155 đậm chất thể thao, động cơ VVA 155cc, thiết kế sắc bén, phù hợp các tay lái ưa tốc độ.",
+    "deadline": 2026,
+    "priority": "Yamaha",
+    "status": "Available"
+  },
+  {
+    "id": 1680000000006,
+    "title": "Yamaha NVX 155",
+    "description": "NVX 155 phong cách cá tính, động cơ mạnh mẽ, tiện nghi, thích hợp cho đi phố và đường xa.",
+    "deadline": 2025,
+    "priority": "Yamaha",
+    "status": "Sold"
+  },
+  {
+    "id": 1680000000007,
+    "title": "Suzuki Raider R150",
+    "description": "Raider R150 côn tay thể thao, vỏ nhỏ gọn, phù hợp người thích trải nghiệm côn tay mạnh mẽ.",
+    "deadline": 2023,
+    "priority": "Suzuki",
+    "status": "Available"
+  },
+  {
+    "id": 1680000000008,
+    "title": "Kawasaki Z125",
+    "description": "Z125 naked mini-bike, phong cách đô thị, 125cc, phù hợp đi làm và đi chơi cự ly ngắn.",
+    "deadline": 2024,
+    "priority": "Kawasaki",
+    "status": "Available"
+  }
+]

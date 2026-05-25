@@ -1,0 +1,119 @@
+﻿[
+  {
+    "id": 1000000001,
+    "title": "Honda Airblade",
+    "description": "Xe ga tự động tiên tiến, tiết kiệm xăng, lái mát tay. Động cơ 4 kỳ 125cc-160cc, khởi động điện, công suất 10.3kW.",
+    "deadline": "2024",
+    "priority": "Honda",
+    "colors": ["Đen", "Đỏ đen", "Trắng đỏ"],
+    "status": "Available"
+  },
+  {
+    "id": 1000000002,
+    "title": "Honda Vision",
+    "description": "Xe ga cơ bản, tin cậy, phù hợp cho mọi người. Động cơ 4 kỳ 110cc, khởi động tay/điện, công suất 7.4kW.",
+    "deadline": "2024",
+    "priority": "Honda",
+    "colors": ["Bạc đen", "Đen", "Đỏ xám", "Nâu xám", "Xám đen"],
+    "status": "Sold"
+  },
+  {
+    "id": 1000000003,
+    "title": "Yamaha Janus",
+    "description": "Xe ga cao cấp với nhiều tính năng hiện đại, thiết kế tinh tế. Động cơ 4 kỳ 125cc, khởi động điện, công suất 8.0kW.",
+    "deadline": "2024",
+    "priority": "Yamaha",
+    "colors": ["Đen", "Đỏ đen", "Xám nhám", "Xanh đen", "Xanh xám"],
+    "status": "Sold"
+  },
+  {
+    "id": 1000000005,
+    "title": "Yamaha Grande",
+    "description": "Xe tay ga thời trang, thiết kế thanh lịch với đường cong uyển chuyển và đèn LED hiện đại nổi bật. Động cơ 125cc phun xăng điện tử.",
+    "deadline": "2024",
+    "priority": "Yamaha",
+    "colors": ["Đen bạc", "Đỏ bạc", "Đen vàng", "Đỏ đen", "Xám bạc", "Xanh bạc"],
+    "status": "Available"
+  },
+  {
+    "id": 1000000006,
+    "title": "Honda CT125",
+    "description": "Xe số đậm chất khám phá, phóng khoáng trên mọi cung đường. Động cơ 4 kỳ 125cc PGM-FI ABS, công suất 6.9kW.",
+    "deadline": "2024",
+    "priority": "Honda",
+    "colors": ["Đỏ", "Đen", "Vàng cam"],
+    "status": "Available"
+  },
+  {
+    "id": 1000000007,
+    "title": "Honda Wave Alpha",
+    "description": "Xe số năng động, trẻ trung với động cơ 110cc bền bỉ và thiết kế tem mới phóng khoáng. Công suất 5.9kW.",
+    "deadline": "2024",
+    "priority": "Honda",
+    "colors": ["Đen", "Đỏ", "Trắng", "Xanh"],
+    "status": "Sold"
+  },
+  {
+    "id": 1000000008,
+    "title": "Honda Winner R",
+    "description": "Xe côn tay thể thao thế hệ mới, thiết kế uy lực cùng động cơ 150cc DOHC làm mát bằng chất lỏng. ABS 2 kênh, công suất 11.2kW.",
+    "deadline": "2024",
+    "priority": "Honda",
+    "colors": ["Đen", "Đen bạc", "Đỏ đen", "Xám đen", "Xanh đen"],
+    "status": "Available"
+  },
+  {
+    "id": 1000000009,
+    "title": "Honda CBR150R",
+    "description": "Sportbike 150cc với động cơ DOHC uy lực, phanh ABS 2 kênh và thiết kế mang tinh thần đua trường thuần chủng. Công suất 12.8kW.",
+    "deadline": "2024",
+    "priority": "Honda",
+    "colors": ["Đen đỏ", "Đen xám", "Đỏ"],
+    "status": "Sold"
+  },
+  {
+    "id": 1000000010,
+    "title": "Yamaha YZF-R15",
+    "description": "Sportbike 155cc với DNA từ YZF-R1, trang bị công nghệ VVA, ABS và kết nối Y-Connect hiện đại. Hộp số 6 cấp.",
+    "deadline": "2024",
+    "priority": "Yamaha",
+    "colors": ["Đen", "Xanh đen"],
+    "status": "Sold"
+  },
+  {
+    "id": 1000000011,
+    "title": "Honda Rebel 1100 2025",
+    "description": "Cruiser 1.084cc DCT với Throttle By Wire, HSTC và đồng hồ TFT 5 inch sắc nét. Phong cách đường phố độc nhất.",
+    "deadline": "2025",
+    "priority": "Honda",
+    "colors": ["Đen", "Xám"],
+    "status": "Available"
+  },
+  {
+    "id": 1000000012,
+    "title": "Honda NX500",
+    "description": "Crossover Adventure 471cc 2 xi-lanh, HSTC thông minh, màn hình TFT 5 inch, linh hoạt mọi địa hình. ABS 2 kênh.",
+    "deadline": "2024",
+    "priority": "Honda",
+    "colors": ["Đen", "Đỏ đen", "Trắng đen"],
+    "status": "Available"
+  },
+  {
+    "id": 1000000013,
+    "title": "VinFast Evo",
+    "description": "Xe máy điện thông minh, pin LFP hiện đại, chống nước IP67, hành trình lên tới 165km mỗi lần sạc. Đổi pin nhanh.",
+    "deadline": "2024",
+    "priority": "VinFast",
+    "colors": ["Đen", "Đỏ", "Trắng", "Xanh", "Đồng"],
+    "status": "Available"
+  },
+  {
+    "id": 1000000014,
+    "title": "VinFast Feliz",
+    "description": "Xe máy điện phong cách sành điệu, pin LFP, chống nước IP67, hành trình 156km, 2 chế độ lái Eco và Sport.",
+    "deadline": "2024",
+    "priority": "VinFast",
+    "colors": ["Đen", "Đỏ", "Trắng"],
+    "status": "Available"
+  }
+]

@@ -1,0 +1,2847 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chi tiết sản phẩm - motor chất</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="assets/css/style.css">
+
+  <style>
+    :root{
+      --ab-red:#c4001b;
+      --ab-red-dark:#970014;
+      --ab-red-bright:#e10000;
+      --ab-bg:#f3f3f3;
+      --ab-text:#404040;
+      --ab-muted:#666;
+      --ab-line:#e7c7cc;
+      --ab-white:#fff;
+      --ab-black:#111;
+      --ab-shadow:0 12px 32px rgba(196,0,27,.12);
+      --ab-radius:22px;
+      --subnav-h:82px;
+    }
+
+    html{
+      scroll-behavior:smooth;
+    }
+
+    body{
+      background:#f2f2f2;
+      color:var(--ab-text);
+      overflow-x:hidden;
+    }
+
+    .navbar{
+      z-index:1200;
+    }
+
+    .ab-page{
+      background:#efefef;
+    }
+
+    .ab-hero-top{
+      background:linear-gradient(90deg,#e2e2e2 0%, #f7f7f7 55%, #ececec 100%);
+      padding:28px 0 18px;
+      border-bottom:1px solid #ddd;
+    }
+
+    .ab-hero-top .container{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-end;
+      gap:24px;
+      flex-wrap:wrap;
+    }
+
+    .vision-hero{
+      position:relative;
+      display:none;
+      min-height:700px;
+      overflow:hidden;
+      background:#050505;
+    }
+
+    .vision-hero.is-active{
+      display:block;
+    }
+
+    .vision-hero video{
+      width:100%;
+      height:100%;
+      min-height:700px;
+      object-fit:cover;
+      display:block;
+    }
+
+    .vision-hero-banner{
+      display:none;
+      width:100%;
+      height:100%;
+      min-height:700px;
+      object-fit:cover;
+    }
+
+    .vision-hero::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(180deg, rgba(0,0,0,.08) 0%, rgba(0,0,0,.24) 48%, rgba(0,0,0,.72) 100%);
+      pointer-events:none;
+    }
+
+    .vision-hero-overlay{
+      position:absolute;
+      inset:0;
+      z-index:2;
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:36px;
+      padding:44px 56px;
+    }
+
+    .vision-hero-logo{
+      font-size:clamp(3.6rem,9vw,7rem);
+      line-height:.9;
+      font-weight:900;
+      font-style:italic;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:#fff;
+      text-shadow:0 8px 30px rgba(0,0,0,.38);
+      flex:0 0 auto;
+    }
+
+    .vision-hero-copy{
+      max-width:760px;
+      margin-left:auto;
+      padding-left:28px;
+      border-left:2px solid rgba(255,255,255,.22);
+      color:#fff;
+      font-size:clamp(1rem,1.4vw,1.18rem);
+      line-height:1.7;
+      font-weight:500;
+      text-shadow:0 4px 18px rgba(0,0,0,.32);
+    }
+
+    .ab-hero-title small{
+      display:inline-block;
+      padding:6px 14px;
+      border-radius:999px;
+      background:#fff0f2;
+      color:var(--ab-red);
+      font-weight:700;
+      margin-bottom:10px;
+    }
+
+    .ab-hero-title h1{
+      font-size:clamp(2rem,4vw,3.4rem);
+      margin:0;
+      font-weight:900;
+      color:#161616;
+      letter-spacing:-.02em;
+    }
+
+    .ab-hero-title p{
+      margin:10px 0 0;
+      max-width:760px;
+      color:#555;
+      font-size:1rem;
+      line-height:1.7;
+    }
+
+    .ab-hero-badge{
+      color:var(--ab-red);
+      font-weight:800;
+      font-size:1.1rem;
+      white-space:nowrap;
+    }
+
+    .ab-subnav{
+      position:sticky;
+      top:56px;
+      z-index:1100;
+      background:#fff;
+      border-top:8px solid var(--ab-red);
+      border-bottom:1px solid #ddd;
+      box-shadow:0 4px 16px rgba(0,0,0,.05);
+    }
+
+    .ab-subnav-inner{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:0;
+      flex-wrap:wrap;
+      min-height:var(--subnav-h);
+    }
+
+    .ab-subnav a{
+      color:#555;
+      text-decoration:none;
+      font-size:1rem;
+      font-weight:500;
+      padding:18px 12px 14px;
+      position:relative;
+      transition:.25s ease;
+      white-space:nowrap;
+    }
+
+    .ab-subnav a.active,
+    .ab-subnav a:hover{
+      color:var(--ab-red);
+      font-weight:700;
+    }
+
+    .ab-subnav a.active::after,
+    .ab-subnav a:hover::after{
+      content:"";
+      position:absolute;
+      left:12px;
+      right:12px;
+      bottom:10px;
+      height:4px;
+      border-radius:999px;
+      background:var(--ab-red);
+    }
+
+    .ab-section{
+      position:relative;
+      scroll-margin-top:calc(var(--subnav-h) + 70px);
+    }
+
+    .ab-pricing{
+      padding:34px 0 10px;
+      background:#f3f3f3;
+    }
+
+    .ab-pricing-grid{
+      display:grid;
+      grid-template-columns:360px 1fr;
+      gap:32px;
+      align-items:start;
+    }
+
+    .ab-config{
+      padding:0 8px 0 0;
+    }
+
+    .ab-version-box{
+      background:#ededed;
+      border:1px solid #bdbdbd;
+      box-shadow:0 2px 8px rgba(0,0,0,.04);
+      overflow:hidden;
+      width:100%;
+      max-width:365px;
+    }
+
+    .ab-version-current{
+      padding:16px 18px;
+      background:#f5f5f5;
+      font-size:18px;
+      font-weight:700;
+      color:#444;
+      border-bottom:1px solid #bdbdbd;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      cursor:pointer;
+    }
+
+    .ab-version-current i{
+      transition:transform .3s ease;
+    }
+
+    .ab-version-list{
+      max-height:0;
+      overflow:hidden;
+      transition:max-height .3s ease;
+      background:#ededed;
+    }
+
+    .ab-version-box.open .ab-version-list{
+      max-height:228px;
+      overflow:auto;
+    }
+
+    .ab-version-box.open .ab-version-current i{
+      transform:rotate(180deg);
+    }
+
+    .ab-version-btn{
+      display:block;
+      width:100%;
+      text-align:left;
+      background:transparent;
+      border:0;
+      border-bottom:1px solid #c9c9c9;
+      padding:16px 14px;
+      font-size:16px;
+      color:#444;
+      transition:.2s ease;
+    }
+
+    .ab-version-btn:hover,
+    .ab-version-btn.active{
+      background:#f7f7f7;
+      font-weight:700;
+    }
+
+    .ab-colors{
+      margin-top:12px;
+    }
+
+    .ab-color-options{
+      display:flex;
+      gap:22px;
+      flex-wrap:wrap;
+      align-items:flex-start;
+    }
+
+    .ab-color-option{
+      cursor:pointer;
+      user-select:none;
+    }
+
+    .ab-color-chip{
+      width:54px;
+      height:34px;
+      border:2px solid transparent;
+      box-shadow:0 1px 4px rgba(0,0,0,.08);
+      background:#000;
+      transition:.2s ease;
+    }
+
+    .ab-color-option.active .ab-color-chip{
+      border-color:#111;
+      transform:translateY(-1px);
+    }
+
+    .ab-color-name{
+      display:block;
+      margin-top:8px;
+      font-size:14px;
+      color:#666;
+      font-weight:500;
+      position:relative;
+      padding-bottom:8px;
+    }
+
+    .ab-color-option.active .ab-color-name{
+      color:#444;
+      font-weight:700;
+    }
+
+    .ab-color-option.active .ab-color-name::after{
+      content:"";
+      position:absolute;
+      left:0;
+      right:0;
+      bottom:0;
+      height:3px;
+      background:var(--ab-red);
+    }
+
+    .ab-price-wrap{
+      margin-top:44px;
+    }
+
+    .ab-price-label{
+      color:#666;
+      font-size:18px;
+      margin-bottom:16px;
+    }
+
+    .ab-price-value{
+      font-size:54px;
+      line-height:1;
+      font-weight:800;
+      color:#56606d;
+      letter-spacing:1px;
+    }
+
+    .ab-price-value span{
+      font-size:20px;
+      margin-left:8px;
+      font-weight:700;
+    }
+
+    .ab-stage{
+      position:relative;
+      min-height:640px;
+      background:
+        radial-gradient(circle at 50% 22%, rgba(0,0,0,.05), transparent 28%),
+        linear-gradient(180deg,#f4f4f4 0%, #efefef 100%);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+    }
+
+    .ab-stage-watermark{
+      position:absolute;
+      top:58px;
+      left:50%;
+      transform:translateX(-50%);
+      font-size:clamp(4rem,10vw,7rem);
+      font-weight:900;
+      color:rgba(0,0,0,.08);
+      letter-spacing:.18em;
+      pointer-events:none;
+      text-transform:uppercase;
+    }
+
+    .ab-stage img{
+      max-width:100%;
+      max-height:520px;
+      object-fit:contain;
+      position:relative;
+      z-index:2;
+      filter:drop-shadow(0 18px 30px rgba(0,0,0,.16));
+      transition:opacity .35s ease, transform .35s ease;
+    }
+
+    .ab-stage.is-changing img{
+      opacity:.15;
+      transform:scale(.98);
+    }
+
+    .ab-rotate{
+      position:absolute;
+      bottom:46px;
+      left:50%;
+      transform:translateX(-50%);
+      width:108px;
+      height:108px;
+      border-radius:50%;
+      background:#fff;
+      box-shadow:0 8px 20px rgba(0,0,0,.08);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:18px;
+      font-weight:800;
+      color:#777;
+      z-index:3;
+    }
+
+    .ab-rotate::before{
+      content:"";
+      position:absolute;
+      width:180px;
+      height:180px;
+      border-radius:50%;
+      border:3px dashed #d7d7d7;
+      border-left-color:transparent;
+      border-right-color:transparent;
+      z-index:-1;
+    }
+
+    .ab-split{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) 36%;
+      min-height:670px;
+      border-top:1px solid #d6d6d6;
+      border-bottom:1px solid #d6d6d6;
+      background:#f5f5f5;
+    }
+
+    .ab-split.reverse{
+      grid-template-columns:35% minmax(0,1fr);
+    }
+
+    .ab-visual{
+      position:relative;
+      overflow:hidden;
+      background:#ebebeb;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .ab-visual img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      transition:opacity .4s ease, transform .4s ease;
+    }
+
+    .ab-content{
+      position:relative;
+      padding:50px 40px 44px;
+      display:flex;
+      flex-direction:column;
+      justify-content:flex-start;
+    }
+
+    .ab-content.red{
+      background:var(--ab-red-bright);
+      color:#fff;
+    }
+
+    .ab-content.white{
+      background:#f7f7f7;
+      color:#444;
+    }
+
+    .ab-wave{
+      position:relative;
+      padding-top:22px;
+      margin-bottom:26px;
+    }
+
+    .ab-wave::before{
+      content:"";
+      position:absolute;
+      inset:0 0 auto 0;
+      height:72px;
+      background:
+        linear-gradient(to right, rgba(255,255,255,.25), rgba(255,255,255,.25)) bottom left / 100% 2px no-repeat;
+      opacity:.9;
+      pointer-events:none;
+    }
+
+    .ab-content.red .ab-wave::after,
+    .ab-content.white .ab-wave::after{
+      content:"";
+      position:absolute;
+      top:0;
+      right:-40px;
+      width:180px;
+      height:72px;
+      border-top:2px solid rgba(255,255,255,.25);
+      border-radius:0 100px 100px 0;
+      opacity:.6;
+    }
+
+    .ab-content.white .ab-wave::before{
+      background:
+        linear-gradient(to right, rgba(196,0,27,.14), rgba(196,0,27,.14)) bottom left / 100% 2px no-repeat;
+    }
+
+    .ab-content.white .ab-wave::after{
+      border-top-color:rgba(196,0,27,.14);
+    }
+
+    .ab-label{
+      margin:0 0 4px;
+      font-style:italic;
+      text-transform:uppercase;
+      font-weight:900;
+      font-size:clamp(2rem,4vw,3rem);
+      letter-spacing:-.02em;
+    }
+
+    .ab-content.red .ab-label{
+      color:#fff;
+    }
+
+    .ab-content.white .ab-label{
+      color:var(--ab-red);
+    }
+
+    .ab-title{
+      margin:8px 0 18px;
+      font-size:clamp(1.9rem,2.8vw,2.8rem);
+      font-weight:800;
+      line-height:1.2;
+    }
+
+    .ab-copy{
+      font-size:17px;
+      line-height:1.75;
+      max-width:500px;
+      font-weight:500;
+    }
+
+    .ab-content.red .ab-copy{
+      color:#fff;
+    }
+
+    .ab-content.white .ab-copy{
+      color:#5d6773;
+    }
+
+    .ab-thumbbar{
+      position:absolute;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:38px;
+      display:flex;
+      gap:14px;
+      z-index:6;
+      flex-wrap:wrap;
+      justify-content:center;
+      width:min(90%,420px);
+    }
+
+    .ab-thumb{
+      width:92px;
+      height:72px;
+      border-radius:12px;
+      overflow:hidden;
+      border:3px solid transparent;
+      background:#fff;
+      box-shadow:0 8px 18px rgba(0,0,0,.16);
+      cursor:pointer;
+      transition:.2s ease;
+      padding:0;
+    }
+
+    .ab-thumb img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .ab-thumb.active{
+      border-color:var(--ab-red-bright);
+    }
+
+    .ab-nav-arrows{
+      display:flex;
+      gap:16px;
+      margin-top:auto;
+      padding-top:34px;
+    }
+
+    .ab-arrow{
+      width:56px;
+      height:56px;
+      border-radius:50%;
+      border:1px solid currentColor;
+      background:transparent;
+      padding:0;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:20px;
+      cursor:pointer;
+      font-family:inherit;
+      transition:.25s ease;
+      text-decoration:none;
+    }
+
+    .ab-content.red .ab-arrow{
+      color:#fff;
+    }
+
+    .ab-content.white .ab-arrow{
+      color:var(--ab-red-bright);
+    }
+
+    .ab-arrow:hover{
+      transform:translateY(-2px);
+      background:rgba(255,255,255,.08);
+      color:inherit;
+    }
+
+    .ab-scrolltop{
+      position:absolute;
+      right:32px;
+      bottom:32px;
+      width:48px;
+      height:48px;
+      background:#555;
+      color:#fff;
+      border:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-decoration:none;
+      font-size:20px;
+      transition:.25s ease;
+      z-index:7;
+    }
+
+    .ab-scrolltop:hover{
+      background:#333;
+      color:#fff;
+    }
+
+    .ab-specs-section{
+      padding:10px 0 72px;
+      background:#f3f3f3;
+    }
+
+    .ab-specs-card{
+      background:#1b1b1b;
+      color:#f7f0df;
+      border-radius:24px;
+      overflow:hidden;
+      box-shadow:0 24px 48px rgba(0,0,0,.16);
+    }
+
+    .ab-specs-head{
+      padding:34px 36px 10px;
+    }
+
+    .ab-specs-eyebrow{
+      display:inline-block;
+      margin-bottom:12px;
+      color:#ffcf6d;
+      font-size:.95rem;
+      font-weight:700;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+
+    .ab-specs-head h2{
+      margin:0;
+      color:#fff7e7;
+      font-size:clamp(1.8rem,3.2vw,2.7rem);
+      font-weight:800;
+    }
+
+    .ab-specs-table{
+      width:100%;
+      border-collapse:collapse;
+    }
+
+    .ab-specs-table th,
+    .ab-specs-table td{
+      padding:22px 36px;
+      border-top:1px solid rgba(255,255,255,.14);
+      vertical-align:top;
+      font-size:1.05rem;
+      line-height:1.65;
+    }
+
+    .ab-specs-table th{
+      width:34%;
+      color:#f6deb0;
+      font-weight:600;
+    }
+
+    .ab-specs-table td{
+      color:#fff7e7;
+      font-weight:500;
+    }
+
+    .ab-spec-line + .ab-spec-line{
+      margin-top:12px;
+    }
+
+    .ab-fade{
+      animation:abFade .45s ease;
+    }
+
+    @keyframes abFade{
+      from{opacity:0; transform:translateY(10px);}
+      to{opacity:1; transform:translateY(0);}
+    }
+
+    .ab-mobile-hero{
+      display:none;
+    }
+
+    .ab-hidden-safe{
+      display:none !important;
+    }
+
+    @media (max-width: 1200px){
+      .ab-pricing-grid{
+        grid-template-columns:320px 1fr;
+      }
+
+      .ab-price-value{
+        font-size:44px;
+      }
+
+      .ab-split,
+      .ab-split.reverse{
+        grid-template-columns:1fr 40%;
+      }
+    }
+
+    @media (max-width: 991.98px){
+      .ab-subnav{
+        top:56px;
+      }
+
+      .vision-hero,
+      .vision-hero video,
+      .vision-hero-banner{
+        min-height:560px;
+      }
+
+      .vision-hero-overlay{
+        padding:28px 24px 32px;
+        flex-direction:column;
+        align-items:flex-start;
+        justify-content:flex-end;
+      }
+
+      .vision-hero-copy{
+        max-width:100%;
+        margin-left:0;
+      }
+
+      .ab-subnav-inner{
+        justify-content:flex-start;
+        overflow:auto;
+        flex-wrap:nowrap;
+        padding:0 8px;
+      }
+
+      .ab-pricing-grid{
+        grid-template-columns:1fr;
+      }
+
+      .ab-config{
+        padding-right:0;
+      }
+
+      .ab-stage{
+        min-height:520px;
+      }
+
+      .ab-stage-watermark{
+        top:42px;
+        font-size:4rem;
+      }
+
+      .ab-price-wrap{
+        margin-top:28px;
+      }
+
+      .ab-split,
+      .ab-split.reverse{
+        grid-template-columns:1fr;
+        min-height:auto;
+      }
+
+      .ab-specs-head{
+        padding:28px 24px 8px;
+      }
+
+      .ab-specs-table th,
+      .ab-specs-table td{
+        padding:18px 24px;
+      }
+
+      .ab-content{
+        order:2;
+      }
+
+      .ab-split.reverse .ab-content{
+        order:1;
+      }
+
+      .ab-split.reverse .ab-visual{
+        order:2;
+      }
+
+      .ab-visual{
+        min-height:460px;
+      }
+
+      .ab-thumbbar{
+        bottom:18px;
+      }
+
+      .ab-content{
+        padding:38px 24px 28px;
+      }
+
+      .ab-scrolltop{
+        right:16px;
+        bottom:16px;
+      }
+    }
+
+    @media (max-width: 767.98px){
+      .ab-hero-top{
+        padding:20px 0 12px;
+      }
+
+      .vision-hero,
+      .vision-hero video,
+      .vision-hero-banner{
+        min-height:420px;
+      }
+
+      .vision-hero-overlay{
+        gap:18px;
+        padding:20px 16px 22px;
+      }
+
+      .vision-hero-logo{
+        letter-spacing:.04em;
+      }
+
+      .vision-hero-copy{
+        padding-left:16px;
+        font-size:.98rem;
+      }
+
+      .ab-hero-badge{
+        font-size:.96rem;
+      }
+
+      .ab-subnav{
+        top:56px;
+      }
+
+      .ab-version-current{
+        font-size:16px;
+      }
+
+      .ab-price-value{
+        font-size:34px;
+      }
+
+      .ab-price-value span{
+        font-size:16px;
+      }
+
+      .ab-stage{
+        min-height:420px;
+      }
+
+      .ab-stage img{
+        max-height:330px;
+      }
+
+      .ab-stage-watermark{
+        top:34px;
+        font-size:2.7rem;
+        letter-spacing:.1em;
+      }
+
+      .ab-rotate{
+        width:82px;
+        height:82px;
+        font-size:14px;
+        bottom:20px;
+      }
+
+      .ab-rotate::before{
+        width:130px;
+        height:130px;
+      }
+
+      .ab-visual{
+        min-height:320px;
+      }
+
+      .ab-thumb{
+        width:70px;
+        height:56px;
+      }
+
+      .ab-title{
+        font-size:1.7rem;
+      }
+
+      .ab-label{
+        font-size:1.9rem;
+      }
+
+      .ab-copy{
+        font-size:15px;
+      }
+
+      .ab-specs-card{
+        border-radius:20px;
+      }
+
+      .ab-specs-table,
+      .ab-specs-table tbody,
+      .ab-specs-table tr,
+      .ab-specs-table th,
+      .ab-specs-table td{
+        display:block;
+        width:100%;
+      }
+
+      .ab-specs-table tr{
+        padding:18px 20px;
+      }
+
+      .ab-specs-table tr + tr{
+        border-top:1px solid rgba(255,255,255,.14);
+      }
+
+      .ab-specs-table th,
+      .ab-specs-table td{
+        border-top:0;
+        padding:0;
+      }
+
+      .ab-specs-table td{
+        padding-top:8px;
+      }
+    }
+  </style>
+</head>
+<body id="top">
+  <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">motor <span class="brand-highlight">chất</span></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto align-items-lg-center">
+          <li class="nav-item"><a class="nav-link" href="index.html">Trang chủ</a></li>
+          <li class="nav-item"><a class="nav-link active" href="sanpham.html">Sản phẩm</a></li>
+          <li class="nav-item"><a class="nav-link" href="tasks.html">Quản lý xe</a></li>
+          <li class="nav-item"><a class="nav-link" href="about.html">Thống kê</a></li>
+          <li class="nav-item"><a class="nav-link" href="lienhe.html">Liên hệ</a></li>
+          <li class="nav-item"><a class="nav-link" href="login.html">Đăng nhập</a></li>
+          <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
+            <button class="btn btn-outline-light dark-toggle" onclick="toggleDarkMode()"><i class="fa-solid fa-moon"></i></button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Giữ 3 div này để app.js cũ không bị lỗi -->
+  <div id="variant-buttons" class="ab-hidden-safe"></div>
+  <div id="details-tabs" class="ab-hidden-safe"></div>
+  <div id="tab-content" class="ab-hidden-safe"></div>
+
+  <div class="ab-page">
+    <section class="ab-hero-top">
+      <div class="container">
+        <div class="ab-hero-title">
+          <small id="heroModelText">Honda Air Blade 160/125</small>
+          <h1 id="heroHeadline">Khí chất thể thao, giao diện kiểu Honda</h1>
+          <p id="heroDescription">
+            Trang này được làm theo kiểu section lớn giống Honda: Giá &amp; Màu sắc ở trên,
+            bên dưới là cụm slider nội dung cho Tính năng nổi bật, Thiết kế, Động cơ và Tiện ích &amp; An toàn.
+          </p>
+        </div>
+        <div class="ab-hero-badge" id="heroBadge">ABS • Smart Key • eSP+ • LED</div>
+      </div>
+    </section>
+
+    <section class="vision-hero" id="visionHeroSection" aria-label="Vision hero video">
+      <video id="visionHeroVideo" autoplay muted loop playsinline preload="auto">
+        <source id="visionHeroSource" src="assets/img/xe-ga/vision-vd.mp4" type="video/mp4">
+      </video>
+      <img id="visionHeroBanner" class="vision-hero-banner" src="assets/img/xe-ga/jannus.png" alt="Hero banner fallback">
+      <div class="vision-hero-overlay">
+        <div class="vision-hero-logo" id="visionHeroLogo">VISION</div>
+        <div class="vision-hero-copy" id="visionHeroCopy">
+          Sở hữu thiết kế nhỏ gọn, màu sắc đa dạng cùng phối màu chi tiết được tinh chỉnh đồng điệu, hiện đại, Vision mang diện mạo thời trang, năng động, đồng thời nổi bật với khả năng tiết kiệm nhiên liệu và độ bền bỉ vượt trội, xứng danh mẫu xe tay ga quốc dân được giới trẻ yêu thích.
+        </div>
+      </div>
+    </section>
+
+    <div class="ab-subnav">
+      <div class="container">
+        <div class="ab-subnav-inner">
+          <a href="#gia-mau" class="ab-nav-link active" data-nav="gia-mau">Giá &amp; Màu sắc</a>
+          <a href="#chi-tiet-slider" class="ab-nav-link" data-nav="tinh-nang" data-slide="0">Tính năng nổi bật</a>
+          <a href="#chi-tiet-slider" class="ab-nav-link" data-nav="thiet-ke" data-slide="1">Thiết kế</a>
+          <a href="#chi-tiet-slider" class="ab-nav-link" data-nav="dong-co" data-slide="2">Động cơ</a>
+          <a href="#chi-tiet-slider" class="ab-nav-link" data-nav="cong-nghe" data-slide="3">Công nghệ</a>
+          <a href="#chi-tiet-slider" class="ab-nav-link" data-nav="tien-ich" data-slide="4">Tiện ích &amp; An toàn</a>
+          <a href="#thong-so" class="ab-nav-link" data-nav="thong-so" hidden>Thông số kỹ thuật</a>
+        </div>
+      </div>
+    </div>
+
+    <section id="gia-mau" class="ab-section ab-pricing">
+      <div class="container">
+        <div class="ab-pricing-grid">
+          <div class="ab-config">
+            <div class="ab-version-box" id="versionBox">
+              <div class="ab-version-current" id="currentVariantLabel" tabindex="0">
+                Air Blade 125 bản Tiêu chuẩn
+                <i class="fa-solid fa-angle-up" style="transition:transform .3s ease;"></i>
+              </div>
+              <div class="ab-version-list" id="variantList"></div>
+            </div>
+
+            <div class="ab-colors">
+              <div class="ab-color-options" id="colorList"></div>
+            </div>
+
+            <div class="ab-price-wrap">
+              <div class="ab-price-label">Giá bán lẻ đề xuất</div>
+              <div class="ab-price-value" id="priceValue">42.208.363 <span>VNĐ</span></div>
+            </div>
+          </div>
+
+          <div class="ab-stage" id="stageWrap">
+            <div class="ab-stage-watermark" id="stageWatermark">AIRBLADE</div>
+            <img id="bikeImage" src="assets/img/xe-ga/airblade-den.png" alt="Honda Air Blade">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="thong-so" class="ab-section ab-specs-section" hidden>
+      <div class="container">
+        <div class="ab-specs-card">
+          <div class="ab-specs-head">
+            <div class="ab-specs-eyebrow">Thông số kỹ thuật</div>
+            <h2 id="specsHeading">Thông số kỹ thuật của xe Suzuki Address 110</h2>
+          </div>
+          <table class="ab-specs-table">
+            <tbody id="specsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="chi-tiet-slider" class="ab-section">
+      <div class="ab-split">
+        <div class="ab-visual">
+          <img id="featureSlideImage" src="assets/img/xe-ga/airblade-feature-1.png" alt="Tính năng nổi bật" class="ab-fade">
+          <div class="ab-thumbbar" id="featureThumbbar"></div>
+        </div>
+        <div class="ab-content red">
+          <div class="ab-wave">
+            <h2 class="ab-label" id="featureSlideLabel">Tính năng nổi bật</h2>
+          </div>
+          <h3 class="ab-title" id="featureSlideTitle">Thiết kế hiện đại mạnh mẽ, kết hợp phối màu cá tính</h3>
+          <div class="ab-copy" id="featureSlideDescription">
+            Air Blade 2026 sở hữu thiết kế được làm mới hoàn toàn, hướng đến phong cách hiện đại và tối giản.
+            Kiểu dáng thể thao mạnh mẽ nhưng không kém phần lịch lãm, cùng phối màu mới lạ trên từng phiên bản,
+            tạo nên diện mạo nam tính, cuốn hút và đầy khác biệt.
+            <br><br>
+            Phiên bản Tiêu chuẩn 160cc tăng thêm lựa chọn màu sắc với tông màu Đỏ Đen cuốn hút, đáp ứng thị hiếu phong phú của người dùng.
+            <br><br>
+            Logo Air Blade mới vuông vắn, nam tính, được dập nổi tinh xảo trên thân xe, tạo điểm nhấn nổi bật và khẳng định phong cách riêng.
+          </div>
+
+          <div class="ab-nav-arrows">
+            <button class="ab-arrow" id="featurePrevBtn" type="button" aria-label="Mục trước"><i class="fa-solid fa-angle-left"></i></button>
+            <button class="ab-arrow" id="featureNextBtn" type="button" aria-label="Mục tiếp theo"><i class="fa-solid fa-angle-right"></i></button>
+          </div>
+
+          <a href="#top" class="ab-scrolltop"><i class="fa-solid fa-angle-up"></i></a>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer class="py-4">
+    <div class="container text-center">
+      <p class="mb-1">&copy; 2026 motor chất. Điện thoại: 0987888888 | Email: motorchat@gmail.com</p>
+      <small>Được phát triển bởi Lê Cương, Minh Đức.</small>
+    </div>
+  </footer>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/js/app.js"></script>
+
+  <script>
+    const AIRBLADE_VARIANTS = [
+      {
+        id: "ab125-standard",
+        label: "Air Blade 125 phiên bản Tiêu chuẩn",
+        colors: [
+          {
+            id: "den",
+            name: "Đen",
+            price: "42.208.363",
+            image: "assets/img/xe-ga/airblade-den.png",
+            swatch: "linear-gradient(90deg,#000 0%,#000 100%)"
+          },
+          {
+            id: "do-den",
+            name: "Đỏ Đen",
+            price: "42.208.363",
+            image: "assets/img/xe-ga/airblade-do.png",
+            swatch: "linear-gradient(90deg,#111 0%, #111 33%, #c4001b 33%, #c4001b 66%, #111 66%, #111 100%)"
+          }
+        ]
+      },
+      {
+        id: "ab160-sport",
+        label: "Air Blade 160cc bản Thể thao",
+        colors: [
+          {
+            id: "trang-do-den",
+            name: "Trắng Đỏ Đen",
+            price: "Liên hệ",
+            image: "assets/img/xe-ga/airblade-trang-do.png",
+            swatch: "linear-gradient(90deg,#f3f3f3 0%, #f3f3f3 33%, #c4001b 33%, #c4001b 66%, #111 66%, #111 100%)"
+          }
+        ]
+      },
+      {
+        id: "ab160-standard",
+        label: "Air Blade 160cc bản Tiêu chuẩn",
+        colors: [
+          {
+            id: "do-den-160",
+            name: "Đỏ Đen",
+            price: "Liên hệ",
+            image: "assets/img/xe-ga/airblade-160cc.png",
+            swatch: "linear-gradient(90deg,#111 0%, #111 33%, #c4001b 33%, #c4001b 66%, #111 66%, #111 100%)"
+          }
+        ]
+      }
+    ];
+
+    const AIRBLADE_FEATURE_SLIDES = [
+      {
+        id: "tinh-nang",
+        navLabel: "Tính năng nổi bật",
+        label: "Tính năng nổi bật",
+        title: "Thiết kế thể thao hiện đại, đậm chất Air Blade",
+        description: `Air Blade nổi bật với phong cách thiết kế góc cạnh, mạnh mẽ và hiện đại, tạo nên diện mạo khác biệt ngay từ ánh nhìn đầu tiên.<br><br>Những mảng khối trên thân xe được xử lý dứt khoát, kết hợp cùng chi tiết đầu xe sắc sảo và cách phối màu cá tính, giúp tổng thể luôn giữ được cảm giác trẻ trung, năng động và giàu chất thể thao.<br><br>Ngôn ngữ thiết kế của Air Blade cũng hướng đến sự cân bằng giữa thẩm mỹ và tính thực dụng, phù hợp với người dùng muốn một mẫu xe ga nổi bật nhưng vẫn thuận tiện cho nhu cầu di chuyển hằng ngày.`,
+        image: "assets/img/xe-ga/airblade-feature-1.png"
+      },
+      {
+        id: "thiet-ke",
+        navLabel: "Thiết kế",
+        label: "Thiết kế",
+        title: "Đầu xe sắc sảo, đường nét liền mạch và cuốn hút",
+        description: `Phần đầu xe Air Blade được tạo hình nổi bật với các đường cắt gãy gọn, mặt nạ trước hiện đại và hệ thống đèn mang phong cách sắc nét, giúp tổng thể trông mạnh mẽ và dễ nhận diện hơn trên phố.<br><br>Cách xử lý các chi tiết từ yếm trước, hông xe đến đuôi xe tạo nên sự liền mạch trong thiết kế, đồng thời duy trì cảm giác cao cấp và khỏe khoắn đặc trưng của dòng Air Blade.<br><br>Đây là phong cách thiết kế phù hợp với người dùng yêu thích một mẫu xe ga có ngoại hình nam tính, năng động và thiên về cảm giác thể thao.`,
+        image: "assets/img/xe-ga/airblade-feature-2.png"
+      },
+      {
+        id: "dong-co",
+        navLabel: "Động cơ",
+        label: "Động cơ",
+        title: "Động cơ vận hành mượt mà, tiết kiệm và ổn định",
+        description: `Air Blade được định hướng là mẫu xe ga có khả năng vận hành linh hoạt trong đô thị, đồng thời vẫn mang lại cảm giác tăng tốc tốt, êm ái và ổn định trong quá trình sử dụng hằng ngày.<br><br>Các công nghệ động cơ hiện đại của Honda giúp xe tối ưu hiệu quả nhiên liệu, giảm độ rung và mang lại cảm giác vận hành mượt hơn ở nhiều dải tốc độ khác nhau.<br><br>Nhờ đó, Air Blade phù hợp với người dùng cần một mẫu xe ga vừa có phong cách thể thao, vừa đáp ứng tốt nhu cầu đi làm, đi học hay di chuyển thường xuyên.`,
+        image: "assets/img/xe-ga/airblade-feature-3.png"
+      },
+      {
+        id: "tien-ich",
+        navLabel: "Tiện ích & An toàn",
+        label: "Tiện ích & An toàn",
+        title: "Tiện ích thực dụng đi cùng cảm giác an tâm khi sử dụng",
+        description: `Air Blade được trang bị nhiều tiện ích hỗ trợ người dùng trong quá trình sử dụng hằng ngày như không gian chứa đồ thuận tiện, hệ thống khóa hiện đại và các chi tiết tối ưu cho trải nghiệm vận hành trong đô thị.<br><br>Bên cạnh yếu tố tiện lợi, mẫu xe này cũng chú trọng đến cảm giác an toàn thông qua hệ thống chiếu sáng rõ ràng, khả năng kiểm soát xe ổn định và các trang bị hỗ trợ phù hợp theo từng phiên bản.<br><br>Sự kết hợp giữa tiện ích và an toàn giúp Air Blade duy trì được tính thực dụng cao, đồng thời tăng giá trị sử dụng cho người lái trong nhiều tình huống khác nhau.`,
+        image: "assets/img/xe-ga/airblade-feature-4.png"
+      }
+    ];
+
+    const VISION_VARIANTS = [
+      {
+        id: "vision-sport",
+        label: "Vision bản Thể thao",
+        colors: [
+          {
+            id: "bac-den",
+            name: "Bạc Đen",
+            price: "36.612.000",
+            image: "assets/img/xe-ga/vision-bac-den.png",
+            swatch: "linear-gradient(90deg,#d8dadf 0%, #d8dadf 50%, #111 50%, #111 100%)"
+          },
+          {
+            id: "den",
+            name: "Đen",
+            price: "36.612.000",
+            image: "assets/img/xe-ga/vision-den.png",
+            swatch: "linear-gradient(90deg,#111 0%, #111 100%)"
+          }
+        ]
+      },
+      {
+        id: "vision-special",
+        label: "Vision bản Đặc biệt",
+        colors: [
+          {
+            id: "nau-xam",
+            name: "Nâu Xám",
+            price: "34.353.818",
+            image: "assets/img/xe-ga/vision-nau-xam.png",
+            swatch: "linear-gradient(90deg,#8d6e63 0%, #8d6e63 50%, #777 50%, #777 100%)"
+          }
+        ]
+      },
+      {
+        id: "vision-premium",
+        label: "Vision bản Cao cấp",
+        colors: [
+          {
+            id: "do-xam",
+            name: "Đỏ Xám",
+            price: "32.979.273",
+            image: "assets/img/xe-ga/vision-do-xam.png",
+            swatch: "linear-gradient(90deg,#aa1c26 0%, #aa1c26 50%, #7b7b7b 50%, #7b7b7b 100%)"
+          }
+        ]
+      }
+    ];
+
+    const VISION_FEATURE_SLIDES = [
+      {
+        id: "tinh-nang",
+        navLabel: "Tính năng nổi bật",
+        label: "Tính năng nổi bật",
+        title: "Nhỏ gọn thời trang, linh hoạt cho nhu cầu đi phố",
+        description: `Honda Vision được định hướng là mẫu xe ga đô thị dễ tiếp cận, có vóc dáng gọn, trọng lượng nhẹ và tư thế lái thân thiện với nhiều nhóm người dùng.<br><br>Thiết kế tối ưu cho việc đi lại hằng ngày giúp người lái xoay trở linh hoạt trong phố đông, đồng thời vẫn giữ được cảm giác thanh lịch và trẻ trung đặc trưng của Vision.<br><br>Nhiều phiên bản phối màu hiện đại đi kèm các tiện ích quen thuộc như Smart Key và hệ thống ngắt động cơ tạm thời, tạo nên một mẫu xe ga thực dụng nhưng vẫn đủ nổi bật khi sử dụng mỗi ngày.`,
+        image: "assets/img/xe-ga/vision-feature-1.png"
+      },
+      {
+        id: "thiet-ke",
+        navLabel: "Thiết kế",
+        label: "Thiết kế",
+        title: "Đường nét thanh lịch, thân xe gọn gàng và dễ làm chủ",
+        description: `Vision sở hữu ngôn ngữ thiết kế mềm mại, cân đối và thiên về sự tinh giản để phù hợp với môi trường đô thị hiện đại.<br><br>Phần đầu xe, mặt nạ trước và thân xe được tạo hình liền mạch, cho cảm giác thanh thoát, dễ nhìn và phù hợp với người dùng thích một mẫu xe ga nhẹ nhàng nhưng vẫn có điểm nhấn riêng.<br><br>Chiều cao yên và cách bố trí sàn để chân cũng hỗ trợ trải nghiệm sử dụng thuận tiện hơn trong việc chống chân, dắt xe và di chuyển ở quãng ngắn hằng ngày.`,
+        image: "assets/img/xe-ga/vision-feature-4.png"
+      },
+      {
+        id: "dong-co",
+        navLabel: "Động cơ",
+        label: "Động cơ",
+        title: "Động cơ eSP vận hành êm, tiết kiệm nhiên liệu",
+        description: `Honda Vision sử dụng động cơ eSP dung tích 110cc, hướng đến khả năng vận hành mượt mà, tiết kiệm xăng và phù hợp nhu cầu đi lại thường xuyên trong thành phố.<br><br>Công nghệ phun xăng điện tử PGM-FI, bộ đề ACG và hệ thống Idling Stop góp phần giúp xe khởi động êm, giảm tiếng ồn và tối ưu hiệu quả sử dụng nhiên liệu.<br><br>Khối động cơ này cũng phù hợp với tính cách của Vision: dễ điều khiển, tăng tốc vừa phải và ưu tiên sự ổn định, bền bỉ trong quá trình sử dụng lâu dài.`,
+        image: "assets/img/xe-ga/vision-feature-2.png"
+      },
+      {
+        id: "tien-ich",
+        navLabel: "Tiện ích & An toàn",
+        label: "Tiện ích & An toàn",
+        title: "Hộc đựng đồ phía trước với cổng loại C tiện lợi",
+        description: `Hộc đựng đồ phía trước có nắp đậy, kích thước rộng rãi và có khả năng chứa nhiều vật dụng cá nhân và tích hợp cổng sạc USB loại C tiện dụng.<br><br>Chi tiết này giúp Vision tăng tính thực dụng cho người dùng thường xuyên di chuyển trong đô thị, đặc biệt khi cần sạc nhanh điện thoại hoặc cất các vật dụng nhỏ một cách gọn gàng, dễ lấy.`,
+        image: "assets/img/xe-ga/vision-feature-3.jpg"
+      }
+    ];
+
+    const JANUS_VARIANTS = [
+      {
+        id: "janus-standard",
+        label: "Janus bản Tiêu chuẩn",
+        colors: [
+          {
+            id: "den-bong",
+            name: "Đen bóng",
+            price: "29.151.000",
+            image: "assets/img/xe-ga/jannus-den.png",
+            swatch: "linear-gradient(90deg,#141414 0%, #141414 100%)"
+          },
+          {
+            id: "do-bong",
+            name: "Đỏ bóng",
+            price: "29.151.000",
+            image: "assets/img/xe-ga/jannus.png",
+            swatch: "linear-gradient(90deg,#b41520 0%, #b41520 100%)"
+          }
+        ]
+      },
+      {
+        id: "janus-limited",
+        label: "Janus phiên bản Giới hạn",
+        colors: [
+          {
+            id: "xanh-xam-nham",
+            name: "Xanh Xám Nhám",
+            price: "33.382.000",
+            image: "assets/img/xe-ga/jannus-xanh-xam-nham.png",
+            swatch: "linear-gradient(90deg,#5f7a80 0%, #5f7a80 50%, #8a8f95 50%, #8a8f95 100%)"
+          },
+          {
+            id: "xam-nham",
+            name: "Xám Nhám",
+            price: "33.382.000",
+            image: "assets/img/xe-ga/jannus-xam-nham.png",
+            swatch: "linear-gradient(90deg,#8d9196 0%, #8d9196 100%)"
+          }
+        ]
+      },
+      {
+        id: "janus-special",
+        label: "Janus phiên bản Đặc biệt",
+        colors: [
+          {
+            id: "do-den",
+            name: "Đỏ Đen",
+            price: "33.186.000",
+            image: "assets/img/xe-ga/jannus-do-den.png",
+            swatch: "linear-gradient(90deg,#a1141f 0%, #a1141f 50%, #121212 50%, #121212 100%)"
+          },
+          {
+            id: "den",
+            name: "Đen",
+            price: "33.186.000",
+            image: "assets/img/xe-ga/jannus-den.png",
+            swatch: "linear-gradient(90deg,#121212 0%, #121212 100%)"
+          },
+          {
+            id: "xanh-den",
+            name: "Xanh Đen",
+            price: "33.186.000",
+            image: "assets/img/xe-ga/jannus-xanh-den.png",
+            swatch: "linear-gradient(90deg,#294b68 0%, #294b68 50%, #121212 50%, #121212 100%)"
+          }
+        ]
+      }
+    ];
+
+    const JANUS_FEATURE_SLIDES = [
+      {
+        id: "tinh-nang",
+        navLabel: "Tính năng nổi bật",
+        label: "Tính năng nổi bật",
+        title: "Thiết kế phần đầu xe thời thượng, đậm tinh thần Gen Z",
+        description: `Thiết kế phần đầu xe được lấy cảm hứng từ hình ảnh cô nàng Gen Z trong chiếc áo choàng thời thượng, Janus là sự kết hợp hoàn hảo giữa tính thời trang và nét trẻ trung năng động.`,
+        image: "assets/img/xe-ga/jannus-feature-1.png"
+      },
+      {
+        id: "thiet-ke",
+        navLabel: "Thiết kế",
+        label: "Thiết kế",
+        title: "Đuôi xe hoàn toàn mới",
+        description: `Thiết kế đường viền mềm mại kết hợp với phần đuôi xe được vuốt gọn, tạo nên vẻ ngoài thời trang và năng động. Đuôi xe sở hữu dải đèn dài uốn lượn theo thân xe tạo nên sự liền mạch và thanh lịch từ trước đến sau. Đèn hậu thiết kế tinh xảo, hình chữ U, điểm nhấn đặc trưng của Janus, giúp chiếc xe nổi bật và dễ nhận diện.`,
+        image: "assets/img/xe-ga/jannus-feature-4.png"
+      }
+    ];
+
+    const ADDRESS_VARIANTS = [
+      {
+        id: "address-standard",
+        label: "Suzuki Address bản Tiêu chuẩn",
+        colors: [
+          {
+            id: "xanh-den",
+            name: "Xanh Đen",
+            price: "31.770.500",
+            image: "assets/img/xe-ga/suzukiaddress.jpg",
+            swatch: "linear-gradient(90deg,#203445 0%, #203445 52%, #0c1218 52%, #0c1218 100%)"
+          },
+          {
+            id: "do-den",
+            name: "Đỏ Đen",
+            price: "31.770.500",
+            image: "assets/img/xe-ga/suzuki-do-den.jpg",
+            swatch: "linear-gradient(90deg,#9e1722 0%, #9e1722 52%, #111 52%, #111 100%)"
+          }
+        ]
+      }
+    ];
+
+    const ADDRESS_SPECS = [
+      {
+        label: "Kích thước (DxRxC)",
+        value: "1.845 x 665 x 1095 (mm)"
+      },
+      {
+        label: "Khối lượng xe",
+        value: "97 kg"
+      },
+      {
+        label: "Chiều cao yên",
+        value: "755 mm"
+      },
+      {
+        label: "Dung tích bình xăng",
+        value: "5,2 lít"
+      },
+      {
+        label: "Loại động cơ",
+        value: "4 thì, 1 xi-lanh, làm mát bằng không khí, phun xăng điện tử"
+      },
+      {
+        label: "Dung tích xi-lanh",
+        value: "113 cm3"
+      },
+      {
+        label: "Hệ thống giảm xóc",
+        value: [
+          "Trước: Telescopic, lò xo, giảm chấn dầu",
+          "Sau: Gắp phuộc đơn, lò xo, giảm chấn dầu"
+        ]
+      },
+      {
+        label: "Hệ thống phanh xe",
+        value: [
+          "Trước: Phanh đĩa",
+          "Sau: Phanh cơ"
+        ]
+      },
+      {
+        label: "Hệ thống truyền động",
+        value: "Tự động, biến thiên vô cấp (CVT)"
+      },
+      {
+        label: "Hệ thống khởi động",
+        value: "Điện / cần đạp"
+      }
+    ];
+
+    const FELIZ_VARIANTS = [
+      {
+        id: "feliz-kem-pin",
+        label: "Feliz (Giá kèm pin)",
+        colors: [
+          {
+            id: "den",
+            name: "Đen",
+            price: "30.500.000",
+            image: "assets/img/xe-dien/feliz-den.png",
+            swatch: "linear-gradient(90deg,#141414 0%, #141414 100%)"
+          },
+          {
+            id: "do",
+            name: "Đỏ",
+            price: "30.500.000",
+            image: "assets/img/xe-dien/feliz-do.png",
+            swatch: "linear-gradient(90deg,#c0392b 0%, #c0392b 100%)"
+          },
+          {
+            id: "trang",
+            name: "Trắng",
+            price: "30.500.000",
+            image: "assets/img/xe-dien/feliz-trang.png",
+            swatch: "linear-gradient(90deg,#f0f0f0 0%, #f0f0f0 100%)"
+          }
+        ]
+      },
+      {
+        id: "feliz-khong-pin",
+        label: "Feliz (Giá không kèm pin)",
+        colors: [
+          {
+            id: "den",
+            name: "Đen",
+            price: "24.900.000",
+            image: "assets/img/xe-dien/feliz-den.png",
+            swatch: "linear-gradient(90deg,#141414 0%, #141414 100%)"
+          },
+          {
+            id: "do",
+            name: "Đỏ",
+            price: "24.900.000",
+            image: "assets/img/xe-dien/feliz-do.png",
+            swatch: "linear-gradient(90deg,#c0392b 0%, #c0392b 100%)"
+          },
+          {
+            id: "trang",
+            name: "Trắng",
+            price: "24.900.000",
+            image: "assets/img/xe-dien/feliz-trang.png",
+            swatch: "linear-gradient(90deg,#f0f0f0 0%, #f0f0f0 100%)"
+          }
+        ]
+      }
+    ];
+
+    const FELIZ_FEATURE_SLIDES = [
+      {
+        id: "tinh-nang",
+        navLabel: "Tính năng nổi bật",
+        label: "Tính năng nổi bật",
+        title: "Phong cách sành điệu — chinh phục mọi cung đường",
+        description: `<strong>QUÃNG ĐƯỜNG</strong><br>Chinh phục quãng đường lên tới khoảng 156 km chỉ với một lần sạc* (theo điều kiện tiêu chuẩn của VinFast).<br><br><strong>CHẾDỘ LÁI</strong><br>02 chế độ lái Eco &amp; Sport, linh hoạt trên mọi địa hình.<br><br><strong>CHỐNG NƯỚC</strong><br>Tiêu chuẩn chống nước IP67. Động cơ có khả năng chống nước vượt trội ở mức nước ngập sâu 0,5m trong thời gian 30 phút.`,
+        image: "assets/img/xe-dien/feliz-feature-1.png"
+      },
+      {
+        id: "thiet-ke",
+        navLabel: "Thiết kế",
+        label: "Thiết kế",
+        title: "Thanh lịch — tự tin — hiện đại",
+        description: `Thiết kế thanh lịch, tôn dáng người lái, khẳng định phong cách tự tin, hiện đại.`,
+        image: "assets/img/xe-dien/feliz-feature-3.png"
+      },
+      {
+        id: "cong-nghe",
+        navLabel: "Công nghệ",
+        label: "Công nghệ",
+        title: "Công nghệ Pin LFP — ổn định và an toàn",
+        description: `Tăng công suất động cơ • Giảm thiểu tiêu hao không cần thiết • Ổn định &amp; an toàn hơn, chống cháy nổ trên mọi trường hợp.<br><br><strong>Thời gian vận hành</strong><br>Thời gian sạc tiêu chuẩn: Khoảng 4h30 phút từ 0 – 100%.<br><br><strong>Cách bảo quản thông minh</strong><br>Duy trì dung lượng trên 20% trong quá trình sử dụng. Cắm sạc khi dung lượng pin thấp hơn 20%. Không nên sạc khi nhiệt độ pin cao hơn 45°C, hệ thống sẽ không nhận sạc khi pin nóng ở nhiệt độ trên 55°C.`,
+        image: "assets/img/xe-dien/feliz-feature-2.png"
+      }
+    ];
+
+    const VINEVO_VARIANTS = [
+      {
+        id: "vinevo-kem-pin",
+        label: "Evo (Giá kèm pin)",
+        colors: [
+          {
+            id: "do",
+            name: "Đỏ",
+            price: "25.600.000",
+            image: "assets/img/xe-dien/vin-evo-do.png",
+            swatch: "linear-gradient(90deg,#c0392b 0%, #c0392b 100%)"
+          },
+          {
+            id: "trang",
+            name: "Trắng",
+            price: "25.600.000",
+            image: "assets/img/xe-dien/vin-evo-trang.png",
+            swatch: "linear-gradient(90deg,#f0f0f0 0%, #f0f0f0 100%)"
+          },
+          {
+            id: "den",
+            name: "Đen",
+            price: "25.600.000",
+            image: "assets/img/xe-dien/vin-evo-den.png",
+            swatch: "linear-gradient(90deg,#141414 0%, #141414 100%)"
+          },
+          {
+            id: "xanh",
+            name: "Xanh",
+            price: "25.600.000",
+            image: "assets/img/xe-dien/vin-evo-xanh.png",
+            swatch: "linear-gradient(90deg,#27ae60 0%, #27ae60 100%)"
+          }
+        ]
+      },
+      {
+        id: "vinevo-khong-pin",
+        label: "Evo (Giá không kèm pin)",
+        colors: [
+          {
+            id: "do",
+            name: "Đỏ",
+            price: "19.990.000",
+            image: "assets/img/xe-dien/vin-evo-do.png",
+            swatch: "linear-gradient(90deg,#c0392b 0%, #c0392b 100%)"
+          },
+          {
+            id: "trang",
+            name: "Trắng",
+            price: "19.990.000",
+            image: "assets/img/xe-dien/vin-evo-trang.png",
+            swatch: "linear-gradient(90deg,#f0f0f0 0%, #f0f0f0 100%)"
+          },
+          {
+            id: "den",
+            name: "Đen",
+            price: "19.990.000",
+            image: "assets/img/xe-dien/vin-evo-den.png",
+            swatch: "linear-gradient(90deg,#141414 0%, #141414 100%)"
+          },
+          {
+            id: "xanh",
+            name: "Xanh",
+            price: "19.990.000",
+            image: "assets/img/xe-dien/vin-evo-xanh.png",
+            swatch: "linear-gradient(90deg,#27ae60 0%, #27ae60 100%)"
+          }
+        ]
+      }
+    ];
+
+    const VINEVO_FEATURE_SLIDES = [
+      {
+        id: "tinh-nang",
+        navLabel: "Tính năng nổi bật",
+        label: "Tính năng nổi bật",
+        title: "Vượt trội mọi giới hạn",
+        description: `<strong>PIN LFP</strong><br>Công nghệ pin LFP hiện đại, đảm bảo an toàn, ổn định và hỗ trợ đổi pin nhanh chóng.<br><br><strong>CHỐNG NƯỚC</strong><br>Tiêu chuẩn chống nước IP67. Động cơ có khả năng chống nước vượt trội ở mức nước ngập sâu 0,5m trong thời gian 30 phút.<br><br><strong>LINH HOẠT NÂNG CẤP 02 PIN</strong><br>VinFast Evo được trang bị 2 khay chứa pin trong cốp, giúp tối ưu không gian và dễ dàng tháo lắp.<br><br><strong>QUÃNG ĐƯỜNG DI CHUYỂN ĐẦY ẤN TƯỢNG</strong><br>Trải nghiệm hành trình di chuyển lên tới 165km trong một lần sạc* khi lắp thêm pin phụ. Gia tốc tăng tốc 0–50km/h chỉ trong vòng 16s (1 người 65kg).`,
+        image: "assets/img/xe-dien/vin-feature-1.png"
+      },
+      {
+        id: "thiet-ke",
+        navLabel: "Thiết kế",
+        label: "Thiết kế",
+        title: "Hiện đại — tinh tế — tiện nghi",
+        description: `Hệ thống đèn Full LED và đèn pha LED Projector sắc nét, chiếu sáng mạnh mẽ mọi hướng.<br><br>Sàn để chân rộng thoáng cho tư thế ngồi thoải mái trên mọi hành trình.<br><br>Hệ thống giảm xóc với giảm chấn thủy lực, hỗ trợ xe di chuyển êm ái trên nhiều địa hình. Vận hành êm ái trên mọi địa hình.`,
+        image: "assets/img/xe-dien/vin-feature-2.png"
+      },
+      {
+        id: "cong-nghe",
+        navLabel: "Công nghệ",
+        label: "Công nghệ",
+        title: "Quản lý thông minh — Làm chủ hành trình",
+        description: `Hiển thị thông tin xe • Tìm xe từ xa qua app • Hiển thị thông tin pin qua app • Định vị xe • Thống kê lịch sử hành trình • Chuẩn đoán lỗi • Tính năng xác thực pin.`,
+        image: "assets/img/xe-dien/vin-feature-3.png"
+      }
+    ];
+
+    const NX500_VARIANTS = [
+      {
+        id: "nx500-tieu-chuan",
+        label: "NX500 Tiêu Chuẩn",
+        colors: [
+          {
+            id: "trang-den",
+            name: "Trắng Đen",
+            price: "194.290.000",
+            image: "assets/img/xe-pkl/nx500-trang-den.png",
+            swatch: "linear-gradient(90deg,#e8e8e8 50%, #141414 50%)"
+          },
+          {
+            id: "do-den",
+            name: "Đỏ Đen",
+            price: "194.290.000",
+            image: "assets/img/xe-pkl/nx500-do-den.png",
+            swatch: "linear-gradient(90deg,#c0392b 50%, #141414 50%)"
+          },
+          {
+            id: "den",
+            name: "Đen",
+            price: "194.290.000",
+            image: "assets/img/xe-pkl/nx500-den.png",
+            swatch: "linear-gradient(90deg,#141414 0%, #141414 100%)"
+          }
+        ]
+      }
+    ];
+
+    const NX500_FEATURE_SLIDES = [
+      {
+        id: "tinh-nang",
+        navLabel: "Tính năng nổi bật",
+        label: "Tính năng nổi bật",
+        title: "Hệ Thống Kiểm Soát Lực Kéo của Honda (HSTC)",
+        description: `Hệ thống HSTC quản lý độ bám đường của bánh sau trong mọi điều kiện, đặc biệt là khi đi trên đường trơn trượt.<br><br>Hệ thống có thể được tắt hoàn toàn khi đi trên đường đất hoặc sỏi để đảm bảo khả năng truyền lực tối đa.`,
+        image: "assets/img/xe-pkl/nx500-feature-1.jpg"
+      },
+      {
+        id: "thiet-ke",
+        navLabel: "Thiết kế",
+        label: "Thiết kế",
+        title: "Kính Chắn Gió Phong Cách Rally",
+        description: `Để đảm bảo sự thoải mái trong những chuyến đi dài, dàn áo được thiết kế đặc biệt kết hợp cùng kính chắn gió cao để tăng hiệu năng khí động học, giảm sức cản của gió. Tem xe được thiết kế sắc nét, thêm phần nam tính cho chiến mã.<br><br><strong>Cụm Đèn Pha Hoàn Toàn Mới</strong><br>Cụm đèn pha mới với khả năng chiếu sáng mạnh mẽ, xa hơn và rộng hơn, đảm bảo tầm nhìn tối ưu khi điều khiển xe vào ban đêm.`,
+        image: "assets/img/xe-pkl/nx500-feature-2.jpg"
+      },
+      {
+        id: "dong-co",
+        navLabel: "Động cơ",
+        label: "Động cơ",
+        title: "Động Cơ Xi-lanh Đôi Mạnh Mẽ",
+        description: `Sản sinh mô-men xoắn lớn từ vòng tua thấp đến trung bình, đạt cực đại 43Nm, mang đến khả năng tăng tốc nhạy bén, bứt phá, thêm phần phấn khích cho người lái.<br><br>Công nghệ ly hợp hỗ trợ và chống trượt cho phép chuyển số mượt mà và ngăn ngừa tình trạng bó cứng bánh sau khi dồn số.`,
+        image: "assets/img/xe-pkl/nx500-feature-3.jpg"
+      },
+      {
+        id: "cong-nghe",
+        navLabel: "Công nghệ",
+        label: "Công nghệ",
+        title: "Hệ Thống Kiểm Soát Lực Kéo của Honda (HSTC)",
+        description: `Hệ thống HSTC quản lý độ bám đường của bánh sau trong mọi điều kiện, đặc biệt là khi đi trên đường trơn trượt.<br><br>Hệ thống có thể được tắt hoàn toàn khi đi trên đường đất hoặc sỏi để đảm bảo khả năng truyền lực tối đa.`,
+        image: "assets/img/xe-pkl/nx500-feature-4.jpg"
+      },
+      {
+        id: "tien-ich",
+        navLabel: "Tiện ích & An toàn",
+        label: "Tiện ích & An toàn",
+        title: "Màn Hình Màu TFT",
+        description: `Màn hình 5 inch với công nghệ liên kết quang học mới giúp giảm chói và dễ quan sát hơn trong điều kiện ánh sáng mạnh.`,
+        image: "assets/img/xe-pkl/nx500-feature-5.jpg"
+      }
+    ];
+
+    const REBEL1100_VARIANTS = [
+      {
+        id: "rebel1100-dct",
+        label: "Rebel 1100 DCT",
+        colors: [
+          {
+            id: "den",
+            name: "Đen",
+            price: "399.990.000",
+            image: "assets/img/xe-pkl/rebel1100.png",
+            swatch: "linear-gradient(90deg,#141414 0%, #141414 100%)"
+          }
+        ]
+      }
+    ];
+
+    const REBEL1100_FEATURE_SLIDES = [
+      {
+        id: "tinh-nang",
+        navLabel: "Tính năng nổi bật",
+        label: "Tính năng nổi bật",
+        title: "Có một Rebel trong mỗi chúng ta",
+        description: `Không chỉ là nơi bạn đã đi qua mà còn là nơi bạn đang hướng tới và Rebel 1100 hoàn toàn mới chính là người bạn đồng hành đưa bạn đến đó – theo một phong cách cruiser đường phố độc nhất.<br><br>Sức mạnh bùng nổ từ khối động cơ 2 xy-lanh song song đầy cá tính, cho khả năng tăng tốc mạnh mẽ ngay từ dải tua thấp cho đến tua giữa.<br><br>Tư thế lái thoải mái hơn với ghi-đông được nâng cao và kéo gần về phía người lái, gác chân đưa ra trước, cùng yên ngồi cao hơn 10mm, mang lại sự tự tin và thoải mái trên mọi hành trình. Đồng hồ TFT 5 inch sắc nét mới.`,
+        image: "assets/img/xe-pkl/rebel-feature-1.png"
+      },
+      {
+        id: "thiet-ke",
+        navLabel: "Thiết kế",
+        label: "Thiết kế",
+        title: "Thấp uy lực, dài phong cách, đẹp bất tận",
+        description: `Rebel cũng sở hữu thân hình gọn gàng. Chiều cao yên chỉ 710mm, giúp việc kiểm soát xe ở tốc độ thấp trở nên dễ dàng và người lái chống chân chắc chắn hơn.<br><br>Bình xăng 13,6 lít kiểu bo tròn đặt nổi bật phía trên khối động cơ mạnh mẽ. Chắn bùn trước và sau được dập từ thép dày 1mm, gắn trên khung nhôm đúc cao cấp, vừa bền bỉ vừa tinh tế.<br><br>Cụm đèn pha tròn mang hơi thở hiện đại với 4 bóng LED sáng nổi bật, cùng đèn xi-nhan & đèn hậu LED – tất cả tạo nên dấu ấn đặc trưng của Rebel.`,
+        image: "assets/img/xe-pkl/rebel-feature-2.png"
+      },
+      {
+        id: "dong-co",
+        navLabel: "Động cơ",
+        label: "Động cơ",
+        title: "Sức mạnh được kiểm soát, kiểm soát tạo sức mạnh",
+        description: `Bạn hoàn toàn nắm giữ sức mạnh từ khối động cơ của Rebel 1100 bằng tay phải, nhờ hệ thống điện tử tiên tiến giúp từng cú vặn ga trở thành một niềm hứng khởi trọn vẹn.<br><br>Công nghệ Throttle By Wire mang đến 3 chế độ lái tiêu chuẩn: Standard, Sport và Rain. Đi kèm là HSTC (Hệ thống kiểm soát lực kéo) tối ưu và Wheelie Control (Kiểm soát bốc đầu) cho khả năng vận hành an toàn, tự tin hơn.<br><br>Hộp số DCT (Dual Clutch Transmission) tự động hoàn toàn hoặc bán tự động, giúp người lái tận hưởng sức mạnh cruiser khổng lồ của khối động cơ 1.084cc mà không cần lo chuyển số.`,
+        image: "assets/img/xe-pkl/rebel-feature-3.png"
+      },
+      {
+        id: "tien-ich",
+        navLabel: "Tiện ích & An toàn",
+        label: "Tiện ích & An toàn",
+        title: "Hệ thống treo cao cấp, êm ái trên mọi cung đường",
+        description: `Phuộc trước ống lồng giảm chấn thủy lực đường kính 43mm, có thể điều chỉnh tải trước lò xo, mang lại cảm giác kinh như mượt mà ngay cả trên mặt đường gồ ghề.<br><br>Giảm xóc sau lò xo trụ đôi, giảm chấn thủy lực với bình chứa khí nén ngoài, có thể điều chỉnh tải trước lò xo, mang lại cảm giác vận hành êm ái, ổn định và chính xác trên mọi cung đường.<br><br>Hệ thống phanh ABS 2 kênh với phanh đĩa đường kính lớn ở cả hai bánh, đảm bảo lực phanh mạnh và an toàn tối đa.`,
+        image: "assets/img/xe-pkl/rebel-feature-4.png"
+      }
+    ];
+
+    const YZFR15_VARIANTS = [
+      {
+        id: "yzfr15-standard",
+        label: "YZF-R15 bản Tiêu chuẩn",
+        colors: [
+          {
+            id: "xanh-gp",
+            name: "Xanh GP",
+            price: "78.000.000",
+            image: "assets/img/xe-pkl/YZF-R15.png",
+            swatch: "linear-gradient(90deg,#003d99 0%, #003d99 52%, #0066cc 52%, #0066cc 100%)"
+          },
+          {
+            id: "den",
+            name: "Đen",
+            price: "78.000.000",
+            image: "assets/img/xe-pkl/YZF-R15-den.png",
+            swatch: "linear-gradient(90deg,#141414 0%, #141414 100%)"
+          }
+        ]
+      }
+    ];
+
+    const YZFR15_FEATURE_SLIDES = [
+      {
+        id: "tinh-nang",
+        navLabel: "Tính năng nổi bật",
+        label: "Tính năng nổi bật",
+        title: "Dung tích 155cc thừa hưởng DNA YZF-R1",
+        description: `Yamaha YZF-R15 là mẫu xe thể thao dung tích xy lanh 155cc, sở hữu những đường nét thừa hưởng DNA từ “đàn anh” YZF-R1.<br><br>Xe được trang bị nhiều công nghệ hiện đại, hệ thống phun xăng điện tử và van biến thiên VVA giúp xe vừa tiết kiệm nhiên liệu, vừa phát huy được khả năng vận hành bền bỉ.<br><br>Cùng với đó, khụng hình sportbike thuần tú gần gũi với các mẫu xe đua đỉnh cao cùng cảm giác xuống thế tấn công đường đua mang đến những trải nghiệm phấn khích cho các tay lái.`,
+        image: "assets/img/xe-pkl/YZF-R15.png"
+      },
+      {
+        id: "thiet-ke",
+        navLabel: "Thiết kế",
+        label: "Thiết kế",
+        title: "V᮰ ngoài mới đậm chất R-DNA",
+        description: `Thiết kế thân xe với khí động học thể thao hơn: mang đến trải nghiệm lái tuyệt vời khi di chuyển ở tốc độ cao. Phiên bản mới thể thao hơn với các đường gân chạy khắp thân xe và bình xăng.<br><br>Hệ thống đèn chính dạng bi cầu projector LED ở phần trung tâm đầu xe, kết hợp pha và cốt: sở hữu hiệu năng ánh sáng mạnh mẽ, góp phần tối ưu khí động học của xe.<br><br>Đèn định vị dạng mảnh, thiết kế nhỏ gọn nhưng vẫn gây ấn tượng đầy sắc sảo, mang lại cho R15 dáng dấp của một chiếc phân khối lớn đầy uy lực.`,
+        image: "assets/img/xe-pkl/YZF-feature-1.png"
+      },
+      {
+        id: "dong-co",
+        navLabel: "Động cơ",
+        label: "Động cơ",
+        title: "Động cơ 155cc SOHC VVA — mạnh mẽ và linh hoạt",
+        description: `Khối động cơ 155cc xy-lanh đơn, SOHC 4 van, làm mát bằng dung dịch trang bị công nghệ van biến thiên VVA — tự động chuyển đổi giữa hai chế độ cam cho cảm giác đạp bãng bướm tiết kiệm ở vòng thấp và sức mạnh bục phá ở vòng cao.<br><br>Công suất cực đại 11,3kW @ 10.000 vòng/phút, mô-men xoắn cực đại 14,2 Nm @ 8.500 vòng/phút cùng hộp số 6 cấp giúp xe tăng tốc mượt mà và linh hoạt trên mọi cụng đường.<br><br>Tùy chọn Quick Shifter hỗ trợ chuyển số không cần cắt ly hợp, mang lại cảm giác đua đường trường thực thụ ngay cả trên đường phố.`,
+        image: "assets/img/xe-pkl/YZF-feature-2.png"
+      },
+      {
+        id: "tien-ich",
+        navLabel: "Tiện ích & An toàn",
+        label: "Tiện ích & An toàn",
+        title: "Kết nối với điện thoại qua Y-Connect",
+        description: `YZF-R15 trang bị hệ thống kết nối Y-Connect giúp nhận thông báo từ điện thoại trong khi lái xe và theo dõi tình trạng của xe tốt hơn.<br><br>Các ứng dụng của Y-Connect bao gồm: <br>— Báo cuộc gọi, e-mail và tin nhắn<br>— Khuyến nghị bảo dưỡng, thay dầu<br>— Tiêu thụ nhiên liệu &amp; hiển thị revs<br>— Vị trí đỗ xe<br>— Xếp hạng đánh giá mức tiêu thụ nhiên liệu<br>— Tính năng theo dõi hành trình`,
+        image: "assets/img/xe-pkl/YZFfeature-3.png"
+      }
+    ];
+
+    const CBR150R_VARIANTS = [
+      {
+        id: "cbr150r-sport",
+        label: "CBR150R phiên bản Thể thao",
+        colors: [
+          {
+            id: "do",
+            name: "Đỏ",
+            price: "73.790.000",
+            image: "assets/img/xe-con-tay/cbr150r-do.png",
+            swatch: "linear-gradient(90deg,#c41520 0%, #c41520 100%)"
+          }
+        ]
+      },
+      {
+        id: "cbr150r-special",
+        label: "CBR150R phiên bản Đặc biệt",
+        colors: [
+          {
+            id: "den-xam",
+            name: "Đen Xám",
+            price: "73.290.000",
+            image: "assets/img/xe-con-tay/cbr150r-den-xam.png",
+            swatch: "linear-gradient(90deg,#1a1a1a 0%, #1a1a1a 52%, #72777d 52%, #72777d 100%)"
+          }
+        ]
+      },
+      {
+        id: "cbr150r-standard",
+        label: "CBR150R bản Tiêu chuẩn",
+        colors: [
+          {
+            id: "den-do",
+            name: "Đen Đỏ",
+            price: "72.290.000",
+            image: "assets/img/xe-con-tay/cbr-den-do.png",
+            swatch: "linear-gradient(90deg,#1a1a1a 0%, #1a1a1a 52%, #c41520 52%, #c41520 100%)"
+          }
+        ]
+      }
+    ];
+
+    const CBR150R_FEATURE_SLIDES = [
+      {
+        id: "tinh-nang",
+        navLabel: "Tính năng nổi bật",
+        label: "Tính năng nổi bật",
+        title: "Bộ ly hợp hỗ trợ và chống trượt hai chiều",
+        description: `CBR150R được trang bị bộ ly hợp hỗ trợ và chống trượt hai chiều tương tự các mẫu xe phân khối lớn giúp chuyển số dễ dàng, tránh tình trạng trượt và khóa bánh trong các tình huống về số đột ngột, giúp người lái an tâm trên mọi cung đường.`,
+        image: "assets/img/xe-con-tay/cbr-feature-1.png"
+      },
+      {
+        id: "thiet-ke",
+        navLabel: "Thiết kế",
+        label: "Thiết kế",
+        title: "Ngoại hình sportbike thuần chủng, đường nét sắc sảo",
+        description: `CBR150R được thiết kế theo ngôn ngữ "Total Control" — mọi đường nét đều được tạo hình để tối ưu khí động học và cảm giác thể thao.<br><br>Cụm đèn pha LED hai lần sắc nét với dải DRL cách điệu, cùng fairing ôm sát thân xe tạo khối hình mạnh mẽ mang hơi hướng đóng gói của SuperSport Honda.<br><br>Ba phối màu đỏ, đen xám và đen đỏ giúp người lái thể hiện rõ cá tính, xứng danh biểu tượng của tinh thần đua trời.`,
+        image: "assets/img/xe-con-tay/cbr-feature-2.png"
+      },
+      {
+        id: "dong-co",
+        navLabel: "Động cơ",
+        label: "Động cơ",
+        title: "Động cơ DOHC 150cc đầy uy lực",
+        description: `Sở hữu khối động cơ dung tích 150cc, xy-lanh đơn, DOHC, hộp số 6 cấp, làm mát bằng dung dịch, CBR150R có khả năng sản sinh mô-men xoắn cực đại 14,4 Nm tại 7.000 vòng/phút giúp xe vận hành mượt mà và phấn khích.<br><br>Công suất cực đại 12,8kW @ 10.000 vòng/phút cùng hệ thống nạp khí Dual Stage Fi tối ưu cả hiệu suất và tiết kiệm nhiên liệu.<br><br>Hầu không gian nhựa nhẹ, hộp số 6 cấp chạy đường trường cũng như đường đô thị thường ngày.`,
+        image: "assets/img/xe-con-tay/cbr-feature-3.jpg"
+      },
+      {
+        id: "tien-ich",
+        navLabel: "Tiện ích & An toàn",
+        label: "Tiện ích & An toàn",
+        title: "ABS 2 kênh & đèn cảnh báo dừng khẩn cấp ESS",
+        description: `Hệ thống chống bó cứng phanh ABS trên cả bánh trước và bánh sau giúp người lái an tâm di chuyển và tự tin xử lý mọi tình huống khẩn cấp.<br><br>Hệ thống đèn cảnh báo dừng đột ngột (ESS) sẽ báo hiệu cho các phương tiện xung quanh có thể kịp thời phản ứng trong trường hợp xe phanh khẩn cấp.<br><br>Cụm đèn LED toàn phần cùng gương chiếu hậu bố cục gọn gàng, hiện đại tăng khả năng nhận diện trên mọi nẻo đường.`,
+        image: "assets/img/xe-con-tay/cbr-feature-4.jpg"
+      }
+    ];
+
+    const WINNERR_VARIANTS = [
+      {
+        id: "winnerr-standard",
+        label: "Winner R bản Tiêu chuẩn",
+        colors: [
+          {
+            id: "do-trang",
+            name: "Đỏ Trắng",
+            price: "Liên hệ",
+            image: "assets/img/xe-con-tay/winnerR.png",
+            swatch: "linear-gradient(90deg,#c41520 0%, #c41520 52%, #f0f0f0 52%, #f0f0f0 100%)"
+          }
+        ]
+      },
+      {
+        id: "winnerr-sport",
+        label: "Winner R phiên bản Thể thao",
+        colors: [
+          {
+            id: "do-den",
+            name: "Đỏ Đen",
+            price: "50.560.000",
+            image: "assets/img/xe-con-tay/winner-do-den.png",
+            swatch: "linear-gradient(90deg,#c41520 0%, #c41520 52%, #141414 52%, #141414 100%)"
+          }
+        ]
+      },
+      {
+        id: "winnerr-special",
+        label: "Winner R phiên bản Đặc biệt",
+        colors: [
+          {
+            id: "xanh-den",
+            name: "Xanh Đen",
+            price: "50.060.000",
+            image: "assets/img/xe-con-tay/winner-xanh-den.png",
+            swatch: "linear-gradient(90deg,#0d3d6e 0%, #0d3d6e 52%, #141414 52%, #141414 100%)"
+          },
+          {
+            id: "den",
+            name: "Đen",
+            price: "50.060.000",
+            image: "assets/img/xe-con-tay/winner-den.png",
+            swatch: "linear-gradient(90deg,#141414 0%, #141414 100%)"
+          },
+          {
+            id: "xam-den",
+            name: "Xám Đen",
+            price: "50.060.000",
+            image: "assets/img/xe-con-tay/winner-xam-den.png",
+            swatch: "linear-gradient(90deg,#72777d 0%, #72777d 52%, #141414 52%, #141414 100%)"
+          }
+        ]
+      }
+    ];
+
+    const WINNERR_FEATURE_SLIDES = [
+      {
+        id: "tinh-nang",
+        navLabel: "Tính năng nổi bật",
+        label: "Tính năng nổi bật",
+        title: "Thiết kế uy lực mang hơi hướng siêu mô tô",
+        description: `Honda Winner R là bản lột xác toàn diện với ngôn ngữ thiết kế hoàn toàn mới, mang âm hưởng của những chiếc siêu mô tô đỉnh cao.<br><br>Phần thân xe với đường gân cụm, kết hợp khung sườn đôi bao quanh động cơ cùng cánh gó ghi-đông mạnh mẽ tạo nên khối thân khủng khiếu, đậm chất thể thao đua.<br><br>Winner R khơi dậy tinh thần khai phóng, trẻ trung và táo bạo, xứng danh biểu tượng cho niềm đam mê tốc độ của thế hệ trẻ hôm nay.`,
+        image: "assets/img/xe-con-tay/winnerR.png"
+      },
+      {
+        id: "thiet-ke",
+        navLabel: "Thiết kế",
+        label: "Thiết kế",
+        title: "Ngoại hình sắc bén, phong cách đua trường",
+        description: `Cụm đèn trước LED hai tầng sắc nét, dải đèn LED DRL chay viền thiết kế độc đáo tạo điểm nhấn nhận diện mạnh mẽ cả ngày lẫn đêm.<br><br>Đường bánh xe rộng, khực thân cỡ lớn cùng cánh đuôi vuốt cao hướng sportbike tạo cảm giác tốc độ ngay cả khi động.<br><br>Bộ tem mới phối màu đa dạng — đỏ đen, xanh đen, xám đen — giúpt người lái thể hiện rõ cá tính trước mọi ánh nhìn.`,
+        image: "assets/img/xe-con-tay/winner-feature-1.jpg"
+      },
+      {
+        id: "dong-co",
+        navLabel: "Động cơ",
+        label: "Động cơ",
+        title: "Động cơ 150cc PGM-FI mạnh mẽ, tiết kiệm nhiên liệu",
+        description: `Winner R trang bị khối động cơ 150cc DOHC 4 van, làm mát bằng chất lỏng, phun xăng điện tử PGM-FI cùng hệ thống xả  4-2-1 bằng thép không gỉ.<br><br>Công suất 11.2kW @ 9.000 vòng/phút, momen xoắn 13.5 Nm @ 6.500 vòng/phút cho khả năng tăng tốc mạnh mẽ vượt trội.<br><br>Hệ thống đánh lửa DC-CDI cùng công nghệ eSP+ (Enhanced Smart Power Plus) giúp giảm tiết thị nhiên liệu, khởi động êm ái và vận hành bền lâu trong điều kiện đô thị.`,
+        image: "assets/img/xe-con-tay/winner-feature-2.jpg"
+      },
+      {
+        id: "cong-nghe",
+        navLabel: "Công nghệ",
+        label: "Công nghệ",
+        title: "Bảng đồng hồ LCD kỹ thuật số hiện đại",
+        description: `Màn hình LCD phần nhô rõ nét thiết kế theo hướng racing, tích hợp đầy đủ thông tin: tốc độ, vòng/phút, mức nhiên liệu, quãng đường, số truyền và kiểu lái.<br><br>Hệ thống Smart Key tích hợp cứu hộ góc 30° và báo thư ngoài mưa, giúpt người lái yên tâm hơn mọi lúc mọi nơi.<br><br>Kết nối ứng dụng Honda RoadSync Duo cho phép xém bản đồ, nhận thông báo và điều khiển nhạc trực tiếp từ màn hình đồng hồ.`,
+        image: "assets/img/xe-con-tay/winner-feature-3.jpg"
+      },
+      {
+        id: "tien-ich",
+        navLabel: "Tiện ích & An toàn",
+        label: "Tiện ích & An toàn",
+        title: "ABS + phanh đĩa 2 bánh, kiểm soát toàn diện",
+        description: `Hệ thống phanh ABS 2 kênh giúpt chống bó cứng bánh khi phanh gấp, đảm bảo quỹ đạo ổn định và an toàn ngay cả trên đường ướt trơn.<br><br>Phanh đĩa cả trước (296mm) và sau (220mm) với cầm phanh tích hợp ngăn lầy tay đảm bảo cảm giác phanh nhạy, chính xác.<br><br>Hệ thống phân bố tải CBC (Combi Brake System) giúp tự động cân bằng lực phanh giữa hai bánh, mang lại cảm giác lái an toàn và tự tin hơn ở mọi tốc độ.`,
+        image: "assets/img/xe-con-tay/winner-feature-4.png"
+      }
+    ];
+
+    const WAVE_VARIANTS = [
+      {
+        id: "wave-special",
+        label: "Wave Alpha phiên bản Đặc biệt",
+        colors: [
+          {
+            id: "den-nham",
+            name: "Đen nhám",
+            price: "18.742.909",
+            image: "assets/img/xe-so/wave-den.png",
+            swatch: "linear-gradient(90deg,#2a2a2a 0%, #2a2a2a 100%)"
+          }
+        ]
+      },
+      {
+        id: "wave-standard",
+        label: "Wave Alpha bản Tiêu chuẩn",
+        colors: [
+          {
+            id: "xanh",
+            name: "Xanh",
+            price: "17.859.273",
+            image: "assets/img/xe-so/wave-xanh.png",
+            swatch: "linear-gradient(90deg,#1a4fa0 0%, #1a4fa0 100%)"
+          },
+          {
+            id: "trang",
+            name: "Trắng",
+            price: "17.859.273",
+            image: "assets/img/xe-so/wave-trang.png",
+            swatch: "linear-gradient(90deg,#f0f0f0 0%, #f0f0f0 100%)"
+          },
+          {
+            id: "do",
+            name: "Đỏ",
+            price: "17.859.273",
+            image: "assets/img/xe-so/wave-do.png",
+            swatch: "linear-gradient(90deg,#b41520 0%, #b41520 100%)"
+          }
+        ]
+      }
+    ];
+
+    const WAVE_FEATURE_SLIDES = [
+      {
+        id: "tinh-nang",
+        navLabel: "Tính năng nổi bật",
+        label: "Tính năng nổi bật",
+        title: "Động cơ 110cc bền bỉ & tiết kiệm nhiên liệu",
+        description: `Wave Alpha được trang bị động cơ 110cc bền bỉ, hiệu suất vượt trội mà vẫn đảm bảo khả năng tiết kiệm nhiên liệu một cách tối ưu, từ đó đem lại cảm giác lái thú vị và tiết kiệm chi phí vận hành.`,
+        image: "assets/img/xe-so/wave-feature-1.png"
+      },
+      {
+        id: "thiet-ke",
+        navLabel: "Thiết kế",
+        label: "Thiết kế",
+        title: "Tem xe độc đáo mới",
+        description: `Thiết kế tem trên thân xe hài hòa với logo cách điệu “Wave Alpha” và nền họa tiết trẻ trung, với màu sắc khác nhau trên mỗi xe.<br><br>Toàn bộ thiết kế năng động và mạnh mẽ, giúp người dùng tự tin khóe trọn cá tính.`,
+        image: "assets/img/xe-so/wave-feature-2.png"
+      },
+      {
+        id: "tien-ich",
+        navLabel: "Tiện ích & An toàn",
+        label: "Tiện ích & An toàn",
+        title: "Đèn chiếu sáng phía trước luôn bật sáng khi xe vận hành",
+        description: `Chế độ đèn luôn sáng đảm bảo cho người sử dụng có tầm nhìn tốt nhất.<br><br>Bên cạnh đó, khả năng nhận diện của xe khi di chuyển trên đường phố cũng được tăng lên, kể cả trong điều kiện ánh sáng ban ngày, giúp người lái an tâm di chuyển.`,
+        image: "assets/img/xe-so/wave-feature-3.png"
+      }
+    ];
+
+    const CT125_VARIANTS = [
+      {
+        id: "ct125-standard",
+        label: "Honda CT125",
+        colors: [
+          {
+            id: "xam-den",
+            name: "Xám Đen",
+            price: "85.801.091",
+            image: "assets/img/xe-so/CT125.png",
+            swatch: "linear-gradient(90deg,#8a8f95 0%, #8a8f95 52%, #141414 52%, #141414 100%)"
+          }
+        ]
+      }
+    ];
+
+    const CT125_FEATURE_SLIDES = [
+      {
+        id: "tinh-nang",
+        navLabel: "Tính năng nổi bật",
+        label: "Tính năng nổi bật",
+        title: "Thiết kế đậm chất khám phá",
+        description: `Khởi nguồn từ ý tưởng "Xe số dành cho người ưa khám phá", những huyền thoại CT70, CT90, CT110 của thập niên 1960 đã mở ra kỷ nguyên xe đa địa hình mang dấu ấn tự do. Kế thừa tinh hoa ấy, CT125 mang trong mình DNA của những chuyến hành trình không giới hạn, là biểu tượng sống động của khát vọng chinh phục và tinh thần dịch chuyển bất tận.<br><br>Giữ trọn nét cổ điển đặc trưng nhưng thổi bùng tinh thần khám phá, CT125 được tối ưu cho hành trình địa hình với khung xe chắc chắn, gầm cao, phuộc trước sau êm ái, yên cao và khả năng leo dốc 19° (tải trọng 20 kg). Động cơ 125cc mạnh mẽ, tiết kiệm nhiên liệu cùng pô vắt cao giúpt xe linh hoạt vượt mọi địa hình.<br><br>Cùng với các trang bị hiện đại gồm đèn LED, phanh ABS, bình xăng lớn 5.4L, khung bảo vệ gầm — động cơ và lốp gai bám đường, CT125 mang đến khả năng chinh phục toàn diện. Từ cắm trại, off-road đến những cung đường mòn đầy hứng khởi, CT125 luôn sẵn sàng đồng hành mà vẫn đủ gọn nhẹ và linh hoạt cho di chuyển mỗi ngày.`,
+        image: "assets/img/xe-so/CT125.png"
+      },
+      {
+        id: "thiet-ke",
+        navLabel: "Thiết kế",
+        label: "Thiết kế",
+        title: "Mặt đồng hồ kỹ thuật số nhỏ gọn",
+        description: `Thiết kế màn hình LCD nhỏ gọn, tích hợp đầy đủ các thông tin cần thiết như tốc độ, quãng đường và mức tiêu thụ nhiên liệu.<br><br>Giao diện tối giản, hiện đại giúp người lái dễ quan sát trong mọi điều kiện ánh sáng, tiện nghi trên mỗi hành trình.`,
+        image: "assets/img/xe-so/ct125-feature-1.png"
+      },
+      {
+        id: "dong-co",
+        navLabel: "Động cơ",
+        label: "Động cơ",
+        title: "Động cơ 125cc mạnh mẽ & tiết kiệm nhiên liệu",
+        description: `Xe được trang bị động cơ 125cc PGM-FI, làm mát bằng không khí, 1 xy-lanh, SOHC 2 van, 4 thì, mạnh mẽ, tiết kiệm nhiên liệu và bền bỉ, là lựa chọn lý tưởng cho di chuyển cả phố xá và địa hình nhẹ.`,
+        image: "assets/img/xe-so/ct125-feature-2.png"
+      },
+      {
+        id: "tien-ich",
+        navLabel: "Tiện ích & An toàn",
+        label: "Tiện ích & An toàn",
+        title: "Giá chở phía sau rộng rãi",
+        description: `Giá chở sau với kích thước lớn 409mm (rộng) × 477mm (dài), khả năng chuyên chở ấn tượng với 4 móc treo tiện lợi giúp người lái dễ dàng mang theo đầy đủ vật dụng cho mọi chuyến đi.`,
+        image: "assets/img/xe-so/ct125-feature-3.png"
+      }
+    ];
+
+    const GRANDE_VARIANTS = [
+      {
+        id: "grande-standard",
+        label: "Grande bản Tiêu chuẩn",
+        colors: [
+          {
+            id: "do-den",
+            name: "Đỏ Đen",
+            price: "46.637.000",
+            image: "assets/img/xe-ga/grande-do-den.png",
+            swatch: "linear-gradient(90deg,#b41520 0%, #b41520 50%, #141414 50%, #141414 100%)"
+          },
+          {
+            id: "den",
+            name: "Đen",
+            price: "46.637.000",
+            image: "assets/img/xe-ga/grande.png",
+            swatch: "linear-gradient(90deg,#141414 0%, #141414 100%)"
+          }
+        ]
+      },
+      {
+        id: "grande-limited",
+        label: "Grande phiên bản Giới hạn",
+        colors: [
+          {
+            id: "xam-bac-den",
+            name: "Xám Bạc Đen",
+            price: "52.037.000",
+            image: "assets/img/xe-ga/grande-xam-bac-den.png",
+            swatch: "linear-gradient(90deg,#8d9196 0%, #8d9196 50%, #141414 50%, #141414 100%)"
+          },
+          {
+            id: "den-vang",
+            name: "Đen Vàng",
+            price: "52.037.000",
+            image: "assets/img/xe-ga/grande-den-vang.png",
+            swatch: "linear-gradient(90deg,#141414 0%, #141414 50%, #c7a428 50%, #c7a428 100%)"
+          },
+          {
+            id: "xanh-bac-den",
+            name: "Xanh Bạc Đen",
+            price: "52.037.000",
+            image: "assets/img/xe-ga/grande-xanh-bac-den.png",
+            swatch: "linear-gradient(90deg,#2a5f7a 0%, #2a5f7a 34%, #b0b8bd 34%, #b0b8bd 67%, #141414 67%, #141414 100%)"
+          }
+        ]
+      },
+      {
+        id: "grande-special",
+        label: "Grande phiên bản Đặc biệt",
+        colors: [
+          {
+            id: "do-den",
+            name: "Đỏ Đen",
+            price: "51.251.000",
+            image: "assets/img/xe-ga/grande-db-do.png",
+            swatch: "linear-gradient(90deg,#b41520 0%, #b41520 50%, #141414 50%, #141414 100%)"
+          },
+          {
+            id: "den",
+            name: "Đen",
+            price: "51.251.000",
+            image: "assets/img/xe-ga/grande-db-den.png",
+            swatch: "linear-gradient(90deg,#141414 0%, #141414 100%)"
+          }
+        ]
+      }
+    ];
+
+    const GRANDE_FEATURE_SLIDES = [
+      {
+        id: "tinh-nang",
+        navLabel: "Tính năng nổi bật",
+        label: "Tính năng nổi bật",
+        title: "Thiết kế thanh lịch, đường cong uyển chuyển vượt thời gian",
+        description: `Yamaha Grande với thiết kế thanh lịch nhưng vẫn toát lên sự hiện đại với đường cong uyển chuyển mang đến vẻ đẹp vượt thời gian.`,
+        image: "assets/img/xe-ga/grande-feature-1.png"
+      },
+      {
+        id: "thiet-ke",
+        navLabel: "Thiết kế",
+        label: "Thiết kế",
+        title: "Hệ thống đèn LED hiện đại, nổi bật",
+        description: `Sự kết hợp độc đáo của cụm đèn chính mang dáng dấp một viên kim cương cùng dải đèn LED tạo nên sự thu hút và toả sáng trên mọi cung đường.`,
+        image: "assets/img/xe-ga/grande-feature-2.png"
+      }
+    ];
+
+    const PRODUCT_CONFIGS = {
+      address: {
+        pageTitle: "Suzuki Address 110 - Chi tiết sản phẩm",
+        heroModel: "Suzuki Address 110",
+        heroTitle: "Gọn gàng, tiết kiệm và thực dụng cho nhịp sống đô thị",
+        heroDescription: "Suzuki Address sử dụng cùng bố cục chi tiết với các mẫu xe trước ở phần giá và màu sắc, nhưng phần nội dung bên dưới được thay bằng bảng thông số kỹ thuật để người xem theo dõi nhanh các thông tin vận hành chính của xe.",
+        heroBadge: "113 cm3 • FI • CVT • 97 kg",
+        watermark: "ADDRESS",
+        defaultImage: "assets/img/xe-ga/suzukiaddress.jpg",
+        bannerImage: "assets/img/xe-ga/suzuki-banner.jpg",
+        videoLogo: "ADDRESS",
+        videoCopy: "Suzuki Address – gọn gàng, tiết kiệm và thực dụng. Thiết kế hiện đại cùng động cơ bền bỉ, Address là người bạn đồng hành lý tưởng cho nhịp sống đô thị năng động.",
+        variants: ADDRESS_VARIANTS,
+        slides: [],
+        specsHeading: "Thông số kỹ thuật của xe Suzuki Address 110",
+        specs: ADDRESS_SPECS
+      },
+      airblade: {
+        pageTitle: "Honda Air Blade - Chi tiết sản phẩm",
+        heroModel: "Honda Air Blade 160/125",
+        heroTitle: "Khí chất thể thao, giao diện kiểu Honda",
+        heroDescription: "Trang này được làm theo kiểu section lớn giống Honda: Giá & Màu sắc ở trên, bên dưới là cụm slider nội dung cho Tính năng nổi bật, Thiết kế, Động cơ và Tiện ích & An toàn.",
+        heroBadge: "ABS • Smart Key • eSP+ • LED",
+        watermark: "AIRBLADE",
+        defaultImage: "assets/img/xe-ga/airblade-den.png",
+        useVideoHero: true,
+        videoSrc: "assets/img/xe-ga/airblade-vd.mp4",
+        videoLogo: "AIRBLADE",
+        videoCopy: "Air Blade gây ấn tượng với diện mạo thể thao, phối màu cá tính và cảm giác vận hành linh hoạt trong đô thị. Thiết kế mạnh mẽ kết hợp cùng các đường nét sắc sảo giúp mẫu xe nổi bật rõ rệt, đồng thời giữ được sự thực dụng cho nhu cầu đi lại hằng ngày và phong cách riêng cho người lái.",
+        variants: AIRBLADE_VARIANTS,
+        slides: AIRBLADE_FEATURE_SLIDES
+      },
+      janus: {
+        pageTitle: "Yamaha Janus - Chi tiết sản phẩm",
+        heroModel: "Yamaha Janus",
+        heroTitle: "Trẻ trung thời thượng, đậm chất đô thị hiện đại",
+        heroDescription: "Janus được hiển thị cùng bố cục chi tiết giống Air Blade và Vision, với khu vực phiên bản, màu sắc và cụm nội dung đặc trưng được đồng bộ cho dòng xe ga thời trang trẻ trung của Yamaha.",
+        heroBadge: "Trẻ trung • Thời trang • Năng động • Cá tính",
+        watermark: "JANUS",
+        defaultImage: "assets/img/xe-ga/jannus-den.png",
+        useVideoHero: true,
+        videoSrc: "assets/img/xe-ga/jannus-vd.mp4",
+        videoLogo: "JANUS",
+        videoCopy: "Janus là sự kết hợp giữa vẻ ngoài thời trang, đường nét trẻ trung và cảm giác sử dụng linh hoạt trong đô thị, phù hợp với người dùng yêu thích một mẫu xe ga hiện đại, gọn gàng và giàu cá tính.",
+        variants: JANUS_VARIANTS,
+        slides: JANUS_FEATURE_SLIDES
+      },
+      vision: {
+        pageTitle: "Honda Vision - Chi tiết sản phẩm",
+        heroModel: "Honda Vision",
+        heroTitle: "Thanh lịch đô thị, gọn nhẹ và dễ làm chủ",
+        heroDescription: "Vision giữ đúng bố cục chi tiết kiểu Honda giống Air Blade, nhưng toàn bộ phiên bản, màu sắc và cụm nội dung bên dưới được tối ưu theo dòng xe ga đô thị nhỏ gọn, linh hoạt và thực dụng.",
+        heroBadge: "Smart Key • eSP • Idling Stop • USB-C",
+        watermark: "VISION",
+        defaultImage: "assets/img/xe-ga/vision-bac-den.png",
+        useVideoHero: true,
+        videoSrc: "assets/img/xe-ga/vision-vd.mp4",
+        videoLogo: "VISION",
+        videoCopy: "Sở hữu thiết kế nhỏ gọn, màu sắc đa dạng cùng phối màu chi tiết được tinh chỉnh đồng điệu, hiện đại, Vision mang diện mạo thời trang, năng động, đồng thời nổi bật với khả năng tiết kiệm nhiên liệu và độ bền bỉ vượt trội, xứng danh mẫu xe tay ga quốc dân được giới trẻ yêu thích.",
+        variants: VISION_VARIANTS,
+        slides: VISION_FEATURE_SLIDES
+      },
+      grande: {
+        pageTitle: "Yamaha Grande - Chi tiết sản phẩm",
+        heroModel: "Yamaha Grande",
+        heroTitle: "Thanh lịch, hiện đại và đầy quyến rũ",
+        heroDescription: "Yamaha Grande mang đến nét thanh lịch đặc trưng với đường cong uyển chuyển, đèn LED hiện đại và phối màu tinh tế — xứng danh là mẫu xe ga thời trang dành cho người yêu thích phong cách vượt thời gian.",
+        heroBadge: "LED • Smart Key • CVT • Phun xăng điện tử",
+        watermark: "GRANDE",
+        defaultImage: "assets/img/xe-ga/grande.png",
+        variants: GRANDE_VARIANTS,
+        slides: GRANDE_FEATURE_SLIDES
+      },
+      ct125: {
+        pageTitle: "Honda CT125 - Chi tiết sản phẩm",
+        heroModel: "Honda CT125",
+        heroTitle: "Khủng khiếu - Khát vọng - Không giới hạn",
+        heroDescription: "CT125 kế thừa DNA những huyền thoại CT70, CT90, CT110 — tượng trưng cho tinh thần khám phá bất tận, liều lĩnh đưa người lái đến những vtí phương chưa từng đặt chân.",
+        heroBadge: "ABS • LED • 125cc PGM-FI • Giao địa hình",
+        watermark: "CT125",
+        defaultImage: "assets/img/xe-so/CT125.png",
+        bannerImage: "assets/img/xe-so/CT125-banner.png",
+        videoLogo: "CT125",
+        videoCopy: "Khởi nguồn từ những huyền thoại, CT125 mang trong mình DNA của những chuyến hành trình không giới hạn — là biểu tượng sống động của khát vọng chinh phục và tinh thần dịch chuyển bất tận.",
+        variants: CT125_VARIANTS,
+        slides: CT125_FEATURE_SLIDES
+      },
+      wave: {
+        pageTitle: "Honda Wave Alpha - Chi tiết sản phẩm",
+        heroModel: "Honda Wave Alpha",
+        heroTitle: "Cục chiến, gu cục chất",
+        heroDescription: "Wave Alpha được trang bị động cơ 110cc với hiệu suất vượt trội nhưng vẫn đảm bảo tiết kiệm nhiên liệu tối ưu, cho bạn thêm tự tin và trải nghiệm tốt nhất trên mọi hành trình.",
+        heroBadge: "110cc • Tiết kiệm • Bền bỉ • Trẻ trung",
+        watermark: "WAVE",
+        defaultImage: "assets/img/xe-so/wave-den.png",
+        useVideoHero: true,
+        videoSrc: "assets/img/xe-so/wave-vd.mp4",
+        videoLogo: "WAVE α",
+        videoCopy: "Wave Alpha — 4 màu, 2 phiên bản cùng thiết kế bộ tem mới phong cách đầy ấn tượng giúp bạn thể hiện sự trẻ trung, năng động, thu hút mọi ánh nhìn.",
+        variants: WAVE_VARIANTS,
+        slides: WAVE_FEATURE_SLIDES
+      },
+      winnerr: {
+        pageTitle: "Honda Winner R - Chi tiết sản phẩm",
+        heroModel: "Honda Winner R",
+        heroTitle: "Hơn cả sự phấn khích",
+        heroDescription: "Mẫu xe côn tay thể thao thế hệ mới với thiết kế mạnh mẽ, uy lực, mang âm hưởng của những chiếc siêu mô tô đỉnh cao. Winner R khơi dậy tinh thần khai phóng, trẻ trung và táo bạo — trở thành biểu tượng cho niềm đam mê tốc độ.",
+        heroBadge: "150cc • ABS • LED • PGM-FI • Thân xe nhôm",
+        watermark: "WINNER R",
+        defaultImage: "assets/img/xe-con-tay/winnerR.png",
+        useVideoHero: true,
+        videoSrc: "assets/img/xe-con-tay/winner-vd.mp4",
+        videoLogo: "WINNER R",
+        videoCopy: "\u201cHơn cả sự phấn khích\u201d — Winner R là bản lột xác toàn diện, đủ mạnh, đủ sắc, đủ chất cho người trẻ yêu tốc độ và phong cách.",
+        variants: WINNERR_VARIANTS,
+        slides: WINNERR_FEATURE_SLIDES
+      },
+      cbr150r: {
+        pageTitle: "Honda CBR150R - Chi tiết sản phẩm",
+        heroModel: "Honda CBR150R",
+        heroTitle: "Định chất cùng chứng",
+        heroDescription: "Sở hữu khối động cơ DOHC 150cc đầy uy lực, tiện ích an toàn giúp xe vận hành mượt mà và phấn khích. CBR150R tự hào mang tinh thần mô tô thể thao đặc trưng của Honda.",
+        heroBadge: "150cc DOHC • ABS 2 kênh • ESS • Hộp số 6 cấp",
+        watermark: "CBR150R",
+        defaultImage: "assets/img/xe-con-tay/cbr150r-do.png",
+        useVideoHero: true,
+        videoSrc: "assets/img/xe-con-tay/cbr-vd.mp4",
+        videoLogo: "CBR150R",
+        videoCopy: "Sở hữu khối động cơ DOHC 150cc đầy uy lực, tiện ích an toàn giúp xe vận hành mượt mà và phấn khích. CBR150R tự hào mang tinh thần mô tô thể thao đặc trưng của Honda, là đáp án cho ai đang tìm mảnh ghép của cuộc sống năng động.",
+        variants: CBR150R_VARIANTS,
+        slides: CBR150R_FEATURE_SLIDES
+      },
+      yzfr15: {
+        pageTitle: "Yamaha YZF-R15 - Chi tiết sản phẩm",
+        heroModel: "Yamaha YZF-R15",
+        heroTitle: "Thừa hưởng DNA số 1 thế giới",
+        heroDescription: "YZF-R15 mang trong mình tinh thần của đàn anh YZF-R1 — xe thể thao 155cc đồng bộ công nghệ VVA, KYB và tựa tay có thể điều chỉnh theo tư thế đua.",
+        heroBadge: "155cc VVA • ABS • Quick Shifter • Y-Connect",
+        watermark: "YZF-R15",
+        defaultImage: "assets/img/xe-pkl/YZF-R15.png",
+        useVideoHero: true,
+        videoSrc: "assets/img/xe-pkl/YZF-vd.mp4",
+        videoLogo: "YZF-R15",
+        videoCopy: "Thừa hưởng DNA từ đàn anh YZF-R1 — YZF-R15 mang tinh thần đua thuần chủng, công nghệ VVA và kết nối Y-Connect vào từng cung đường.",
+        variants: YZFR15_VARIANTS,
+        slides: YZFR15_FEATURE_SLIDES
+      },
+      rebel1100: {
+        pageTitle: "Honda Rebel 1100 2025 - Chi tiết sản phẩm",
+        heroModel: "Honda Rebel 1100 2025",
+        heroTitle: "Có một Rebel trong mỗi chúng ta",
+        heroDescription: "Rebel 1100 hoàn toàn mới là người bạn đồng hành đưa bạn đến nời bạn đang hướng tới — theo một phong cách cruiser đường phố độc nhất, không hề có định kiến.",
+        heroBadge: "1084cc • DCT • Throttle By Wire • HSTC • TFT 5 inch",
+        watermark: "REBEL",
+        defaultImage: "assets/img/xe-pkl/rebel1100.png",
+        bannerImage: "assets/img/xe-pkl/rebel-banner.png",
+        videoLogo: "REBEL 1100",
+        videoCopy: "Có một Rebel trong mỗi chúng ta — vừa mạnh mẽ, vừa tinh tế, con người và máy móc hoà làm một trên mọi cung đường.",
+        variants: REBEL1100_VARIANTS,
+        slides: REBEL1100_FEATURE_SLIDES
+      },
+      nx500: {
+        pageTitle: "Honda NX500 2024 - Chi tiết sản phẩm",
+        heroModel: "Honda NX500 2024",
+        heroTitle: "Khám phá mọi hành trình",
+        heroDescription: "NX500 — crossover adventure linh hoạt với khối động cơ 2 xi-lanh 471cc, HSTC thông minh và màn hình TFT 5 inch. Sẵn sàng cho mọi cung đường.",
+        heroBadge: "471cc • 2 Xi-lanh • HSTC • TFT 5 inch • ABS",
+        watermark: "NX500",
+        defaultImage: "assets/img/xe-pkl/nx500-trang-den.png",
+        useVideoHero: true,
+        videoSrc: "assets/img/xe-pkl/nx500-vd.mp4",
+        videoLogo: "NX500",
+        videoCopy: "Khám phá mọi hành trình — NX500 adventure crossover vượt mọi giới hạn, mọi địa hình.",
+        variants: NX500_VARIANTS,
+        slides: NX500_FEATURE_SLIDES
+      },
+      vinevo: {
+        pageTitle: "VinFast Evo - Chi tiết sản phẩm",
+        heroModel: "VinFast Evo",
+        heroTitle: "Linh hoạt không giới hạn",
+        heroDescription: "VinFast Evo — xe máy điện thông minh với công nghệ pin LFP hiện đại, chuẩn chống nước IP67, quãng đường lên tới 165km mỗi lần sạc.",
+        heroBadge: "Pin LFP • IP67 • 165km/sạc • Đổi pin nhanh",
+        watermark: "EVO",
+        defaultImage: "assets/img/xe-dien/vin-evo-do.png",
+        bannerImage: "assets/img/xe-dien/vin-banner.jpg",
+        videoLogo: "VINFAST EVO",
+        videoCopy: "Linh hoạt không giới hạn — pin LFP bền vững, chống nước IP67, sấp sạc lên tới 165km.",
+        variants: VINEVO_VARIANTS,
+        slides: VINEVO_FEATURE_SLIDES
+      },
+      feliz: {
+        pageTitle: "VinFast Feliz - Chi tiết sản phẩm",
+        heroModel: "VinFast Feliz",
+        heroTitle: "Phong cách sành điệu, chinh phục mọi cung đường",
+        heroDescription: "Feliz — xe máy điện VinFast thanh lịch, pin LFP, hành trình lên tới 156km, chống nước IP67.",
+        heroBadge: "Pin LFP • IP67 • 156km/sạc • Eco &amp; Sport",
+        watermark: "FELIZ",
+        defaultImage: "assets/img/xe-dien/feliz-den.png",
+        bannerImage: "assets/img/xe-dien/feliz-banner.jpg",
+        videoLogo: "VINFAST FELIZ",
+        videoCopy: "Phong cách sành điệu, chinh phục mọi cung đường — VinFast Feliz.",
+        variants: FELIZ_VARIANTS,
+        slides: FELIZ_FEATURE_SLIDES
+      }
+    };
+
+    let currentVariantIndex = 0;
+    let currentColorIndex = 0;
+    let currentSlide = 0;
+    let currentProductKey = "airblade";
+    let currentProductConfig = PRODUCT_CONFIGS.airblade;
+    let currentVariants = currentProductConfig.variants;
+    let currentSlides = currentProductConfig.slides;
+    let currentSpecs = currentProductConfig.specs || [];
+
+    const variantList = document.getElementById("variantList");
+    const colorList = document.getElementById("colorList");
+    const currentVariantLabel = document.getElementById("currentVariantLabel");
+    const versionBox = document.getElementById("versionBox");
+    const bikeImage = document.getElementById("bikeImage");
+    const priceValue = document.getElementById("priceValue");
+    const stageWrap = document.getElementById("stageWrap");
+    const pricingSection = document.getElementById("gia-mau");
+    const featureSliderSection = document.getElementById("chi-tiet-slider");
+    const featureSlideImage = document.getElementById("featureSlideImage");
+    const featureSlideLabel = document.getElementById("featureSlideLabel");
+    const featureSlideTitle = document.getElementById("featureSlideTitle");
+    const featureSlideDescription = document.getElementById("featureSlideDescription");
+    const featureThumbbar = document.getElementById("featureThumbbar");
+    const featurePrevBtn = document.getElementById("featurePrevBtn");
+    const featureNextBtn = document.getElementById("featureNextBtn");
+    const navLinks = document.querySelectorAll(".ab-nav-link");
+    const heroModelText = document.getElementById("heroModelText");
+    const heroHeadline = document.getElementById("heroHeadline");
+    const heroDescription = document.getElementById("heroDescription");
+    const heroBadge = document.getElementById("heroBadge");
+    const stageWatermark = document.getElementById("stageWatermark");
+    const heroTopSection = document.querySelector(".ab-hero-top");
+    const visionHeroSection = document.getElementById("visionHeroSection");
+    const visionHeroVideo = document.getElementById("visionHeroVideo");
+    const visionHeroSource = document.getElementById("visionHeroSource");
+    const visionHeroBanner = document.getElementById("visionHeroBanner");
+    const visionHeroLogo = document.getElementById("visionHeroLogo");
+    const visionHeroCopy = document.getElementById("visionHeroCopy");
+    const specsSection = document.getElementById("thong-so");
+    const specsHeading = document.getElementById("specsHeading");
+    const specsTableBody = document.getElementById("specsTableBody");
+
+    function formatPrice(value) {
+      if (value === "Liên hệ") return "Liên hệ";
+      return value + " <span>VNĐ</span>";
+    }
+
+    function getSelectedBike() {
+      const picked = sessionStorage.getItem("selectedBikeDetail");
+      if (!picked) return null;
+
+      try {
+        return JSON.parse(picked);
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function getRequestedProductKey() {
+      const productKey = new URLSearchParams(window.location.search).get("bike");
+      if (productKey && PRODUCT_CONFIGS[productKey]) {
+        return productKey;
+      }
+
+      return getProductKeyFromBike(getSelectedBike());
+    }
+
+    function getProductKeyFromBike(bike) {
+      const bikeName = (bike?.name || "").toLowerCase();
+      if (bikeName.includes("address") || bikeName.includes("suzuki")) return "address";
+      if (bikeName.includes("vision")) return "vision";
+      if (bikeName.includes("janus") || bikeName.includes("jannus")) return "janus";
+      if (bikeName.includes("grande")) return "grande";
+      if (bikeName.includes("ct125") || bikeName.includes("ct 125")) return "ct125";
+      if (bikeName.includes("wave")) return "wave";
+      if (bikeName.includes("winner")) return "winnerr";
+      if (bikeName.includes("cbr150r") || bikeName.includes("cbr150") || bikeName.includes("cbr 150")) return "cbr150r";
+      if (bikeName.includes("yzf-r15") || bikeName.includes("yzfr15") || bikeName.includes("r15")) return "yzfr15";
+      if (bikeName.includes("rebel")) return "rebel1100";
+      if (bikeName.includes("nx500") || bikeName.includes("nx 500")) return "nx500";
+      if (bikeName.includes("vinfast") || bikeName.includes("vin-evo") || bikeName.includes("evo")) return "vinevo";
+      if (bikeName.includes("feliz")) return "feliz";
+      return "airblade";
+    }
+
+    function getDefaultVariantIndex(bikeName) {
+      const normalizedName = (bikeName || "").toLowerCase();
+
+      if (currentProductKey === "airblade") {
+        if (normalizedName.includes("160")) return 2;
+        if (normalizedName.includes("125")) return 0;
+      }
+
+      if (currentProductKey === "vision") {
+        if (normalizedName.includes("đặc biệt") || normalizedName.includes("dac biet")) return 1;
+        if (normalizedName.includes("cao cấp") || normalizedName.includes("cao cap")) return 2;
+      }
+
+      if (currentProductKey === "janus") {
+        if (normalizedName.includes("giới hạn") || normalizedName.includes("gioi han")) return 1;
+        if (normalizedName.includes("đặc biệt") || normalizedName.includes("dac biet")) return 2;
+      }
+
+      if (currentProductKey === "grande") {
+        if (normalizedName.includes("giới hạn") || normalizedName.includes("gioi han")) return 1;
+        if (normalizedName.includes("đặc biệt") || normalizedName.includes("dac biet")) return 2;
+      }
+
+      if (currentProductKey === "winnerr") {
+        if (normalizedName.includes("thể thao") || normalizedName.includes("the thao")) return 0;
+        if (normalizedName.includes("đặc biệt") || normalizedName.includes("dac biet")) return 1;
+        if (normalizedName.includes("tiêu chuẩn") || normalizedName.includes("tieu chuan")) return 2;
+      }
+
+      if (currentProductKey === "cbr150r") {
+        if (normalizedName.includes("thể thao") || normalizedName.includes("the thao")) return 0;
+        if (normalizedName.includes("đặc biệt") || normalizedName.includes("dac biet")) return 1;
+        if (normalizedName.includes("tiêu chuẩn") || normalizedName.includes("tieu chuan")) return 2;
+      }
+
+      return 0;
+    }
+
+    function applyProductConfig(productKey, bikeName = "") {
+      currentProductKey = PRODUCT_CONFIGS[productKey] ? productKey : "airblade";
+      currentProductConfig = PRODUCT_CONFIGS[currentProductKey];
+      currentVariants = currentProductConfig.variants;
+      currentSlides = currentProductConfig.slides || [];
+      currentSpecs = currentProductConfig.specs || [];
+      currentVariantIndex = Math.min(getDefaultVariantIndex(bikeName), currentVariants.length - 1);
+      currentColorIndex = 0;
+      currentSlide = 0;
+
+      document.title = currentProductConfig.pageTitle;
+      heroModelText.textContent = currentProductConfig.heroModel;
+      heroHeadline.textContent = currentProductConfig.heroTitle;
+      heroDescription.textContent = currentProductConfig.heroDescription;
+      heroBadge.textContent = currentProductConfig.heroBadge;
+      stageWatermark.textContent = currentProductConfig.watermark;
+      bikeImage.src = currentProductConfig.defaultImage;
+      bikeImage.alt = currentProductConfig.heroModel;
+
+      const hasSlides = currentSlides.length > 0;
+      const hasSpecs = currentSpecs.length > 0;
+      const visibleNavs = new Set(["gia-mau", ...currentSlides.map(slide => slide.id), ...(hasSpecs ? ["thong-so"] : [])]);
+      navLinks.forEach(link => {
+        link.hidden = !visibleNavs.has(link.dataset.nav);
+      });
+
+      featureSliderSection.hidden = !hasSlides;
+      specsSection.hidden = !hasSpecs;
+
+      if (hasSpecs) {
+        specsHeading.textContent = currentProductConfig.specsHeading || `Thông số kỹ thuật của ${currentProductConfig.heroModel}`;
+      }
+
+      const useVideoHero = Boolean(currentProductConfig.useVideoHero);
+      const useBannerHero = Boolean(currentProductConfig.bannerImage);
+      const useMediaHero = useVideoHero || useBannerHero;
+
+      heroTopSection.style.display = useMediaHero ? "none" : "block";
+      visionHeroSection.classList.toggle("is-active", useMediaHero);
+
+      if (useMediaHero) {
+        visionHeroLogo.textContent = currentProductConfig.videoLogo || currentProductConfig.watermark;
+        visionHeroCopy.textContent = currentProductConfig.videoCopy || "";
+      }
+
+      if (useVideoHero) {
+        visionHeroVideo.style.display = "block";
+        visionHeroBanner.style.display = "none";
+        if (currentProductConfig.videoSrc) {
+          visionHeroSource.src = currentProductConfig.videoSrc;
+          visionHeroVideo.load();
+        }
+
+        visionHeroVideo.play().catch(() => {});
+      } else if (useBannerHero) {
+        visionHeroVideo.pause();
+        visionHeroVideo.style.display = "none";
+        visionHeroBanner.style.display = "block";
+        visionHeroBanner.src = currentProductConfig.bannerImage;
+        visionHeroBanner.alt = `${currentProductConfig.heroModel} banner`;
+      } else {
+        visionHeroVideo.pause();
+        visionHeroVideo.style.display = "none";
+        visionHeroBanner.style.display = "none";
+      }
+    }
+
+    function renderVariantList() {
+      variantList.innerHTML = currentVariants.map((item, index) => `
+        <button class="ab-version-btn ${index === currentVariantIndex ? "active" : ""}" data-index="${index}">
+          ${item.label}
+        </button>
+      `).join("");
+
+      variantList.querySelectorAll(".ab-version-btn").forEach(btn => {
+        btn.addEventListener("click", function () {
+          currentVariantIndex = Number(this.dataset.index);
+          currentColorIndex = 0;
+          versionBox.classList.remove("open");
+          renderPricingUI();
+        });
+      });
+    }
+
+    function bindVersionToggle() {
+      if (!versionBox || !currentVariantLabel) return;
+
+      currentVariantLabel.onclick = function () {
+        versionBox.classList.toggle("open");
+      };
+
+      currentVariantLabel.onkeydown = function (event) {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          versionBox.classList.toggle("open");
+        }
+      };
+    }
+
+    function renderColorList() {
+      const variant = currentVariants[currentVariantIndex];
+      colorList.innerHTML = variant.colors.map((color, index) => `
+        <div class="ab-color-option ${index === currentColorIndex ? "active" : ""}" data-index="${index}">
+          <div class="ab-color-chip" style="background:${color.swatch};"></div>
+          <span class="ab-color-name">${color.name}</span>
+        </div>
+      `).join("");
+
+      colorList.querySelectorAll(".ab-color-option").forEach(item => {
+        item.addEventListener("click", function () {
+          currentColorIndex = Number(this.dataset.index);
+          updateStage();
+          renderColorList();
+        });
+      });
+    }
+
+    function updateStage() {
+      const variant = currentVariants[currentVariantIndex];
+      const color = variant.colors[currentColorIndex];
+      currentVariantLabel.innerHTML = `${variant.label} <i class="fa-solid fa-angle-up"></i>`;
+      priceValue.innerHTML = formatPrice(color.price);
+
+      stageWrap.classList.add("is-changing");
+      setTimeout(() => {
+        bikeImage.src = color.image;
+        bikeImage.alt = currentProductConfig.heroModel + " - " + color.name;
+        stageWrap.classList.remove("is-changing");
+      }, 180);
+    }
+
+    function renderPricingUI() {
+      renderVariantList();
+      renderColorList();
+      updateStage();
+      bindVersionToggle();
+    }
+
+    function renderSpecsTable() {
+      if (!currentSpecs.length) {
+        specsTableBody.innerHTML = "";
+        return;
+      }
+
+      specsHeading.textContent = currentProductConfig.specsHeading || `Thông số kỹ thuật của ${currentProductConfig.heroModel}`;
+      specsTableBody.innerHTML = currentSpecs.map(item => {
+        const value = Array.isArray(item.value)
+          ? item.value.map(line => `<div class="ab-spec-line">${line}</div>`).join("")
+          : item.value;
+
+        return `
+          <tr>
+            <th scope="row">${item.label}</th>
+            <td>${value}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function setActiveNav(id) {
+      navLinks.forEach(link => {
+        link.classList.toggle("active", link.dataset.nav === id);
+      });
+    }
+
+    function restartFade(element) {
+      if (!element) return;
+      element.classList.remove("ab-fade");
+      void element.offsetWidth;
+      element.classList.add("ab-fade");
+    }
+
+    function renderFeatureThumbs() {
+      if (!currentSlides.length) {
+        featureThumbbar.innerHTML = "";
+        return;
+      }
+
+      featureThumbbar.innerHTML = currentSlides.map((item, index) => `
+        <button class="ab-thumb ${index === currentSlide ? "active" : ""}" type="button" data-index="${index}" aria-label="${item.navLabel}">
+          <img src="${item.image}" alt="${item.navLabel}">
+        </button>
+      `).join("");
+
+      featureThumbbar.querySelectorAll(".ab-thumb").forEach(btn => {
+        btn.addEventListener("click", function () {
+          renderSlide(Number(this.dataset.index));
+          setActiveNav(currentSlides[currentSlide].id);
+        });
+      });
+    }
+
+    function renderSlide(index) {
+      if (!currentSlides.length) return;
+
+      currentSlide = (index + currentSlides.length) % currentSlides.length;
+
+      const slide = currentSlides[currentSlide];
+      featureSlideImage.src = slide.image;
+      featureSlideImage.alt = currentProductConfig.heroModel + " - " + slide.navLabel;
+      featureSlideLabel.textContent = slide.label;
+      featureSlideTitle.textContent = slide.title;
+      featureSlideDescription.innerHTML = slide.description;
+
+      featureThumbbar.querySelectorAll(".ab-thumb").forEach((thumb, thumbIndex) => {
+        thumb.classList.toggle("active", thumbIndex === currentSlide);
+      });
+
+      restartFade(featureSlideImage);
+      restartFade(featureSlideLabel);
+      restartFade(featureSlideTitle);
+      restartFade(featureSlideDescription);
+    }
+
+    function nextSlide() {
+      if (!currentSlides.length) return;
+      renderSlide(currentSlide + 1);
+      setActiveNav(currentSlides[currentSlide].id);
+    }
+
+    function prevSlide() {
+      if (!currentSlides.length) return;
+      renderSlide(currentSlide - 1);
+      setActiveNav(currentSlides[currentSlide].id);
+    }
+
+    function syncNavWithViewport() {
+      const offset = 140;
+      const pricingRect = pricingSection.getBoundingClientRect();
+      const specsRect = specsSection.hidden ? null : specsSection.getBoundingClientRect();
+      const sliderRect = featureSliderSection.hidden ? null : featureSliderSection.getBoundingClientRect();
+
+      if (specsRect && specsRect.top <= offset && specsRect.bottom > offset) {
+        setActiveNav("thong-so");
+        return;
+      }
+
+      if (sliderRect && sliderRect.top <= offset && sliderRect.bottom > offset && currentSlides.length) {
+        setActiveNav(currentSlides[currentSlide].id);
+      } else if (pricingRect.top <= offset && pricingRect.bottom > offset) {
+        setActiveNav("gia-mau");
+      }
+    }
+
+    function bindFeatureControls() {
+      navLinks.forEach(link => {
+        link.addEventListener("click", function (event) {
+          if (this.dataset.nav === "gia-mau") {
+            event.preventDefault();
+            pricingSection.scrollIntoView({ behavior: "smooth", block: "start" });
+            setActiveNav("gia-mau");
+            return;
+          }
+
+          if (this.dataset.nav === "thong-so") {
+            event.preventDefault();
+            specsSection.scrollIntoView({ behavior: "smooth", block: "start" });
+            setActiveNav("thong-so");
+            return;
+          }
+
+          if (typeof this.dataset.slide !== "undefined") {
+            event.preventDefault();
+            renderSlide(Number(this.dataset.slide));
+            setActiveNav(currentSlides[currentSlide].id);
+            featureSliderSection.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        });
+      });
+
+      featurePrevBtn.addEventListener("click", prevSlide);
+      featureNextBtn.addEventListener("click", nextSlide);
+
+      document.querySelectorAll(".ab-scrolltop").forEach(anchor => {
+        anchor.addEventListener("click", function (event) {
+          event.preventDefault();
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+      });
+
+      window.addEventListener("scroll", syncNavWithViewport, { passive: true });
+      window.addEventListener("resize", syncNavWithViewport);
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const selectedBike = getSelectedBike();
+      const selectedBikeName = selectedBike?.name || "";
+
+      applyProductConfig(getRequestedProductKey(), selectedBikeName);
+
+      renderPricingUI();
+      renderSpecsTable();
+      renderFeatureThumbs();
+      if (currentSlides.length) {
+        renderSlide(currentSlide);
+      }
+      bindFeatureControls();
+      syncNavWithViewport();
+    });
+  </script>
+</body>
+</html>
