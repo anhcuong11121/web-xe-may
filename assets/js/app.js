@@ -44,14 +44,32 @@ function updateNavbar() {
   const homeLink = document.querySelector('a[href="index.html"]');
   const sanphamLink = document.querySelector('a[href="sanpham.html"]');
   const tasksLink = document.querySelector('a[href="tasks.html"]');
+  const staffLink = document.querySelector('a[href="staff.html"]');
   const aboutLink = document.querySelector('a[href="about.html"]');
   const contactLink = document.querySelector('a[href="lienhe.html"]');
   const loginLink = document.querySelector('a[href="login.html"]');
 
   if (userRole === 'admin') {
-    if (sanphamLink) sanphamLink.style.display = '';
+    if (sanphamLink) sanphamLink.style.display = 'none';
     if (tasksLink) tasksLink.style.display = '';
+    if (staffLink) staffLink.style.display = 'none';
     if (aboutLink) aboutLink.style.display = '';
+    if (homeLink) homeLink.style.display = 'none';
+    if (contactLink) contactLink.style.display = 'none';
+    if (loginLink) {
+      loginLink.textContent = 'Đăng xuất';
+      loginLink.href = '#';
+      loginLink.onclick = function(e) {
+        e.preventDefault();
+        sessionStorage.removeItem('userRole');
+        window.location.href = 'login.html';
+      };
+    }
+  } else if (userRole === 'staff') {
+    if (sanphamLink) sanphamLink.style.display = 'none';
+    if (tasksLink) tasksLink.style.display = 'none';
+    if (staffLink) staffLink.style.display = '';
+    if (aboutLink) aboutLink.style.display = 'none';
     if (homeLink) homeLink.style.display = 'none';
     if (contactLink) contactLink.style.display = 'none';
     if (loginLink) {
@@ -66,6 +84,7 @@ function updateNavbar() {
   } else if (userRole === 'customer') {
     if (sanphamLink) sanphamLink.style.display = '';
     if (tasksLink) tasksLink.style.display = 'none';
+    if (staffLink) staffLink.style.display = 'none';
     if (aboutLink) aboutLink.style.display = 'none';
     if (homeLink) homeLink.style.display = '';
     if (contactLink) contactLink.style.display = '';
@@ -81,6 +100,7 @@ function updateNavbar() {
   } else {
     if (sanphamLink) sanphamLink.style.display = '';
     if (tasksLink) tasksLink.style.display = 'none';
+    if (staffLink) staffLink.style.display = 'none';
     if (aboutLink) aboutLink.style.display = 'none';
     if (homeLink) homeLink.style.display = '';
     if (contactLink) contactLink.style.display = '';

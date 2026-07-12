@@ -117,6 +117,11 @@
       { username: 'admin', password: 'ad123123' }
     ];
 
+    const staffUsers = [
+      { username: 'staff123', password: 'staff123' },
+      { username: 'staff', password: 'staff123' }
+    ];
+
     function getCustomerAccounts() {
       return JSON.parse(localStorage.getItem('customerAccounts') || '[]');
     }
@@ -128,6 +133,7 @@
     function isAccountTaken(username, email, phone) {
       const customers = getCustomerAccounts();
       if (adminUsers.some(a => a.username === username)) return true;
+      if (staffUsers.some(a => a.username === username)) return true;
       if (customers.some(u => u.username === username)) return true;
       if (customers.some(u => u.email === email)) return true;
       if (customers.some(u => u.phone === phone)) return true;
@@ -139,6 +145,13 @@
       if (adminMatch) {
         sessionStorage.setItem('userRole', 'admin');
         window.location.href = 'tasks.html';
+        return;
+      }
+
+      const staffMatch = staffUsers.find(s => s.username === username && s.password === password);
+      if (staffMatch) {
+        sessionStorage.setItem('userRole', 'staff');
+        window.location.href = 'staff.html';
         return;
       }
 
