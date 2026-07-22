@@ -13,5 +13,11 @@ public class Brand
     [MaxLength(500)]
     public string? Description { get; set; }
 
+    [MaxLength(100)]
+    public string? Country { get; set; }
+
+    [MaxLength(500)]
+    public string? LogoUrl { get; set; }
+
     public virtual ICollection<Product> Products { get; set; } = new List<Product>();
 }

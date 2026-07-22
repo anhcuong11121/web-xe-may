@@ -1,12 +1,14 @@
-using Microsoft.AspNetCore.Identity;
 using MotorBikeShop.API.DTOs;
-using MotorBikeShop.API.Models;
 
 namespace MotorBikeShop.API.Services;
 
 public interface IAuthService
 {
-    Task<IdentityResult> RegisterAsync(RegisterRequest request);
-    Task<LoginResponse?> LoginAsync(LoginRequest request);
-    Task<AppUser?> GetCurrentUserAsync(string email);
+    Task<AuthResult<RegisterResponse>> RegisterAsync(RegisterRequest request);
+    Task<AuthResult<LoginResponse>> LoginAsync(LoginRequest request);
+    Task<AuthResult<LoginResponse>> RefreshAsync(RefreshTokenRequest request);
+    Task RevokeRefreshTokenAsync(string refreshToken);
+    Task<AuthResult<ChangePasswordResponse>> ChangePasswordAsync(Guid userId, ChangePasswordRequest request);
+    Task<ProfileResponse?> GetProfileAsync(Guid userId);
+    Task<AuthResult<ProfileResponse>> UpdateProfileAsync(Guid userId, ProfileUpdateRequest request);
 }

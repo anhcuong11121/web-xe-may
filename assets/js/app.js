@@ -38,16 +38,149 @@ function toggleDarkMode() {
   applyDarkModeIcon();
 }
 
+function ensureChangePasswordUi(loginLink) {
+  let navItem = document.getElementById('changePasswordNavItem');
+  if (!navItem && loginLink?.parentElement) {
+    navItem = document.createElement('li');
+    navItem.id = 'changePasswordNavItem';
+    navItem.className = 'nav-item';
+    navItem.innerHTML = '<a class="nav-link" href="#" id="changePasswordLink"><i class="fa-solid fa-key me-1"></i>Đổi mật khẩu</a>';
+    loginLink.parentElement.before(navItem);
+  }
+
+  if (!document.getElementById('changePasswordModal')) {
+    const modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.id = 'changePasswordModal';
+    modal.tabIndex = -1;
+    modal.innerHTML = `
+      <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">Đổi mật khẩu</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <form id="changePasswordForm">
+          <div class="modal-body">
+            <div class="mb-3"><label class="form-label" for="currentPassword">Mật khẩu hiện tại</label><input class="form-control" type="password" id="currentPassword" maxlength="128" autocomplete="current-password" required></div>
+            <div class="mb-3"><label class="form-label" for="newPassword">Mật khẩu mới</label><input class="form-control" type="password" id="newPassword" minlength="8" maxlength="128" autocomplete="new-password" required><div class="form-text">8–128 ký tự, có chữ hoa, chữ thường, số và ký tự đặc biệt.</div></div>
+            <div class="mb-3"><label class="form-label" for="confirmNewPassword">Xác nhận mật khẩu mới</label><input class="form-control" type="password" id="confirmNewPassword" minlength="8" maxlength="128" autocomplete="new-password" required></div>
+            <div id="changePasswordMessage" class="small"></div>
+          </div>
+          <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button><button type="submit" class="btn btn-primary" id="changePasswordSubmit">Đổi mật khẩu</button></div>
+        </form>
+      </div></div>`;
+    document.body.appendChild(modal);
+
+    document.getElementById('changePasswordForm').addEventListener('submit', handleChangePassword);
+  }
+
+  const link = document.getElementById('changePasswordLink');
+  if (link) {
+    link.onclick = event => {
+      event.preventDefault();
+      document.getElementById('changePasswordForm').reset();
+      document.getElementById('changePasswordMessage').textContent = '';
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('changePasswordModal')).show();
+    };
+  }
+
+  if (navItem) navItem.style.display = '';
+}
+
+async function handleChangePassword(event) {
+  event.preventDefault();
+  const currentPassword = document.getElementById('currentPassword').value;
+  const newPassword = document.getElementById('newPassword').value;
+  const confirmPassword = document.getElementById('confirmNewPassword').value;
+  const message = document.getElementById('changePasswordMessage');
+  const submitButton = document.getElementById('changePasswordSubmit');
+  const strongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,128}$/;
+
+  if (!strongPassword.test(newPassword)) {
+    message.className = 'small text-danger';
+    message.textContent = 'Mật khẩu mới chưa đáp ứng chính sách bảo mật.';
+    return;
+  }
+  if (newPassword !== confirmPassword) {
+    message.className = 'small text-danger';
+    message.textContent = 'Mật khẩu xác nhận không khớp.';
+    return;
+  }
+
+  submitButton.disabled = true;
+  try {
+    const result = await Api.changePassword({ currentPassword, newPassword, confirmPassword });
+    message.className = 'small text-success';
+    message.textContent = result.message;
+    setTimeout(() => {
+      Session.clear();
+      window.location.href = 'login.html';
+    }, 800);
+  } catch (error) {
+    message.className = 'small text-danger';
+    message.textContent = apiErrorMessage(error);
+  } finally {
+    submitButton.disabled = false;
+  }
+}
+
+function ensureNavbarLink(href, label, loginLink) {
+  let link = document.querySelector(`.navbar-nav a[href="${href}"]`);
+  if (link) return link;
+
+  const navbar = loginLink?.closest('.navbar-nav') || document.querySelector('.navbar-nav');
+  if (!navbar) return null;
+
+  const item = document.createElement('li');
+  item.className = 'nav-item';
+  link = document.createElement('a');
+  link.className = 'nav-link';
+  link.href = href;
+  link.textContent = label;
+  if (window.location.pathname.toLowerCase().endsWith('/' + href.toLowerCase())) {
+    link.classList.add('active');
+  }
+  item.appendChild(link);
+  navbar.insertBefore(item, loginLink?.parentElement || navbar.lastElementChild);
+  return link;
+}
+
+function setNavbarItemVisible(link, visible) {
+  if (!link) return;
+  const item = link.closest('.nav-item') || link;
+  item.style.setProperty('display', visible ? '' : 'none', 'important');
+}
+
 // Update navbar based on login status
 function updateNavbar() {
-  const userRole = sessionStorage.getItem('userRole');
-  const homeLink = document.querySelector('a[href="index.html"]');
-  const sanphamLink = document.querySelector('a[href="sanpham.html"]');
-  const tasksLink = document.querySelector('a[href="tasks.html"]');
-  const staffLink = document.querySelector('a[href="staff.html"]');
-  const aboutLink = document.querySelector('a[href="about.html"]');
-  const contactLink = document.querySelector('a[href="lienhe.html"]');
-  const loginLink = document.querySelector('a[href="login.html"]');
+  const userRole = (typeof Session !== 'undefined' && Session.isLoggedIn())
+    ? roleToAppRole(Session.getRole())
+    : null;
+  let homeLink = document.querySelector('.navbar-nav a[href="index.html"]');
+  const sanphamLink = document.querySelector('.navbar-nav a[href="sanpham.html"]');
+  const tasksLink = document.querySelector('.navbar-nav a[href="tasks.html"]');
+  let staffLink = document.querySelector('.navbar-nav a[href="staff.html"]');
+  let suppliersLink = document.querySelector('.navbar-nav a[href="suppliers.html"]');
+  const usersLink = document.querySelector('.navbar-nav a[href="users.html"]');
+  const aboutLink = document.querySelector('.navbar-nav a[href="about.html"]');
+  const contactLink = document.querySelector('.navbar-nav a[href="lienhe.html"]');
+  const loginLink = document.querySelector('.navbar-nav a[href="login.html"]');
+
+  function bindLogout() {
+    if (loginLink) {
+      ensureChangePasswordUi(loginLink);
+      loginLink.textContent = 'Đăng xuất (' + (Session.getUser()?.fullName || '') + ')';
+      loginLink.href = '#';
+      loginLink.onclick = async function(e) {
+        e.preventDefault();
+        try {
+          await Api.logout();
+        } catch {
+          // Vẫn xóa dữ liệu local nếu server không thể kết nối.
+        } finally {
+          Session.clear();
+          window.location.href = 'login.html';
+        }
+      };
+    }
+  }
 
   if (userRole === 'admin') {
     if (sanphamLink) sanphamLink.style.display = 'none';
@@ -56,52 +189,48 @@ function updateNavbar() {
     if (aboutLink) aboutLink.style.display = '';
     if (homeLink) homeLink.style.display = 'none';
     if (contactLink) contactLink.style.display = 'none';
-    if (loginLink) {
-      loginLink.textContent = 'Đăng xuất';
-      loginLink.href = '#';
-      loginLink.onclick = function(e) {
-        e.preventDefault();
-        sessionStorage.removeItem('userRole');
-        window.location.href = 'login.html';
-      };
-    }
+    bindLogout();
   } else if (userRole === 'staff') {
-    if (sanphamLink) sanphamLink.style.display = 'none';
-    if (tasksLink) tasksLink.style.display = 'none';
-    if (staffLink) staffLink.style.display = '';
-    if (aboutLink) aboutLink.style.display = 'none';
-    if (homeLink) homeLink.style.display = 'none';
-    if (contactLink) contactLink.style.display = 'none';
-    if (loginLink) {
-      loginLink.textContent = 'Đăng xuất';
-      loginLink.href = '#';
-      loginLink.onclick = function(e) {
-        e.preventDefault();
-        sessionStorage.removeItem('userRole');
-        window.location.href = 'login.html';
-      };
+    homeLink = ensureNavbarLink('index.html', 'Trang chủ', loginLink);
+    staffLink = ensureNavbarLink('staff.html', 'Quản lý', loginLink);
+    suppliersLink = ensureNavbarLink('suppliers.html', 'Nhà cung cấp', loginLink);
+
+    const navbar = loginLink?.closest('.navbar-nav');
+    const menuAnchor = loginLink?.parentElement;
+    if (navbar && menuAnchor) {
+      [homeLink, staffLink, suppliersLink].forEach(link => {
+        if (link?.parentElement) navbar.insertBefore(link.parentElement, menuAnchor);
+      });
     }
+
+    setNavbarItemVisible(homeLink, true);
+    setNavbarItemVisible(staffLink, true);
+    setNavbarItemVisible(suppliersLink, true);
+    setNavbarItemVisible(sanphamLink, false);
+    setNavbarItemVisible(tasksLink, false);
+    setNavbarItemVisible(usersLink, false);
+    setNavbarItemVisible(aboutLink, false);
+    setNavbarItemVisible(contactLink, false);
+    bindLogout();
   } else if (userRole === 'customer') {
     if (sanphamLink) sanphamLink.style.display = '';
     if (tasksLink) tasksLink.style.display = 'none';
     if (staffLink) staffLink.style.display = 'none';
+    setNavbarItemVisible(suppliersLink, false);
+    setNavbarItemVisible(usersLink, false);
     if (aboutLink) aboutLink.style.display = 'none';
     if (homeLink) homeLink.style.display = '';
     if (contactLink) contactLink.style.display = '';
-    if (loginLink) {
-      loginLink.textContent = 'Đăng xuất';
-      loginLink.href = '#';
-      loginLink.onclick = function(e) {
-        e.preventDefault();
-        sessionStorage.removeItem('userRole');
-        window.location.href = 'login.html';
-      };
-    }
+    bindLogout();
   } else {
+    const changePasswordNavItem = document.getElementById('changePasswordNavItem');
+    if (changePasswordNavItem) changePasswordNavItem.style.display = 'none';
     if (sanphamLink) sanphamLink.style.display = '';
-    if (tasksLink) tasksLink.style.display = 'none';
-    if (staffLink) staffLink.style.display = 'none';
-    if (aboutLink) aboutLink.style.display = 'none';
+    setNavbarItemVisible(tasksLink, false);
+    setNavbarItemVisible(staffLink, false);
+    setNavbarItemVisible(suppliersLink, false);
+    setNavbarItemVisible(usersLink, false);
+    setNavbarItemVisible(aboutLink, false);
     if (homeLink) homeLink.style.display = '';
     if (contactLink) contactLink.style.display = '';
     if (loginLink) {
@@ -119,72 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   applyDarkModeIcon();
   updateNavbar();
-  renderStoredProducts();
-  applyIndexRoleUI();
 });
-
-function applyIndexRoleUI() {
-  const role = sessionStorage.getItem('userRole');
-  const features = document.getElementById('featuresSection');
-  const stats = document.getElementById('statsSection');
-  const viewAllBtn = document.getElementById('viewAllBtn');
-
-  if (role === 'customer') {
-    if (features) features.style.display = 'none';
-    if (stats) stats.style.display = 'none';
-    if (viewAllBtn) {
-      viewAllBtn.href = '#storedProducts';
-      viewAllBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        const target = document.getElementById('storedProducts');
-        if (target) {
-          target.scrollIntoView({ behavior: 'smooth' });
-          renderStoredProducts();
-        }
-      });
-    }
-  } else if (role === 'admin') {
-    if (features) features.style.display = '';
-    if (stats) stats.style.display = '';
-    if (viewAllBtn) {
-      viewAllBtn.href = 'tasks.html';
-      viewAllBtn.onclick = null;
-    }
-  } else {
-    if (features) features.style.display = '';
-    if (stats) stats.style.display = '';
-    if (viewAllBtn) {
-      viewAllBtn.href = 'tasks.html';
-      viewAllBtn.onclick = null;
-    }
-  }
-}
-
-function renderStoredProducts() {
-  const container = document.getElementById('storedProducts');
-  if (!container) return;
-
-  const motorbikes = JSON.parse(localStorage.getItem('motorbikes') || '[]');
-  if (motorbikes.length === 0) {
-    container.innerHTML = '';
-    return;
-  }
-
-  container.innerHTML = motorbikes.map(m => `
-    <div class="col-lg-4 col-md-6">
-      <div class="card product-card h-100">
-        <img src="assets/img/${m.title.toLowerCase().replace(/\s+/g, '')}.jpg" class="card-img-top" alt="${m.title}" onerror="this.src='assets/img/banner.jpg'">
-        <div class="card-body">
-          <span class="product-tag">${m.priority || 'Không rõ'}</span>
-          <h5 class="card-title">${m.title}</h5>
-          <p class="product-price">${m.price || 'Liên hệ'}</p>
-          <p class="card-text text-muted">${m.description || 'Mô tả đang cập nhật...'}</p>
-          <a href="tasks.html" class="btn btn-outline-primary">Xem chi tiết</a>
-        </div>
-      </div>
-    </div>
-  `).join('');
-}
 
 // JavaScript for Airblade Section
 const abVariants = [
@@ -290,6 +354,7 @@ let abCurrentVariant = abVariants[0];
 let abCurrentTab = abTabs[0].id;
 
 function updateAbUI() {
+  if (!document.getElementById('variant-buttons')) return; // Trang không có section Airblade
   document.getElementById('variant-buttons').innerHTML = renderAbVariants(abCurrentVariant.id);
   document.getElementById('details-tabs').innerHTML = renderAbTabs(abCurrentTab);
   document.getElementById('tab-content').innerHTML = renderAbTabContent(abCurrentVariant, abCurrentTab);

@@ -25,7 +25,9 @@ public class Supplier
     [MaxLength(500)]
     public string? Address { get; set; }
 
-    public virtual ICollection<ProductSupplier> ProductSuppliers { get; set; } = new List<ProductSupplier>();
+    [Required]
+    [MaxLength(50)]
+    public string Status { get; set; } = "Active";
 
     public virtual ICollection<ImportReceipt> ImportReceipts { get; set; } = new List<ImportReceipt>();
 }

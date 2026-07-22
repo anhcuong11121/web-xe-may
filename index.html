@@ -152,55 +152,8 @@
           <a id="viewAllBtn" href="tasks.html" class="btn btn-soft">Xem toàn bộ danh sách</a>
         </div>
 
-        <div class="row g-4">
-          <div class="col-lg-3 col-md-6">
-            <div class="card product-card h-100">
-              <img src="assets/img/xe-ga/airblade-den.png" class="card-img-top" alt="Honda Air Blade" />
-              <div class="card-body">
-                <span class="product-tag">Sport Scooter</span>
-                <h5 class="card-title">Honda Air Blade</h5>
-                <p class="product-price">42.000.000 VNĐ</p>
-                <p class="card-text text-muted">Phong cách thể thao, mạnh mẽ và hiện đại, phù hợp khách hàng trẻ yêu cá tính.</p>
-                <a href="chi-tiet-san-pham.html?bike=airblade" class="btn btn-outline-primary">Xem thêm</a>
-              </div>
-            </div>
-          </div>
-          <div class="col-lg-3 col-md-6">
-            <div class="card product-card h-100">
-              <img src="assets/img/xe-con-tay/winnerR.png" class="card-img-top" alt="Honda Winner R" />
-              <div class="card-body">
-                <span class="product-tag">Underbone Sport</span>
-                <h5 class="card-title">Honda Winner R</h5>
-                <p class="product-price">50.560.000 VNĐ</p>
-                <p class="card-text text-muted">Côn tay thể thao với kiểu dáng sắc nét, hướng tới người dùng yêu cảm giác lái mạnh mẽ.</p>
-                <a href="chi-tiet-san-pham.html?bike=winnerr" class="btn btn-outline-primary">Xem thêm</a>
-              </div>
-            </div>
-          </div>
-          <div class="col-lg-3 col-md-6">
-            <div class="card product-card h-100">
-              <img src="assets/img/xe-pkl/rebel1100.png" class="card-img-top" alt="Honda Rebel 1100" />
-              <div class="card-body">
-                <span class="product-tag">Cruiser PKL</span>
-                <h5 class="card-title">Honda Rebel 1100</h5>
-                <p class="product-price">399.990.000 VNĐ</p>
-                <p class="card-text text-muted">Cruiser 1.084cc DCT, Throttle By Wire và đồng hồ TFT 5 inch — phong cách đường phố độc nhất.</p>
-                <a href="chi-tiet-san-pham.html?bike=rebel1100" class="btn btn-outline-primary">Xem thêm</a>
-              </div>
-            </div>
-          </div>
-          <div class="col-lg-3 col-md-6">
-            <div class="card product-card h-100">
-              <img src="assets/img/xe-dien/vin-evo-do.png" class="card-img-top" alt="VinFast Evo" />
-              <div class="card-body">
-                <span class="product-tag">Xe Điện</span>
-                <h5 class="card-title">VinFast Evo</h5>
-                <p class="product-price">25.600.000 VNĐ</p>
-                <p class="card-text text-muted">Pin LFP hiện đại, chống nước IP67, hành trình lên tới 165km — thông minh và bền bỉ.</p>
-                <a href="chi-tiet-san-pham.html?bike=vinevo" class="btn btn-outline-primary">Xem thêm</a>
-              </div>
-            </div>
-          </div>
+        <div class="row g-4" id="featuredProducts">
+          <div class="col-12 text-center text-muted py-4">Đang tải sản phẩm...</div>
         </div>
       </div>
     </section>
@@ -232,47 +185,114 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="assets/js/apiClient.js"></script>
   <script src="assets/js/app.js"></script>
   <script>
-    function updateIndexStats() {
-      const stored = localStorage.getItem('motorbikes');
-      let motorbikes = [];
-      if (stored) {
-        try { motorbikes = JSON.parse(stored) || []; } catch { motorbikes = []; }
+    function esc(s) { return String(s).replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); }
+
+    function getLoaiXe(p) {
+      const text = ((p.vehicleTypeName || '') + ' ' + (p.name || '') + ' ' + (p.description || '')).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      if (p.brandName === 'VinFast' || text.includes('dien') || text.includes('electric')) return 'xe-dien';
+      if (text.includes('con tay') || text.includes('sportbike') || text.includes('winner') ||
+          text.includes('cbr') || text.includes('yzf') || text.includes('r15')) return 'xe-con-tay';
+      const cc = (p.specification && p.specification.engineCapacityCc) || 0;
+      if (cc > 175 || text.includes('phan khoi lon') || text.includes('cruiser') ||
+          text.includes('adventure') || text.includes('rebel') || text.includes('nx5')) return 'xe-pkl';
+      if (text.includes('xe so') || text.includes('wave') || text.includes('ct125') ||
+          text.includes('kham pha')) return 'xe-so';
+      return 'xe-tay-ga';
+    }
+
+    function buildProductImage(p) {
+      if (!p.imageUrl) return 'assets/img/banner-1.jpg';
+      if (/^https?:\/\//i.test(p.imageUrl)) return p.imageUrl;
+      return p.imageUrl.startsWith('/assets/')
+        ? p.imageUrl
+        : API_BASE_URL + p.imageUrl;
+    }
+
+    async function loadPromotionBanners() {
+      try {
+        const news = await Api.getNews();
+        const promotions = news.filter(item => item.contentType === 'Promotion' && item.imageUrl).slice(0, 5);
+        if (!promotions.length) return;
+
+        const carousel = document.getElementById('homepageCarousel');
+        const inner = carousel.querySelector('.carousel-inner');
+        inner.querySelectorAll('.carousel-item').forEach(item => item.classList.remove('active'));
+        inner.insertAdjacentHTML('afterbegin', promotions.map((item, index) => `
+          <div class="carousel-item${index === 0 ? ' active' : ''}">
+            <img src="${buildProductImage(item)}" class="d-block w-100" alt="${esc(item.title)}" style="height:min(520px,55vw);min-height:300px;object-fit:cover">
+            <div class="carousel-caption text-start rounded-3 p-3 p-md-4" style="left:7%;right:auto;bottom:10%;max-width:620px;background:linear-gradient(90deg,rgba(0,0,0,.82),rgba(0,0,0,.35))">
+              <span class="badge bg-danger mb-2">Khuyến mãi</span>
+              <h2 class="fw-bold">${esc(item.title)}</h2>
+              <p class="d-none d-md-block mb-0">${esc((item.content || '').substring(0, 150))}${(item.content || '').length > 150 ? '…' : ''}</p>
+            </div>
+          </div>`).join(''));
+
+        const items = [...inner.querySelectorAll('.carousel-item')];
+        carousel.querySelector('.carousel-indicators').innerHTML = items.map((_, index) =>
+          `<button type="button" data-bs-target="#homepageCarousel" data-bs-slide-to="${index}" class="${index === 0 ? 'active' : ''}" aria-label="Slide ${index + 1}"></button>`
+        ).join('');
+      } catch {
+        // Giữ banner mặc định nếu chưa có khuyến mãi hoặc API tạm thời không khả dụng.
       }
+    }
 
-      const total = motorbikes.length;
-      const available = motorbikes.filter(x => x.status === 'Available').length;
-      const sold = motorbikes.filter(x => x.status === 'Sold').length;
-      const counts = motorbikes.reduce((acc, x) => {
-        acc[x.priority] = (acc[x.priority] || 0) + 1;
-        return acc;
-      }, {});
-      const topBrand = Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0] || '-';
+    function buildCard(p) {
+      const sold = p.stockQuantity <= 0;
+      return `
+        <div class="col-lg-3 col-md-6">
+          <div class="card product-card h-100${sold ? ' opacity-75' : ''}">
+            ${sold ? '<span class="sold-ribbon">Hết hàng</span>' : ''}
+            <a href="chi-tiet-san-pham.html?id=${p.id}" aria-label="Xem chi tiết ${esc(p.name)}">
+              <img src="${buildProductImage(p)}" class="card-img-top" alt="${esc(p.name)}"
+                   onerror="this.src='assets/img/banner-1.jpg'" />
+            </a>
+            <div class="card-body">
+              <span class="product-tag">${esc(p.brandName || 'Xe máy')}</span>
+              <h5 class="card-title">${esc(p.name)}</h5>
+              <p class="product-price">${formatCurrencyVnd(p.price)}</p>
+              <p class="card-text text-muted">${esc((p.description || '').substring(0, 80))}${(p.description || '').length > 80 ? '…' : ''}</p>
+              <a href="chi-tiet-san-pham.html?id=${p.id}" class="btn btn-outline-primary">Xem thêm</a>
+            </div>
+          </div>
+        </div>`;
+    }
 
-      document.getElementById('indexTotal').textContent = total;
-      document.getElementById('indexAvailable').textContent = available;
-      document.getElementById('indexSold').textContent = sold;
-      document.getElementById('indexTopBrand').textContent = topBrand;
+    async function loadFeaturedProducts() {
+      const container = document.getElementById('featuredProducts');
+      if (!container) return;
+      try {
+        const result = await Api.getProducts('?pageSize=4');
+        container.innerHTML = result.items.length
+          ? result.items.map(buildCard).join('')
+          : '<div class="col-12 text-center text-muted py-4">Chưa có sản phẩm nào. Đăng nhập bằng Employee/Admin để thêm sản phẩm mới.</div>';
+      } catch (err) {
+        container.innerHTML = `<div class="col-12 text-center text-danger py-4">Không tải được sản phẩm: ${apiErrorMessage(err)}</div>`;
+      }
+    }
+
+    async function loadBrandChips() {
+      try {
+        const brands = await Api.getBrands();
+        const chipHang = document.getElementById('chipHang');
+        if (chipHang && brands.length) {
+          chipHang.innerHTML = '<button class="hm-chip is-active" data-val="">Tất cả</button>' +
+            brands.map(b => `<button class="hm-chip" data-val="${esc(b.name)}">${esc(b.name)}</button>`).join('');
+        }
+      } catch (err) {
+        // Giữ nguyên chip mặc định (Honda/Yamaha/VinFast) nếu API lỗi
+      }
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-      updateIndexStats();
-      // If logged-in as admin or customer, allow home; if no login, also allow home.
-      // So no automatic redirect from home unless you want stricter behavior.
-    });
-    window.addEventListener('storage', (event) => {
-      if (event.key === 'motorbikes') {
-        updateIndexStats();
-        if (window._searchDoSearch) window._searchDoSearch();
-      }
-    });
-    window.addEventListener('motorbikesUpdated', () => {
-      updateIndexStats();
-      if (window._searchDoSearch) window._searchDoSearch();
+      loadPromotionBanners();
+      loadFeaturedProducts();
+      loadBrandChips();
     });
 
-    // ── Honda-style Search & Filter ─────────────────────────
+    // ── Honda-style Search & Filter (dữ liệu thật từ API) ─────────────────
     (function () {
       const searchInput    = document.getElementById('searchInput');
       const searchBtn      = document.getElementById('searchBtn');
@@ -284,120 +304,34 @@
       const resultsGrid    = document.getElementById('searchResultsGrid');
       const resultCount    = document.getElementById('resultCount');
 
-      // ── Static metadata: title → image / tag / price / category ──
-      const BIKE_META = {
-        'Honda Airblade':        { img: 'xe-ga/airblade-den.png',      tag: 'Sport Scooter',   price: '42.000.000 VNĐ',  cat: 'xe-ga' },
-        'Honda Vision':          { img: 'xe-ga/vision-den.png',         tag: 'Scooter',          price: '32.000.000 VNĐ',  cat: 'xe-ga' },
-        'Yamaha Janus':          { img: 'xe-ga/jannus-den.png',         tag: 'Scooter Premium',  price: '37.000.000 VNĐ',  cat: 'xe-ga' },
-        'Yamaha Grande':         { img: 'xe-ga/grande.png',             tag: 'Scooter Thời Trang',price: '46.000.000 VNĐ', cat: 'xe-ga' },
-        'Honda CT125':           { img: 'xe-so/CT125.png',              tag: 'Trail',            price: '129.900.000 VNĐ', cat: 'xe-so' },
-        'Honda Wave Alpha':      { img: 'xe-so/wave-den.png',           tag: 'Xe Số',            price: '19.900.000 VNĐ',  cat: 'xe-so' },
-        'Honda Winner R':        { img: 'xe-con-tay/winnerR.png',       tag: 'Underbone Sport',  price: '50.560.000 VNĐ',  cat: 'xe-con-tay' },
-        'Honda CBR150R':         { img: 'xe-con-tay/cbr150r-den-xam.png', tag: 'Sportbike',      price: '94.990.000 VNĐ',  cat: 'xe-con-tay' },
-        'Yamaha YZF-R15':        { img: 'xe-pkl/YZF-R15.png',          tag: 'Sportbike 155cc',  price: '99.000.000 VNĐ',  cat: 'xe-pkl' },
-        'Honda Rebel 1100 2025': { img: 'xe-pkl/rebel1100.png',         tag: 'Cruiser PKL',      price: '399.990.000 VNĐ', cat: 'xe-pkl' },
-        'Honda NX500':           { img: 'xe-pkl/nx500.png',             tag: 'Adventure 500cc',  price: '219.900.000 VNĐ', cat: 'xe-pkl' },
-        'VinFast Evo':           { img: 'xe-dien/vin-evo-do.png',       tag: 'Xe Điện',          price: '25.600.000 VNĐ',  cat: 'xe-dien' },
-        'VinFast Feliz':         { img: 'xe-dien/feliz-den.png',        tag: 'Xe Điện',          price: '22.190.000 VNĐ',  cat: 'xe-dien' },
-      };
-
-      // fallback images for categories
-      const CAT_FALLBACK = {
-        'xe-ga': 'xe-ga.png', 'xe-so': 'xe-so.png',
-        'xe-con-tay': 'xe-con-tay.png', 'xe-pkl': 'xe-pkl.png', 'xe-dien': 'xe-dien.png'
-      };
-
-      // Active filter state
       const filters = { loaiXe: '', hang: '', status: '', phanKhoi: '' };
+      let productsCache = null;
 
-      // ── Helpers ─────────────────────────────────────────
-      function getMotorbikes() {
-        try { return JSON.parse(localStorage.getItem('motorbikes')) || []; }
-        catch { return []; }
+      async function getAllProducts() {
+        if (productsCache) return productsCache;
+        try {
+          const result = await Api.getProducts('?pageSize=200');
+          productsCache = result.items;
+        } catch {
+          productsCache = [];
+        }
+        return productsCache;
       }
 
-      function esc(s) { return String(s).replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); }
+      async function doSearch(forceShow = false) {
+        const q = searchInput.value.trim().toLowerCase();
+        const all = await getAllProducts();
 
-      function parseCc(m) {
-        const match = (m.description || '').match(/(\d[\d.]*)\s*cc/i);
-        if (!match) return 0;
-        return parseInt(match[1].replace(/\./g, ''));
-      }
-
-      function getLoaiXe(m) {
-        const text = (m.title + ' ' + m.description).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        if (m.priority === 'VinFast' || text.includes('dien') || text.includes('electric')) return 'xe-dien';
-        if (text.includes('con tay') || text.includes('sportbike') || text.includes('winner') ||
-            text.includes('cbr') || text.includes('yzf') || text.includes('r15')) return 'xe-con-tay';
-        const cc = parseCc(m);
-        if (cc > 300 || text.includes('phan khoi lon') || text.includes('cruiser') ||
-            text.includes('adventure') || text.includes('rebel') || text.includes('nx5')) return 'xe-pkl';
-        if (text.includes('xe so') || text.includes('wave') || text.includes('ct125') ||
-            text.includes('kham pha')) return 'xe-so';
-        return 'xe-tay-ga';
-      }
-
-      // ── Map bike title → product key for chi-tiet-san-pham.html ──
-      function getBikeKey(title) {
-        const t = (title || '').toLowerCase();
-        if (t.includes('airblade') || t.includes('air blade')) return 'airblade';
-        if (t.includes('vision'))   return 'vision';
-        if (t.includes('janus') || t.includes('jannus')) return 'janus';
-        if (t.includes('grande'))   return 'grande';
-        if (t.includes('ct125') || t.includes('ct 125')) return 'ct125';
-        if (t.includes('wave'))     return 'wave';
-        if (t.includes('winner'))   return 'winnerr';
-        if (t.includes('cbr150'))   return 'cbr150r';
-        if (t.includes('yzf') || t.includes('r15')) return 'yzfr15';
-        if (t.includes('rebel'))    return 'rebel1100';
-        if (t.includes('nx500') || t.includes('nx 500')) return 'nx500';
-        if (t.includes('evo') || t.includes('vinfast')) return 'vinevo';
-        if (t.includes('feliz'))    return 'feliz';
-        return 'airblade';
-      }
-
-      // ── Build product card (matches "Sản phẩm tiêu biểu" style) ──
-      function buildCard(m) {
-        const meta  = BIKE_META[m.title] || {};
-        const cat   = meta.cat || getLoaiXe(m);
-        const img   = meta.img ? 'assets/img/' + meta.img
-                               : ('assets/img/' + (CAT_FALLBACK[cat] || 'banner-1.jpg'));
-        const tag   = meta.tag || (m.priority || 'Xe máy');
-        const price = meta.price || 'Liên hệ';
-        const sold  = m.status === 'Sold';
-
-        return `
-          <div class="col-lg-3 col-md-6">
-            <div class="card product-card h-100${sold ? ' opacity-75' : ''}">
-              ${sold ? '<span class="sold-ribbon">Đã bán</span>' : ''}
-              <img src="${img}" class="card-img-top" alt="${esc(m.title)}"
-                   onerror="this.src='assets/img/banner-1.jpg'" />
-              <div class="card-body">
-                <span class="product-tag">${esc(tag)}</span>
-                <h5 class="card-title">${esc(m.title)}</h5>
-                <p class="product-price">${esc(price)}</p>
-                <p class="card-text text-muted">${esc((m.description || '').substring(0, 80))}${(m.description||'').length > 80 ? '…' : ''}</p>
-                <a href="chi-tiet-san-pham.html?bike=${getBikeKey(m.title)}"
-                   class="btn btn-outline-primary${sold ? ' disabled' : ''}">Xem thêm</a>
-              </div>
-            </div>
-          </div>`;
-      }
-
-      // ── Render search / filter results ───────────────────
-      function doSearch(forceShow = false) {
-        const q   = searchInput.value.trim().toLowerCase();
-        const all = getMotorbikes();
-
-        const result = all.filter(m => {
-          if (q && !(m.title || '').toLowerCase().includes(q)) return false;
-          if (filters.loaiXe && getLoaiXe(m) !== filters.loaiXe) return false;
-          if (filters.hang   && m.priority !== filters.hang)      return false;
-          if (filters.status && m.status   !== filters.status)    return false;
+        const result = all.filter(p => {
+          if (q && !(p.name || '').toLowerCase().includes(q)) return false;
+          if (filters.loaiXe && getLoaiXe(p) !== filters.loaiXe) return false;
+          if (filters.hang && p.brandName !== filters.hang) return false;
+          if (filters.status === 'Available' && p.stockQuantity <= 0) return false;
+          if (filters.status === 'Sold' && p.stockQuantity > 0) return false;
           if (filters.phanKhoi) {
-            const cc = parseCc(m);
-            if (filters.phanKhoi === 'under175' && cc >= 175)          return false;
-            if (filters.phanKhoi === 'over175'  && (cc < 175 || cc === 0)) return false;
+            const cc = (p.specification && p.specification.engineCapacityCc) || 0;
+            if (filters.phanKhoi === 'under175' && cc >= 175) return false;
+            if (filters.phanKhoi === 'over175' && (cc < 175 || !cc)) return false;
           }
           return true;
         });
@@ -405,7 +339,6 @@
         const hasFilter = q || filters.loaiXe || filters.hang || filters.status || filters.phanKhoi;
         resultCount.textContent = (hasFilter || forceShow ? result.length : all.length) + ' sản phẩm';
 
-        // Ẩn kết quả nếu không có gì lọc VÀ không phải bấm nút LỌC
         if (!hasFilter && !forceShow) { resultsGrid.style.display = 'none'; return; }
 
         if (!result.length) {
@@ -414,25 +347,18 @@
           return;
         }
 
-        resultsGrid.innerHTML =
-          `<div class="row g-4 py-3">${result.map(buildCard).join('')}</div>`;
+        resultsGrid.innerHTML = `<div class="row g-4 py-3">${result.map(buildCard).join('')}</div>`;
         resultsGrid.style.display = '';
         resultsGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
 
-      // Count on load
-      document.addEventListener('DOMContentLoaded', () => {
-        resultCount.textContent = getMotorbikes().length + ' sản phẩm';
+      document.addEventListener('DOMContentLoaded', async () => {
+        const all = await getAllProducts();
+        resultCount.textContent = all.length + ' sản phẩm';
       });
 
-      // Expose để event listener bên ngoài gọi được
-      window._searchDoSearch = () => {
-        if (resultsGrid.style.display !== 'none') doSearch(true);
-      };
-
-      // ── Events ───────────────────────────────────────────
-      searchInput.addEventListener('input', doSearch);
-      searchBtn.addEventListener('click', doSearch);
+      searchInput.addEventListener('input', () => doSearch());
+      searchBtn.addEventListener('click', () => doSearch());
       searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
 
       function openPanel()  { filterPanel.classList.add('is-open');    filterBackdrop.classList.add('is-open');    filterBtn.classList.add('is-active'); }

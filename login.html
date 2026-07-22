@@ -55,8 +55,8 @@
               </div>
               <form id="loginForm">
                 <div class="mb-3">
-                  <label for="username" class="form-label fw-semibold">Tên đăng nhập *</label>
-                  <input type="text" class="form-control" id="username" placeholder="Nhập tên đăng nhập" required>
+                  <label for="username" class="form-label fw-semibold">Email *</label>
+                  <input type="email" class="form-control" id="username" placeholder="Nhập email" required>
                 </div>
                 <div class="mb-3">
                   <label for="password" class="form-label fw-semibold">Mật khẩu *</label>
@@ -66,33 +66,36 @@
                   <button type="submit" class="btn btn-primary"><i class="fa-solid fa-sign-in-alt me-2"></i>Đăng nhập</button>
                   <button type="reset" class="btn btn-soft">Làm mới</button>
                 </div>
+                <div id="loginMsg" class="mt-3"></div>
               </form>
 
               <form id="registerForm" style="display:none;">
                 <div class="mb-3">
-                  <label for="regUsername" class="form-label fw-semibold">Tên đăng nhập mới *</label>
-                  <input type="text" class="form-control" id="regUsername" placeholder="Nhập tên đăng nhập" required>
+                  <label for="regFullName" class="form-label fw-semibold">Họ tên *</label>
+                  <input type="text" class="form-control" id="regFullName" placeholder="Nhập họ tên" required>
                 </div>
                 <div class="mb-3">
                   <label for="regEmail" class="form-label fw-semibold">Email *</label>
                   <input type="email" class="form-control" id="regEmail" placeholder="Nhập email" required>
                 </div>
                 <div class="mb-3">
-                  <label for="regPhone" class="form-label fw-semibold">Số điện thoại *</label>
-                  <input type="tel" class="form-control" id="regPhone" placeholder="Nhập số điện thoại" required>
+                  <label for="regPhoneNumber" class="form-label fw-semibold">Số điện thoại *</label>
+                  <input type="tel" class="form-control" id="regPhoneNumber" placeholder="Nhập số điện thoại" maxlength="20" required>
                 </div>
                 <div class="mb-3">
-                  <label for="regPassword" class="form-label fw-semibold">Mật khẩu mới *</label>
-                  <input type="password" class="form-control" id="regPassword" placeholder="Nhập mật khẩu" required>
+                  <label for="regPassword" class="form-label fw-semibold">Mật khẩu mới * <small class="text-muted fw-normal">(ít nhất 8 ký tự, có hoa/thường/số/ký tự đặc biệt)</small></label>
+                  <input type="password" class="form-control" id="regPassword" placeholder="Nhập mật khẩu" minlength="8" maxlength="128" required>
                 </div>
                 <div class="mb-3">
                   <label for="regConfirmPassword" class="form-label fw-semibold">Nhập lại mật khẩu *</label>
-                  <input type="password" class="form-control" id="regConfirmPassword" placeholder="Nhập lại mật khẩu" required>
+                  <input type="password" class="form-control" id="regConfirmPassword" placeholder="Nhập lại mật khẩu" minlength="8" maxlength="128" required>
                 </div>
-                <div class="d-flex gap-3 flex-wrap mt-4">
+                <div class="note text-muted small mb-2">Tài khoản đăng ký mới luôn có quyền Khách hàng (Customer).</div>
+                <div class="d-flex gap-3 flex-wrap mt-2">
                   <button type="submit" class="btn btn-success"><i class="fa-solid fa-user-plus me-2"></i>Đăng ký</button>
                   <button type="button" id="cancelRegister" class="btn btn-soft">Hủy</button>
                 </div>
+                <div id="registerMsg" class="mt-3"></div>
               </form>
             </div>
           </div>
@@ -110,62 +113,9 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="assets/js/apiClient.js"></script>
   <script src="assets/js/app.js"></script>
   <script>
-    const adminUsers = [
-      { username: 'admin123', password: 'ad123123' },
-      { username: 'admin', password: 'ad123123' }
-    ];
-
-    const staffUsers = [
-      { username: 'staff123', password: 'staff123' },
-      { username: 'staff', password: 'staff123' }
-    ];
-
-    function getCustomerAccounts() {
-      return JSON.parse(localStorage.getItem('customerAccounts') || '[]');
-    }
-
-    function setCustomerAccounts(accounts) {
-      localStorage.setItem('customerAccounts', JSON.stringify(accounts));
-    }
-
-    function isAccountTaken(username, email, phone) {
-      const customers = getCustomerAccounts();
-      if (adminUsers.some(a => a.username === username)) return true;
-      if (staffUsers.some(a => a.username === username)) return true;
-      if (customers.some(u => u.username === username)) return true;
-      if (customers.some(u => u.email === email)) return true;
-      if (customers.some(u => u.phone === phone)) return true;
-      return false;
-    }
-
-    function handleLogin(username, password) {
-      const adminMatch = adminUsers.find(a => a.username === username && a.password === password);
-      if (adminMatch) {
-        sessionStorage.setItem('userRole', 'admin');
-        window.location.href = 'tasks.html';
-        return;
-      }
-
-      const staffMatch = staffUsers.find(s => s.username === username && s.password === password);
-      if (staffMatch) {
-        sessionStorage.setItem('userRole', 'staff');
-        window.location.href = 'staff.html';
-        return;
-      }
-
-      const customers = getCustomerAccounts();
-      const user = customers.find(u => u.username === username && u.password === password);
-      if (user) {
-        sessionStorage.setItem('userRole', 'customer');
-        window.location.href = 'index.html';
-        return;
-      }
-
-      alert('Tên đăng nhập hoặc mật khẩu không đúng!');
-    }
-
     function setFormMode(mode) {
       const loginForm = document.getElementById('loginForm');
       const registerForm = document.getElementById('registerForm');
@@ -185,6 +135,22 @@
       }
     }
 
+    function showMsg(elementId, message, isError) {
+      const div = document.getElementById(elementId);
+      div.innerHTML = `<div class="alert ${isError ? 'alert-danger' : 'alert-success'} py-2 mb-0">${message}</div>`;
+    }
+
+    function redirectByRole(role) {
+      const appRole = roleToAppRole(role);
+      if (appRole === 'admin') {
+        window.location.href = 'tasks.html';
+      } else if (appRole === 'staff') {
+        window.location.href = 'staff.html';
+      } else {
+        window.location.href = 'index.html';
+      }
+    }
+
     document.getElementById('showLoginBtn').addEventListener('click', function(e) {
       e.preventDefault();
       setFormMode('login');
@@ -200,48 +166,49 @@
       setFormMode('login');
     });
 
-    document.getElementById('loginForm').addEventListener('submit', function(e) {
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
       e.preventDefault();
-      const username = document.getElementById('username').value.trim();
-      const password = document.getElementById('password').value.trim();
-      handleLogin(username, password);
+      const email = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+
+      try {
+        const result = await Api.login({ email, password });
+        Session.save(result);
+        showMsg('loginMsg', `✅ Đăng nhập thành công! Xin chào ${result.fullName} (${result.role})`, false);
+        setTimeout(() => redirectByRole(result.role), 600);
+      } catch (err) {
+        showMsg('loginMsg', '❌ ' + apiErrorMessage(err), true);
+      }
     });
 
-    document.getElementById('registerForm').addEventListener('submit', function(e) {
+    document.getElementById('registerForm').addEventListener('submit', async function(e) {
       e.preventDefault();
-      const username = document.getElementById('regUsername').value.trim();
+      const fullName = document.getElementById('regFullName').value.trim();
       const email = document.getElementById('regEmail').value.trim();
-      const phone = document.getElementById('regPhone').value.trim();
-      const password = document.getElementById('regPassword').value.trim();
-      const confirmPassword = document.getElementById('regConfirmPassword').value.trim();
+      const phoneNumber = document.getElementById('regPhoneNumber').value.trim();
+      const password = document.getElementById('regPassword').value;
+      const confirmPassword = document.getElementById('regConfirmPassword').value;
 
-      if (!username || !email || !phone || !password || !confirmPassword) {
-        alert('Vui lòng nhập đầy đủ thông tin.');
+      const strongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,128}$/;
+      if (!strongPassword.test(password)) {
+        showMsg('registerMsg', '❌ Mật khẩu phải dài 8–128 ký tự và có chữ hoa, chữ thường, số, ký tự đặc biệt.', true);
         return;
       }
 
       if (password !== confirmPassword) {
-        alert('Mật khẩu và xác nhận mật khẩu không khớp.');
+        showMsg('registerMsg', '❌ Mật khẩu và xác nhận mật khẩu không khớp.', true);
         return;
       }
 
-      if (isAccountTaken(username, email, phone)) {
-        alert('Tên đăng nhập/email/số điện thoại đã tồn tại. Vui lòng chọn thông tin khác.');
-        return;
+      try {
+        const result = await Api.register({ email, fullName, phoneNumber, password, confirmPassword });
+        showMsg('registerMsg', `✅ Đăng ký thành công! Role: ${result.role}. Bạn có thể đăng nhập ngay.`, false);
+        setFormMode('login');
+        document.getElementById('username').value = email;
+        document.getElementById('password').value = '';
+      } catch (err) {
+        showMsg('registerMsg', '❌ ' + apiErrorMessage(err), true);
       }
-
-      const accounts = getCustomerAccounts();
-      accounts.push({ username, email, phone, password });
-      setCustomerAccounts(accounts);
-      alert('Đăng ký thành công! Bạn có thể đăng nhập ngay bây giờ.');
-      setFormMode('login');
-      document.getElementById('username').value = username;
-      document.getElementById('password').value = '';
-      document.getElementById('regUsername').value = '';
-      document.getElementById('regEmail').value = '';
-      document.getElementById('regPhone').value = '';
-      document.getElementById('regPassword').value = '';
-      document.getElementById('regConfirmPassword').value = '';
     });
 
     setFormMode('login');

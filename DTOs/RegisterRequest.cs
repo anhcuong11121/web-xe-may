@@ -13,9 +13,20 @@ public class RegisterRequest
     public string FullName { get; set; } = string.Empty;
 
     [Required]
-    [MinLength(6)]
+    [Phone]
+    [MaxLength(20)]
+    public string PhoneNumber { get; set; } = string.Empty;
+
+    [Required]
+    [MinLength(8)]
+    [MaxLength(128)]
+    [RegularExpression(
+        @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).+$",
+        ErrorMessage = "Mật khẩu phải có chữ hoa, chữ thường, số và ký tự đặc biệt.")]
     public string Password { get; set; } = string.Empty;
 
     [Required]
-    public string Role { get; set; } = "Customer";
+    [MaxLength(128)]
+    [Compare(nameof(Password), ErrorMessage = "Mật khẩu xác nhận không khớp.")]
+    public string ConfirmPassword { get; set; } = string.Empty;
 }

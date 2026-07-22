@@ -244,9 +244,10 @@
                 <h2>⚙️ Cấu hình Server</h2>
                 <div class="form-group">
                     <label>Server URL:</label>
-                    <input type="text" id="serverUrl" value="http://localhost:5000" 
-                           placeholder="http://localhost:5xxx">
+                    <input type="text" id="serverUrl" value="https://localhost:7114" 
+                           placeholder="https://localhost:7114">
                 </div>
+                <div class="note">⚠️ Luôn dùng URL HTTPS (không dùng cổng HTTP 5xxx). App có UseHttpsRedirection() nên khi gọi qua HTTP, trình duyệt sẽ tự follow redirect sang HTTPS và bị strip header Authorization → lỗi 401 giả.</div>
                 <button onclick="testConnection()">🧪 Test Connection</button>
                 <div id="connectionResult"></div>
             </div>
@@ -271,13 +272,11 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Role (cho đăng ký):</label>
-                    <select id="authRole">
-                        <option value="Admin">Admin</option>
-                        <option value="Employee">Employee</option>
-                        <option value="Customer">Customer</option>
-                    </select>
+                    <label>Xác nhận mật khẩu (cho đăng ký):</label>
+                    <input type="password" id="authConfirmPassword" placeholder="Nhập lại mật khẩu" value="Admin@123">
                 </div>
+
+                <div class="note">⚠️ Đăng ký luôn gán Role = Customer. Muốn thành Employee/Admin, hãy đăng nhập bằng tài khoản Admin và dùng panel "API tuỳ chỉnh" bên dưới để gọi PUT /api/users/{id}/role.</div>
 
                 <button onclick="register()">📝 Đăng ký</button>
                 <button onclick="login()" style="background: #27ae60;">🔓 Đăng nhập</button>
@@ -333,7 +332,58 @@
             </div>
         </div>
 
-        <!-- Card 6: Test Cases -->
+        <!-- Card 5b: Custom API Tester (Giai đoạn 4-13) -->
+        <div class="card full-width">
+            <h2>🧪 Test API tuỳ chỉnh (Product / Brand / Order / Deposit / Support / News / Supplier / Import / Users / Dashboard)</h2>
+
+            <div class="form-group">
+                <label>Quick links (bấm để tự điền Method + Path):</label>
+                <div class="endpoint-list">
+                    <button class="endpoint-btn" onclick="quickFill('GET', '/api/products')">📦 GET /api/products</button>
+                    <button class="endpoint-btn" onclick="quickFill('GET', '/api/brands')">🏷️ GET /api/brands</button>
+                    <button class="endpoint-btn" onclick="quickFill('GET', '/api/news')">📰 GET /api/news</button>
+                    <button class="endpoint-btn" onclick="quickFill('GET', '/api/suppliers')">🚚 GET /api/suppliers</button>
+                    <button class="endpoint-btn" onclick="quickFill('GET', '/api/imports')">📥 GET /api/imports</button>
+                    <button class="endpoint-btn" onclick="quickFill('GET', '/api/orders')">🧾 GET /api/orders</button>
+                    <button class="endpoint-btn" onclick="quickFill('GET', '/api/support')">💬 GET /api/support</button>
+                    <button class="endpoint-btn" onclick="quickFill('GET', '/api/users')">👥 GET /api/users (Admin)</button>
+                    <button class="endpoint-btn" onclick="quickFill('GET', '/api/dashboard')">📊 GET /api/dashboard (Admin)</button>
+                    <button class="endpoint-btn" onclick="quickFill('GET', '/api/statistics/revenue')">💰 GET /api/statistics/revenue</button>
+                    <button class="endpoint-btn" onclick="quickFill('GET', '/api/statistics/product')">🔥 GET /api/statistics/product</button>
+                    <button class="endpoint-btn" onclick="quickFill('POST', '/api/brands', '{\n  \&quot;name\&quot;: \&quot;Honda\&quot;,\n  \&quot;description\&quot;: \&quot;Brand test\&quot;\n}')">➕ POST /api/brands</button>
+                    <button class="endpoint-btn" onclick="quickFill('POST', '/api/products', '{\n  \&quot;name\&quot;: \&quot;Honda Vision Test\&quot;,\n  \&quot;description\&quot;: \&quot;Xe test\&quot;,\n  \&quot;price\&quot;: 35000000,\n  \&quot;stockQuantity\&quot;: 10,\n  \&quot;brandId\&quot;: 1\n}')">➕ POST /api/products</button>
+                    <button class="endpoint-btn" onclick="quickFill('POST', '/api/orders', '{\n  \&quot;items\&quot;: [ { \&quot;productId\&quot;: 1, \&quot;quantity\&quot;: 1 } ]\n}')">➕ POST /api/orders</button>
+                    <button class="endpoint-btn" onclick="quickFill('POST', '/api/deposit', '{\n  \&quot;orderId\&quot;: 1,\n  \&quot;amount\&quot;: 5000000,\n  \&quot;paymentMethod\&quot;: \&quot;Fake\&quot;\n}')">➕ POST /api/deposit</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Method:</label>
+                <select id="customMethod">
+                    <option value="GET">GET</option>
+                    <option value="POST">POST</option>
+                    <option value="PUT">PUT</option>
+                    <option value="DELETE">DELETE</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Path (bắt đầu bằng /api/...):</label>
+                <input type="text" id="customPath" value="/api/products" placeholder="/api/products">
+            </div>
+
+            <div class="form-group">
+                <label>Body (JSON, để trống nếu GET/DELETE):</label>
+                <textarea id="customBody" rows="6" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px; font-family:'Courier New', monospace;"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label><input type="checkbox" id="customAuth" checked style="width:auto; display:inline-block;"> Gửi kèm Authorization: Bearer &lt;token&gt;</label>
+            </div>
+
+            <button onclick="sendCustomRequest()">🚀 Gửi yêu cầu</button>
+        </div>
+
         <div class="card full-width">
             <h2>📋 Test Cases Table</h2>
             <div style="overflow-x: auto;">
@@ -411,9 +461,9 @@
             const email = document.getElementById('authEmail').value;
             const fullName = document.getElementById('authFullName').value;
             const password = document.getElementById('authPassword').value;
-            const role = document.getElementById('authRole').value;
+            const confirmPassword = document.getElementById('authConfirmPassword').value;
 
-            if (!email || !fullName || !password) {
+            if (!email || !fullName || !password || !confirmPassword) {
                 showAuthResponse('❌ Vui lòng nhập đủ thông tin', true);
                 return;
             }
@@ -422,14 +472,14 @@
                 const response = await fetch(`${getServerUrl()}/api/auth/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, fullName, password, role })
+                    body: JSON.stringify({ email, fullName, password, confirmPassword })
                 });
 
                 const data = await response.json();
                 if (response.ok) {
-                    showAuthResponse(`✅ Đăng ký thành công! Email: ${email}`, false);
+                    showAuthResponse(`✅ Đăng ký thành công! Email: ${email} — Role mặc định: ${data.role}`, false);
                 } else {
-                    showAuthResponse(`❌ Đăng ký thất bại: ${data.message}`, true);
+                    showAuthResponse(`❌ Đăng ký thất bại: ${JSON.stringify(data.errors || data)}`, true);
                 }
             } catch (e) {
                 showAuthResponse(`❌ Lỗi: ${e.message}`, true);
@@ -537,6 +587,55 @@
         function showResponse(html, isError) {
             const div = document.getElementById('responseArea');
             div.innerHTML = `<div class="response-box ${isError ? 'error' : 'success'}">${html}</div>`;
+        }
+
+        function quickFill(method, path, body) {
+            document.getElementById('customMethod').value = method;
+            document.getElementById('customPath').value = path;
+            document.getElementById('customBody').value = body || '';
+            window.scrollTo({ top: document.getElementById('customPath').getBoundingClientRect().top + window.scrollY - 100, behavior: 'smooth' });
+        }
+
+        async function sendCustomRequest() {
+            const method = document.getElementById('customMethod').value;
+            const path = document.getElementById('customPath').value.trim();
+            const bodyText = document.getElementById('customBody').value.trim();
+            const useAuth = document.getElementById('customAuth').checked;
+
+            if (!path.startsWith('/')) {
+                showResponse('❌ Path phải bắt đầu bằng /api/...', true);
+                return;
+            }
+
+            if (useAuth && !currentToken) {
+                showResponse('⚠️ Chưa có token — yêu cầu sẽ gửi không kèm Authorization. Đăng nhập trước nếu endpoint cần quyền.', true);
+            }
+
+            const headers = { 'Content-Type': 'application/json' };
+            if (useAuth && currentToken) {
+                headers['Authorization'] = `Bearer ${currentToken}`;
+            }
+
+            const options = { method, headers };
+            if (method !== 'GET' && method !== 'DELETE' && bodyText) {
+                options.body = bodyText;
+            }
+
+            try {
+                const response = await fetch(`${getServerUrl()}${path}`, options);
+                const contentType = response.headers.get('content-type') || '';
+                const data = contentType.includes('application/json') ? await response.json() : await response.text();
+                const isSuccess = response.ok;
+
+                let html = `<p><strong>📌 Request:</strong> ${method} ${path}</p>`;
+                html += `<p><strong>📊 Status:</strong> <span class="status-badge ${isSuccess ? 'success' : 'error'}">${response.status}</span></p>`;
+                html += `<p><strong>📝 Response:</strong></p>`;
+                html += `<div class="token-display">${typeof data === 'string' ? data : JSON.stringify(data, null, 2)}</div>`;
+
+                showResponse(html, !isSuccess);
+            } catch (e) {
+                showResponse(`❌ Lỗi: ${e.message}`, true);
+            }
         }
 
         // Initialize

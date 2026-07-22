@@ -40,22 +40,32 @@
 
   <main class="container pb-5">
     <div class="manage-shell">
+      <div class="filters-panel mb-4">
+        <div class="row g-3 align-items-end">
+          <div class="col-md-4"><label class="form-label">Từ ngày</label><input id="statsFrom" type="date" class="form-control"></div>
+          <div class="col-md-4"><label class="form-label">Đến ngày</label><input id="statsTo" type="date" class="form-control"></div>
+          <div class="col-md-4 d-flex gap-2">
+            <button class="btn btn-primary flex-fill" onclick="loadStatistics()"><i class="fa-solid fa-filter me-1"></i>Lọc</button>
+            <button class="btn btn-outline-success flex-fill" onclick="exportStatistics()"><i class="fa-solid fa-file-csv me-1"></i>Xuất CSV</button>
+          </div>
+        </div>
+      </div>
       <div class="stats-strip mb-4">
         <div class="info-card">
-          <h6>Tổng số xe</h6>
-          <div class="value" id="totalTasks">0</div>
+          <h6>Tổng doanh thu (đơn hoàn thành)</h6>
+          <div class="value fs-3" id="totalTasks">0</div>
         </div>
         <div class="info-card">
-          <h6>Xe còn hàng</h6>
+          <h6>Tổng đơn hàng</h6>
           <div class="value" id="availableTasks">0</div>
         </div>
         <div class="info-card">
-          <h6>Xe đã bán</h6>
+          <h6>Tổng khách hàng</h6>
           <div class="value" id="soldTasks">0</div>
         </div>
         <div class="info-card">
-          <h6>Thương hiệu dẫn đầu</h6>
-          <div class="value fs-3" id="topBrandStats">-</div>
+          <h6>Tổng sản phẩm</h6>
+          <div class="value fs-3" id="topBrandStats">0</div>
         </div>
       </div>
 
@@ -64,23 +74,44 @@
           <div class="card chart-box h-100">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
               <div>
-                <small class="text-brand fw-bold">Phân bố trạng thái</small>
-                <h4 class="mb-0">Biểu đồ tồn kho</h4>
+                <small class="text-brand fw-bold">Phân bố trạng thái đơn hàng</small>
+                <h4 class="mb-0">Biểu đồ đơn hàng</h4>
               </div>
-              <span class="stat-pill">Cập nhật theo LocalStorage</span>
+              <span class="stat-pill">Dữ liệu thật từ API</span>
             </div>
             <canvas id="statsChart" height="220"></canvas>
           </div>
         </div>
         <div class="col-lg-5">
           <div class="card chart-box h-100">
-            <small class="text-brand fw-bold">Theo hãng xe</small>
-            <h4 class="mb-4">Phân bố thương hiệu</h4>
-            <div class="brand-list">
-              <div class="brand-item"><span><i class="fa-solid fa-motorcycle me-2 text-brand"></i>Honda</span><strong id="lowPriority">0</strong></div>
-              <div class="brand-item"><span><i class="fa-solid fa-motorcycle me-2 text-brand"></i>Yamaha</span><strong id="mediumPriority">0</strong></div>
-              <div class="brand-item"><span><i class="fa-solid fa-motorcycle me-2 text-brand"></i>VinFast</span><strong id="highPriority">0</strong></div>
+            <small class="text-brand fw-bold">Sản phẩm bán chạy</small>
+            <h4 class="mb-4">Top sản phẩm được quan tâm</h4>
+            <div class="brand-list" id="topProductsList">
+              <p class="text-muted text-center py-3">Đang tải...</p>
             </div>
+          </div>
+        </div>
+      </div>
+      <div class="row g-4 mt-1">
+        <div class="col-lg-6">
+          <div class="card chart-box h-100">
+            <small class="text-brand fw-bold">Tình hình mua xe</small>
+            <h4 class="mb-3">Theo tháng</h4>
+            <div class="table-responsive"><table class="table table-sm"><thead><tr><th>Kỳ</th><th>Đơn</th><th>Số xe</th><th>Giá trị</th></tr></thead><tbody id="purchaseStatsList"></tbody></table></div>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="card chart-box h-100">
+            <small class="text-brand fw-bold">Tồn kho hiện tại</small>
+            <h4 class="mb-3">Cảnh báo tồn kho</h4>
+            <div class="table-responsive"><table class="table table-sm"><thead><tr><th>Sản phẩm</th><th>Số lượng</th><th>Trạng thái</th></tr></thead><tbody id="inventoryStatsList"></tbody></table></div>
+          </div>
+        </div>
+        <div class="col-12">
+          <div class="card chart-box">
+            <small class="text-brand fw-bold">Hành vi khách hàng</small>
+            <h4 class="mb-3">Lượt quan tâm sản phẩm</h4>
+            <div class="table-responsive"><table class="table table-sm"><thead><tr><th>Sản phẩm</th><th>Lượt xem chi tiết</th><th>Số lượng đã bán</th></tr></thead><tbody id="interestStatsList"></tbody></table></div>
           </div>
         </div>
       </div>
@@ -97,16 +128,83 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="assets/js/apiClient.js"></script>
   <script src="assets/js/app.js"></script>
-  <script src="assets/js/tasks.js"></script>
   <script>
-    // Check login for admin on statistics page
-    document.addEventListener('DOMContentLoaded', function() {
-      const userRole = sessionStorage.getItem('userRole');
-      if (userRole !== 'admin') {
-        alert('Chỉ admin được phép xem trang thống kê.');
-        window.location.href = 'index.html';
+    let statisticsChart = null;
+
+    function statisticsQuery() {
+      const from = document.getElementById('statsFrom').value;
+      const to = document.getElementById('statsTo').value;
+      if (from && to && from > to) throw new Error('Ngày bắt đầu phải nhỏ hơn hoặc bằng ngày kết thúc.');
+      const params = new URLSearchParams();
+      if (from) params.set('from', from);
+      if (to) params.set('to', to);
+      const value = params.toString();
+      return value ? `?${value}` : '';
+    }
+
+    async function loadStatistics() {
+      try {
+        const query = statisticsQuery();
+        const [dashboard, revenue, orderStats, customers, topProducts, inventory, purchases, interests] = await Promise.all([
+          Api.getDashboard(), Api.getRevenueStats(query), Api.getOrderStats(query),
+          Api.getCustomerStats(query), Api.getProductStats(5, query), Api.getInventoryStats(),
+          Api.getPurchaseStats(query), Api.getInterestStats(10, query)
+        ]);
+        document.getElementById('totalTasks').textContent = formatCurrencyVnd(revenue.reduce((sum, item) => sum + item.totalRevenue, 0));
+        document.getElementById('availableTasks').textContent = orderStats.reduce((sum, item) => sum + item.count, 0);
+        document.getElementById('soldTasks').textContent = customers.totalCustomers;
+        document.getElementById('topBrandStats').textContent = dashboard.totalProducts;
+
+        const ctx = document.getElementById('statsChart');
+        if (statisticsChart) statisticsChart.destroy();
+        if (ctx && typeof Chart !== 'undefined') {
+          statisticsChart = new Chart(ctx, {
+            type: 'pie',
+            data: { labels: orderStats.map(s => s.status), datasets: [{ data: orderStats.map(s => s.count), backgroundColor: ['#ffc107', '#28a745', '#0d6efd', '#dc3545', '#6c757d'], borderWidth: 1 }] },
+            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+          });
+        }
+
+        const list = document.getElementById('topProductsList');
+        list.innerHTML = topProducts.length ? topProducts.map(p => `
+          <div class="brand-item"><span><i class="fa-solid fa-motorcycle me-2 text-brand"></i>${p.productName}</span><strong>${p.totalQuantitySold}</strong></div>
+        `).join('') : '<p class="text-muted text-center py-3">Chưa có dữ liệu trong khoảng thời gian này.</p>';
+
+        document.getElementById('purchaseStatsList').innerHTML = purchases.length ? purchases.map(item => `
+          <tr><td>${item.period}</td><td>${item.totalOrders}</td><td>${item.totalVehicles}</td><td>${formatCurrencyVnd(item.totalValue)}</td></tr>
+        `).join('') : '<tr><td colspan="4" class="text-center text-muted">Chưa có dữ liệu.</td></tr>';
+        document.getElementById('inventoryStatsList').innerHTML = inventory.length ? inventory.map(item => {
+          const label = item.status === 'OutOfStock' ? 'Hết hàng' : item.status === 'LowStock' ? 'Sắp hết' : 'Còn hàng';
+          const color = item.status === 'OutOfStock' ? 'danger' : item.status === 'LowStock' ? 'warning' : 'success';
+          return `<tr><td>${item.productName}</td><td>${item.stockQuantity}</td><td><span class="badge bg-${color}">${label}</span></td></tr>`;
+        }).join('') : '<tr><td colspan="3" class="text-center text-muted">Chưa có sản phẩm.</td></tr>';
+        document.getElementById('interestStatsList').innerHTML = interests.length ? interests.map(item => `
+          <tr><td>${item.productName}</td><td>${item.viewCount}</td><td>${item.totalQuantitySold}</td></tr>
+        `).join('') : '<tr><td colspan="3" class="text-center text-muted">Chưa ghi nhận lượt quan tâm.</td></tr>';
+      } catch (err) {
+        showToast('Không tải được thống kê: ' + apiErrorMessage(err), 'danger');
       }
+    }
+
+    async function exportStatistics() {
+      try {
+        const file = await Api.exportStatistics(statisticsQuery());
+        const url = URL.createObjectURL(file.blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = file.filename;
+        link.click();
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        showToast('Không xuất được thống kê: ' + apiErrorMessage(err), 'danger');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', async function() {
+      if (!requireRole(['admin'])) return;
+      await loadStatistics();
     });
   </script>
 </body>

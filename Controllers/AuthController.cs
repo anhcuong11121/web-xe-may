@@ -1,108 +1,128 @@
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using MotorBikeShop.API.DTOs;
-using MotorBikeShop.API.Models;
+using MotorBikeShop.API.Services;
 
-namespace MotorBikeShop.API.Services;
+namespace MotorBikeShop.API.Controllers;
 
-public class AuthService : IAuthService
+[ApiController]
+[Route("api/auth")]
+public class AuthController : ControllerBase
 {
-    private readonly UserManager<AppUser> _userManager;
-    private readonly RoleManager<IdentityRole<Guid>> _roleManager;
-    private readonly JwtSettings _jwtSettings;
+    private readonly IAuthService _authService;
 
-    public AuthService(
-        UserManager<AppUser> userManager,
-        RoleManager<IdentityRole<Guid>> roleManager,
-        IOptions<JwtSettings> jwtSettings)
+    public AuthController(IAuthService authService)
     {
-        _userManager = userManager;
-        _roleManager = roleManager;
-        _jwtSettings = jwtSettings.Value;
+        _authService = authService;
     }
 
-    public async Task<IdentityResult> RegisterAsync(RegisterRequest request)
+    /// <summary>
+    /// Đăng ký tài khoản mới. Role mặc định luôn là Customer.
+    /// </summary>
+    [HttpPost("register")]
+    [EnableRateLimiting("Auth")]
+    public async Task<ActionResult<RegisterResponse>> Register([FromBody] RegisterRequest request)
     {
-        var user = new AppUser
-        {
-            UserName = request.Email,
-            Email = request.Email,
-            FullName = request.FullName,
-            IsActive = true,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        var result = await _userManager.CreateAsync(user, request.Password);
+        var result = await _authService.RegisterAsync(request);
         if (!result.Succeeded)
         {
-            return result;
+            return BadRequest(new { errors = result.Errors });
         }
 
-        if (!await _roleManager.RoleExistsAsync(request.Role))
-        {
-            await _roleManager.CreateAsync(new IdentityRole<Guid>(request.Role));
-        }
-
-        var roleResult = await _userManager.AddToRoleAsync(user, request.Role);
-        return roleResult;
+        return Ok(result.Data);
     }
 
-    public async Task<LoginResponse?> LoginAsync(LoginRequest request)
+    /// <summary>
+    /// Đăng nhập bằng Email + Password, trả về JWT.
+    /// </summary>
+    [HttpPost("login")]
+    [EnableRateLimiting("Auth")]
+    public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
     {
-        var user = await _userManager.FindByEmailAsync(request.Email);
-        if (user == null || !user.IsActive)
+        var result = await _authService.LoginAsync(request);
+        if (!result.Succeeded)
         {
-            return null;
+            return Unauthorized(new { errors = result.Errors });
         }
 
-        var passwordValid = await _userManager.CheckPasswordAsync(user, request.Password);
-        if (!passwordValid)
+        return Ok(result.Data);
+    }
+
+    [HttpPost("refresh")]
+    [EnableRateLimiting("Token")]
+    public async Task<ActionResult<LoginResponse>> Refresh([FromBody] RefreshTokenRequest request)
+    {
+        var result = await _authService.RefreshAsync(request);
+        if (!result.Succeeded)
         {
-            return null;
+            return Unauthorized(new { errors = result.Errors });
         }
 
-        var roles = await _userManager.GetRolesAsync(user);
-        var role = roles.FirstOrDefault() ?? "Customer";
-
-        var token = GenerateJwtToken(user, role);
-
-        return new LoginResponse
-        {
-            Token = token,
-            Email = user.Email ?? string.Empty,
-            FullName = user.FullName,
-            Role = role
-        };
+        return Ok(result.Data);
     }
 
-    public Task<AppUser?> GetCurrentUserAsync(string email)
+    /// <summary>
+    /// Đăng xuất bằng cách thu hồi refresh token. Access token hiện tại vẫn tự hết hạn
+    /// theo thời gian sống ngắn đã cấu hình.
+    /// </summary>
+    [HttpPost("logout")]
+    [EnableRateLimiting("Token")]
+    public async Task<IActionResult> Logout([FromBody] RefreshTokenRequest request)
     {
-        return _userManager.FindByEmailAsync(email);
+        await _authService.RevokeRefreshTokenAsync(request.RefreshToken);
+        return Ok(new { message = "Đăng xuất thành công." });
     }
 
-    private string GenerateJwtToken(AppUser user, string role) //trả về token JWT
+    /// <summary>
+    /// Lấy thông tin tài khoản đang đăng nhập, đọc từ Claims trong JWT.
+    /// </summary>
+    [Authorize]
+    [HttpGet("profile")]
+    public async Task<ActionResult<ProfileResponse>> Profile()
     {
-        var claims = new List<Claim>
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(userIdClaim, out var userId))
         {
-            new(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new(ClaimTypes.Email, user.Email ?? string.Empty),
-            new(ClaimTypes.Role, role)
-        };
+            return Unauthorized();
+        }
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        var profile = await _authService.GetProfileAsync(userId);
+        if (profile == null)
+        {
+            return NotFound();
+        }
 
-        var token = new JwtSecurityToken(
-            issuer: _jwtSettings.Issuer,
-            audience: _jwtSettings.Audience,
-            claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(_jwtSettings.ExpiryMinutes),
-            signingCredentials: creds);
+        return Ok(profile);
+    }
 
-        return new JwtSecurityTokenHandler().WriteToken(token);
+    [Authorize]
+    [HttpPut("profile")]
+    public async Task<ActionResult<ProfileResponse>> UpdateProfile(
+        [FromBody] ProfileUpdateRequest request)
+    {
+        var result = await _authService.UpdateProfileAsync(this.GetUserId(), request);
+        if (!result.Succeeded)
+        {
+            return BadRequest(new { errors = result.Errors });
+        }
+
+        return Ok(result.Data);
+    }
+
+    [Authorize]
+    [HttpPost("change-password")]
+    [EnableRateLimiting("Auth")]
+    public async Task<ActionResult<ChangePasswordResponse>> ChangePassword(
+        [FromBody] ChangePasswordRequest request)
+    {
+        var result = await _authService.ChangePasswordAsync(this.GetUserId(), request);
+        if (!result.Succeeded)
+        {
+            return BadRequest(new { errors = result.Errors });
+        }
+
+        return Ok(result.Data);
     }
 }

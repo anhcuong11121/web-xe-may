@@ -16,21 +16,66 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, Microsoft.AspNetC
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
     public DbSet<Deposit> Deposits => Set<Deposit>();
+    public DbSet<PaymentAttempt> PaymentAttempts => Set<PaymentAttempt>();
     public DbSet<SupportRequest> SupportRequests => Set<SupportRequest>();
     public DbSet<News> News => Set<News>();
     public DbSet<Supplier> Suppliers => Set<Supplier>();
     public DbSet<ImportReceipt> ImportReceipts => Set<ImportReceipt>();
     public DbSet<ImportReceiptDetail> ImportReceiptDetails => Set<ImportReceiptDetail>();
-    public DbSet<ProductSupplier> ProductSuppliers => Set<ProductSupplier>();
+    public DbSet<CustomerProfile> CustomerProfiles => Set<CustomerProfile>();
+    public DbSet<EmployeeProfile> EmployeeProfiles => Set<EmployeeProfile>();
+    public DbSet<VehicleType> VehicleTypes => Set<VehicleType>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<ProductInterest> ProductInterests => Set<ProductInterest>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.Entity<CustomerProfile>()
+            .HasOne(p => p.User)
+            .WithOne(u => u.CustomerProfile)
+            .HasForeignKey<CustomerProfile>(p => p.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<RefreshToken>()
+            .HasOne(t => t.User)
+            .WithMany(u => u.RefreshTokens)
+            .HasForeignKey(t => t.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<RefreshToken>()
+            .HasIndex(t => t.TokenHash)
+            .IsUnique();
+
+        modelBuilder.Entity<RefreshToken>()
+            .HasIndex(t => new { t.UserId, t.ExpiresAt });
+
+        modelBuilder.Entity<EmployeeProfile>()
+            .HasOne(p => p.User)
+            .WithOne(u => u.EmployeeProfile)
+            .HasForeignKey<EmployeeProfile>(p => p.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         modelBuilder.Entity<Product>()
             .HasOne(p => p.Brand)
             .WithMany(b => b.Products)
             .HasForeignKey(p => p.BrandId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<ProductInterest>()
+            .HasOne(interest => interest.Product)
+            .WithMany(product => product.Interests)
+            .HasForeignKey(interest => interest.ProductId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ProductInterest>()
+            .HasIndex(interest => new { interest.ProductId, interest.ViewedAt });
+
+        modelBuilder.Entity<Product>()
+            .HasOne(p => p.VehicleType)
+            .WithMany(v => v.Products)
+            .HasForeignKey(p => p.VehicleTypeId)
             .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Specification>()
@@ -39,10 +84,35 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, Microsoft.AspNetC
             .HasForeignKey<Specification>(s => s.ProductId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        modelBuilder.Entity<Specification>().Property(s => s.CurbWeightKg).HasPrecision(8, 2);
+        modelBuilder.Entity<Specification>().Property(s => s.FuelTankCapacityLiters).HasPrecision(8, 2);
+        modelBuilder.Entity<Specification>().Property(s => s.FuelConsumptionLitersPer100Km).HasPrecision(8, 2);
+
         modelBuilder.Entity<Order>()
             .HasOne(o => o.User)
             .WithMany(u => u.Orders)
             .HasForeignKey(o => o.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Một đơn có nhiều dòng hàng; mỗi sản phẩm chỉ xuất hiện một lần trong cùng đơn.
+        modelBuilder.Entity<OrderItem>()
+            .HasIndex(item => new { item.OrderId, item.ProductId })
+            .IsUnique();
+
+        modelBuilder.Entity<OrderItem>()
+            .ToTable(table =>
+            {
+                table.HasCheckConstraint("CK_OrderItems_Quantity_Positive", "[Quantity] > 0");
+                table.HasCheckConstraint("CK_OrderItems_UnitPrice_NonNegative", "[UnitPrice] >= 0");
+            });
+
+        modelBuilder.Entity<Order>()
+            .ToTable(table => table.HasCheckConstraint("CK_Orders_TotalAmount_NonNegative", "[TotalAmount] >= 0"));
+
+        modelBuilder.Entity<Order>()
+            .HasOne(o => o.ProcessedBy)
+            .WithMany()
+            .HasForeignKey(o => o.ProcessedByUserId)
             .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<OrderItem>()
@@ -59,15 +129,53 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, Microsoft.AspNetC
 
         modelBuilder.Entity<Deposit>()
             .HasOne(d => d.Order)
-            .WithMany(o => o.Deposits)
-            .HasForeignKey(d => d.OrderId)
+            .WithOne(o => o.Deposit)
+            .HasForeignKey<Deposit>(d => d.OrderId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Deposit>()
+            .HasIndex(d => d.TransactionCode)
+            .IsUnique();
+
+        modelBuilder.Entity<PaymentAttempt>()
+            .HasOne(p => p.Order)
+            .WithMany(o => o.PaymentAttempts)
+            .HasForeignKey(p => p.OrderId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PaymentAttempt>()
+            .HasIndex(p => p.TransactionCode)
+            .IsUnique();
+
+        modelBuilder.Entity<PaymentAttempt>()
+            .HasOne(p => p.ProcessedBy)
+            .WithMany(u => u.ProcessedPaymentAttempts)
+            .HasForeignKey(p => p.ProcessedByUserId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<PaymentAttempt>()
+            .HasIndex(p => new { p.OrderId, p.Status });
+
+        modelBuilder.Entity<PaymentAttempt>()
+            .HasIndex(p => p.OrderId)
+            .IsUnique()
+            .HasFilter("[Status] = 'Pending'");
+
+        modelBuilder.Entity<PaymentAttempt>()
+            .Property(p => p.Amount)
+            .HasPrecision(18, 2);
 
         modelBuilder.Entity<SupportRequest>()
             .HasOne(s => s.User)
             .WithMany(u => u.SupportRequests)
             .HasForeignKey(s => s.UserId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<SupportRequest>()
+            .HasOne(s => s.AssignedEmployee)
+            .WithMany(u => u.AssignedSupportRequests)
+            .HasForeignKey(s => s.AssignedEmployeeUserId)
+            .OnDelete(DeleteBehavior.NoAction);
 
         modelBuilder.Entity<News>()
             .HasOne(n => n.Author)
@@ -81,6 +189,15 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, Microsoft.AspNetC
             .HasForeignKey(ir => ir.SupplierId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        modelBuilder.Entity<ImportReceipt>()
+            .HasOne(ir => ir.CreatedBy)
+            .WithMany()
+            .HasForeignKey(ir => ir.CreatedByUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<ImportReceiptDetail>()
+            .HasKey(ird => new { ird.ImportReceiptId, ird.ProductId });
+
         modelBuilder.Entity<ImportReceiptDetail>()
             .HasOne(ird => ird.ImportReceipt)
             .WithMany(ir => ir.ImportReceiptDetails)
@@ -93,19 +210,5 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, Microsoft.AspNetC
             .HasForeignKey(ird => ird.ProductId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<ProductSupplier>()
-            .HasKey(ps => new { ps.ProductId, ps.SupplierId });
-
-        modelBuilder.Entity<ProductSupplier>()
-            .HasOne(ps => ps.Product)
-            .WithMany(p => p.ProductSuppliers)
-            .HasForeignKey(ps => ps.ProductId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<ProductSupplier>()
-            .HasOne(ps => ps.Supplier)
-            .WithMany(s => s.ProductSuppliers)
-            .HasForeignKey(ps => ps.SupplierId)
-            .OnDelete(DeleteBehavior.Cascade);
     }
 }

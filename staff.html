@@ -39,6 +39,7 @@
         <ul class="navbar-nav ms-auto align-items-lg-center">
           <li class="nav-item"><a class="nav-link" href="index.html">Trang chủ</a></li>
           <li class="nav-item"><a class="nav-link" href="staff.html">Quản lý</a></li>
+          <li class="nav-item"><a class="nav-link" href="suppliers.html">Nhà cung cấp</a></li>
           <li class="nav-item"><a class="nav-link" href="lienhe.html">Liên hệ</a></li>
           <li class="nav-item"><a class="nav-link" href="login.html">Đăng xuất</a></li>
           <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
@@ -81,6 +82,11 @@
           </button>
         </li>
         <li class="nav-item" role="presentation">
+          <button class="nav-link" id="payments-tab" data-bs-toggle="tab" data-bs-target="#payments-content" type="button" role="tab">
+            <i class="fa-solid fa-money-check-dollar me-2"></i>Đối soát thanh toán
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
           <button class="nav-link" id="promos-tab" data-bs-toggle="tab" data-bs-target="#promos-content" type="button" role="tab">
             <i class="fa-solid fa-tags me-2"></i>Khuyến mãi
           </button>
@@ -104,8 +110,9 @@
                   <th>ID</th>
                   <th>Tên xe</th>
                   <th>Mô tả</th>
+                  <th>Giá</th>
                   <th>Hãng</th>
-                  <th>Trạng thái</th>
+                  <th>Tồn kho</th>
                   <th>Hành động</th>
                 </tr>
               </thead>
@@ -121,15 +128,21 @@
             <table class="table align-middle table-sm">
               <thead>
                 <tr>
-                  <th>Tên</th>
+                  <th>Họ tên</th>
                   <th>Email</th>
-                  <th>Số điện thoại</th>
-                  <th>Ngày đăng ký</th>
-                  <th>Hành động</th>
+                  <th>Điện thoại</th>
+                  <th>Số đơn</th>
+                  <th>Trạng thái</th>
+                  <th>Ngày tham gia</th>
                 </tr>
               </thead>
               <tbody id="customersList"></tbody>
             </table>
+          </div>
+          <div class="d-flex justify-content-between align-items-center mt-2">
+            <button id="customersPrevious" class="btn btn-sm btn-outline-secondary" onclick="changeCustomersPage(-1)">Trước</button>
+            <small id="customersPageInfo" class="text-muted"></small>
+            <button id="customersNext" class="btn btn-sm btn-outline-secondary" onclick="changeCustomersPage(1)">Sau</button>
           </div>
         </div>
 
@@ -173,10 +186,26 @@
           </div>
         </div>
 
+        <!-- PAYMENTS TAB -->
+        <div class="tab-pane fade" id="payments-content" role="tabpanel">
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <h5 class="mb-0"><i class="fa-solid fa-money-check-dollar me-2 text-brand"></i>Đối soát thanh toán</h5>
+            <button class="btn btn-outline-primary btn-sm" type="button" onclick="loadPaymentAttempts()"><i class="fa-solid fa-rotate me-1"></i>Làm mới</button>
+          </div>
+          <form class="row g-2 mb-3" onsubmit="filterPaymentAttempts(event)">
+            <div class="col-md-3"><label class="form-label small" for="paymentStatusFilter">Trạng thái</label><select class="form-select form-select-sm" id="paymentStatusFilter"><option value="">Tất cả</option><option value="Pending">Đang chờ</option><option value="Succeeded">Thành công</option><option value="Failed">Thất bại</option><option value="Expired">Hết hạn</option></select></div>
+            <div class="col-md-3"><label class="form-label small" for="paymentMethodFilter">Phương thức</label><select class="form-select form-select-sm" id="paymentMethodFilter"><option value="">Tất cả</option><option value="BankTransfer">Chuyển khoản demo</option><option value="Cash">Tiền mặt demo</option><option value="Fake">Mô phỏng</option></select></div>
+            <div class="col-md-3"><label class="form-label small" for="paymentOrderFilter">Mã đơn hàng</label><input class="form-control form-control-sm" id="paymentOrderFilter" type="number" min="1" placeholder="Ví dụ: 12"></div>
+            <div class="col-md-3 d-flex align-items-end"><button class="btn btn-primary btn-sm w-100" type="submit"><i class="fa-solid fa-filter me-1"></i>Lọc</button></div>
+          </form>
+          <div class="table-responsive"><table class="table align-middle table-sm"><thead><tr><th>Mã giao dịch</th><th>Đơn hàng</th><th>Số tiền</th><th>Phương thức</th><th>Thời gian</th><th>Trạng thái</th><th>Người xử lý</th><th>Hành động</th></tr></thead><tbody id="paymentsList"></tbody></table></div>
+          <div class="d-flex justify-content-between align-items-center mt-3"><small class="text-muted" id="paymentsPageInfo"></small><div class="btn-group btn-group-sm"><button class="btn btn-outline-secondary" id="paymentsPrev" type="button" onclick="changePaymentsPage(-1)">Trước</button><button class="btn btn-outline-secondary" id="paymentsNext" type="button" onclick="changePaymentsPage(1)">Sau</button></div></div>
+        </div>
+
         <!-- PROMOTIONS TAB -->
         <div class="tab-pane fade" id="promos-content" role="tabpanel">
           <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="mb-0"><i class="fa-solid fa-tags me-2 text-brand"></i>Quản lý khuyến mãi</h5>
+            <h5 class="mb-0"><i class="fa-solid fa-tags me-2 text-brand"></i>Quản lý tin tức &amp; khuyến mãi</h5>
             <button class="btn btn-primary btn-sm" onclick="addPromotion()">
               <i class="fa-solid fa-plus me-1"></i>Thêm khuyến mãi
             </button>
@@ -186,10 +215,11 @@
               <thead>
                 <tr>
                   <th>ID</th>
-                  <th>Tên chương trình</th>
-                  <th>Mô tả</th>
-                  <th>Giảm giá</th>
-                  <th>Ngày bắt đầu</th>
+                  <th>Tiêu đề</th>
+                  <th>Nội dung</th>
+                  <th>Loại</th>
+                  <th>Trạng thái</th>
+                  <th>Ngày đăng</th>
                   <th>Hành động</th>
                 </tr>
               </thead>
@@ -202,6 +232,88 @@
   </main>
 
   <!-- Product Modal -->
+  <div class="modal fade" id="promotionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+      <div class="modal-content overflow-hidden">
+        <div class="modal-header bg-danger text-white px-4 py-3">
+          <h5 class="modal-title" id="promotionModalTitle"><i class="fa-solid fa-tags me-2"></i>Thêm khuyến mãi</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <form id="promotionForm">
+            <input type="hidden" id="promotionId">
+            <div class="mb-3"><label class="form-label fw-semibold" for="promotionTitle">Tiêu đề</label><input class="form-control" id="promotionTitle" maxlength="200" required></div>
+            <div class="mb-3"><label class="form-label fw-semibold" for="promotionContent">Nội dung</label><textarea class="form-control" id="promotionContent" rows="6" maxlength="4000" required></textarea></div>
+            <div class="row g-3 mb-3">
+              <div class="col-md-6"><label class="form-label fw-semibold" for="promotionType">Loại nội dung</label><select class="form-select" id="promotionType"><option value="Promotion">Khuyến mãi</option><option value="News">Tin tức</option></select></div>
+              <div class="col-md-6"><label class="form-label fw-semibold" for="promotionStatus">Trạng thái</label><select class="form-select" id="promotionStatus"><option value="Published">Xuất bản</option><option value="Draft">Bản nháp</option><option value="Archived">Lưu trữ</option></select></div>
+            </div>
+            <div class="mb-3"><label class="form-label fw-semibold" for="promotionImageUrl">URL ảnh (không bắt buộc)</label><input type="url" class="form-control" id="promotionImageUrl" maxlength="500" placeholder="https://..."></div>
+            <div class="mb-3"><label class="form-label fw-semibold" for="promotionImageFile">Hoặc tải ảnh banner</label><input type="file" class="form-control" id="promotionImageFile" accept=".jpg,.jpeg,.png,.webp"><div class="form-text">JPG, PNG hoặc WebP; tối đa 5MB. Tỷ lệ banner gợi ý 16:6.</div></div>
+            <div class="rounded border overflow-hidden bg-light text-center" style="min-height:180px"><img id="promotionImagePreview" alt="Xem trước banner" style="width:100%;height:240px;object-fit:cover;display:none"><div id="promotionImagePlaceholder" class="text-muted py-5"><i class="fa-regular fa-image fa-3x mb-2 d-block"></i>Ảnh xem trước</div></div>
+            <div id="promotionFormMessage" class="mt-3"></div>
+          </form>
+        </div>
+        <div class="modal-footer px-4 py-3"><button type="button" class="btn btn-soft" data-bs-dismiss="modal">Hủy</button><button type="submit" form="promotionForm" class="btn btn-primary" id="promotionSaveButton"><i class="fa-solid fa-floppy-disk me-1"></i>Lưu nội dung</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hộp hội thoại tư vấn khách hàng -->
+  <div class="modal fade" id="consultationModal" tabindex="-1" aria-labelledby="consultationModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+      <div class="modal-content overflow-hidden">
+        <div class="modal-header px-4 py-3 bg-danger text-white">
+          <div>
+            <h5 class="modal-title mb-1" id="consultationModalTitle"><i class="fa-solid fa-comments me-2"></i>Hội thoại tư vấn</h5>
+            <div class="small opacity-75" id="consultationCustomerMeta"></div>
+          </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="d-flex flex-wrap gap-2 align-items-center mb-4">
+            <span class="badge bg-info" id="consultationType"></span>
+            <span class="badge bg-secondary" id="consultationSubject"></span>
+            <span class="badge" id="consultationStatus"></span>
+            <small class="text-muted ms-auto" id="consultationCreatedAt"></small>
+          </div>
+
+          <div class="d-flex justify-content-start mb-3">
+            <div class="rounded-4 bg-light border p-3" style="max-width:85%">
+              <div class="small fw-bold text-danger mb-1"><i class="fa-solid fa-user me-1"></i>Khách hàng</div>
+              <div id="consultationMessage" style="white-space:pre-wrap; overflow-wrap:anywhere"></div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-end mb-3" id="consultationExistingResponseWrap" style="display:none !important">
+            <div class="rounded-4 text-white p-3" style="max-width:85%; background:#b00020">
+              <div class="small fw-bold mb-1"><i class="fa-solid fa-headset me-1"></i><span id="consultationResponder">Nhân viên</span></div>
+              <div id="consultationExistingResponse" style="white-space:pre-wrap; overflow-wrap:anywhere"></div>
+              <div class="small opacity-75 mt-2" id="consultationRespondedAt"></div>
+            </div>
+          </div>
+
+          <form id="consultationResponseForm">
+            <input type="hidden" id="consultationId">
+            <label class="form-label fw-semibold" for="consultationResponse"><i class="fa-solid fa-reply me-1 text-danger"></i>Nội dung phản hồi</label>
+            <textarea class="form-control" id="consultationResponse" rows="5" maxlength="2000" placeholder="Nhập nội dung tư vấn rõ ràng, lịch sự cho khách hàng..." required></textarea>
+            <div class="d-flex justify-content-between mt-1">
+              <small class="text-muted">Tối đa 2.000 ký tự</small>
+              <small class="text-muted"><span id="consultationResponseCount">0</span>/2000</small>
+            </div>
+            <div id="consultationResponseMessage" class="mt-2"></div>
+          </form>
+        </div>
+        <div class="modal-footer px-4 py-3">
+          <button type="button" class="btn btn-soft" data-bs-dismiss="modal">Đóng</button>
+          <button type="submit" form="consultationResponseForm" class="btn btn-primary" id="consultationSendButton">
+            <i class="fa-solid fa-paper-plane me-1"></i>Gửi phản hồi
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="modal fade" id="productModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
@@ -221,16 +333,42 @@
             </div>
             <div class="row g-3">
               <div class="col-md-6">
-                <label for="productYear" class="form-label fw-semibold">Năm sản xuất</label>
-                <input type="number" class="form-control" id="productYear" placeholder="2024">
+                <label for="productYear" class="form-label fw-semibold">Giá (VNĐ) *</label>
+                <input type="number" class="form-control" id="productYear" min="0" placeholder="35000000" required>
               </div>
               <div class="col-md-6">
-                <label for="productBrand" class="form-label fw-semibold">Hãng</label>
-                <select class="form-select" id="productBrand">
-                  <option value="Honda">Honda</option>
-                  <option value="Yamaha">Yamaha</option>
-                  <option value="VinFast">VinFast</option>
+                <label for="productBrand" class="form-label fw-semibold">Hãng *</label>
+                <select class="form-select" id="productBrand" required></select>
+              </div>
+            </div>
+            <div class="mb-3 mt-3">
+              <label for="productStock" class="form-label fw-semibold">Tồn kho *</label>
+              <input type="number" class="form-control" id="productStock" min="0" placeholder="10" required>
+            </div>
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label for="productColor" class="form-label fw-semibold">Màu sắc *</label>
+                <input type="text" class="form-control" id="productColor" maxlength="100" required>
+              </div>
+              <div class="col-md-4">
+                <label for="productStatus" class="form-label fw-semibold">Trạng thái *</label>
+                <select class="form-select" id="productStatus" required>
+                  <option value="Available">Đang bán</option>
+                  <option value="Unavailable">Ngừng bán</option>
                 </select>
+              </div>
+              <div class="col-md-4">
+                <label for="productVehicleType" class="form-label fw-semibold">Loại xe</label>
+                <select class="form-select" id="productVehicleType"><option value="">Chưa phân loại</option></select>
+              </div>
+            </div>
+            <div class="border rounded p-3 mt-3">
+              <div class="fw-semibold mb-2">Thông số kỹ thuật bắt buộc</div>
+              <div class="row g-2">
+                <div class="col-md-6"><input class="form-control" id="specEngineType" placeholder="Loại động cơ" required></div>
+                <div class="col-md-6"><input class="form-control" id="specFuelType" placeholder="Loại nhiên liệu" required></div>
+                <div class="col-md-6"><input type="number" class="form-control" id="specEngineCapacity" min="0" placeholder="Dung tích xy-lanh (cc)" required></div>
+                <div class="col-md-6"><input type="number" class="form-control" id="specHorsePower" min="0" placeholder="Mã lực (HP)" required></div>
               </div>
             </div>
           </form>
@@ -252,21 +390,13 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="assets/js/apiClient.js"></script>
   <script src="assets/js/app.js"></script>
   <script src="assets/js/staff.js"></script>
   <script>
-    // Check role
+    // Chỉ Employee được truy cập trang này
     document.addEventListener('DOMContentLoaded', function() {
-      const userRole = sessionStorage.getItem('userRole');
-      if (userRole === 'staff') {
-        return;
-      } else if (userRole === 'admin') {
-        alert('Admin không được phép truy cập trang nhân viên.');
-        window.location.href = 'tasks.html';
-      } else {
-        alert('Vui lòng đăng nhập với tài khoản nhân viên.');
-        window.location.href = 'login.html';
-      }
+      requireRole(['staff', 'admin']);
     });
   </script>
 </body>

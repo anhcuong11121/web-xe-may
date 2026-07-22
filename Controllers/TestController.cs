@@ -85,6 +85,69 @@ public class TestController : ControllerBase
     }
 
     /// <summary>
+    /// Endpoint test [Authorize] - bất kỳ user đã đăng nhập nào (Giai đoạn 3)
+    /// </summary>
+    [Authorize]
+    [HttpGet("profile")]
+    public ActionResult<object> GetTestProfile()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var email = User.FindFirstValue(ClaimTypes.Email);
+        var role = User.FindFirstValue(ClaimTypes.Role);
+
+        return Ok(new
+        {
+            message = "✅ [Authorize] - đã đăng nhập hợp lệ",
+            userId,
+            email,
+            role,
+            timestamp = DateTime.UtcNow
+        });
+    }
+
+    /// <summary>
+    /// Endpoint test [Authorize(Roles="Admin")] (Giai đoạn 3)
+    /// </summary>
+    [Authorize(Roles = "Admin")]
+    [HttpGet("admin")]
+    public ActionResult<object> GetAdmin()
+    {
+        return Ok(new
+        {
+            message = "✅ [Authorize(Roles=\"Admin\")] - chỉ Admin truy cập được",
+            timestamp = DateTime.UtcNow
+        });
+    }
+
+    /// <summary>
+    /// Endpoint test [Authorize(Roles="Employee")] (Giai đoạn 3)
+    /// </summary>
+    [Authorize(Roles = "Employee")]
+    [HttpGet("employee")]
+    public ActionResult<object> GetEmployee()
+    {
+        return Ok(new
+        {
+            message = "✅ [Authorize(Roles=\"Employee\")] - chỉ Employee truy cập được",
+            timestamp = DateTime.UtcNow
+        });
+    }
+
+    /// <summary>
+    /// Endpoint test [Authorize(Roles="Customer")] (Giai đoạn 3)
+    /// </summary>
+    [Authorize(Roles = "Customer")]
+    [HttpGet("customer")]
+    public ActionResult<object> GetCustomer()
+    {
+        return Ok(new
+        {
+            message = "✅ [Authorize(Roles=\"Customer\")] - chỉ Customer truy cập được",
+            timestamp = DateTime.UtcNow
+        });
+    }
+
+    /// <summary>
     /// Endpoint cho tất cả authenticated user
     /// </summary>
     [Authorize(Roles = "Admin,Employee,Customer")]

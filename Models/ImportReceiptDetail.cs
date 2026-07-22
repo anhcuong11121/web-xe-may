@@ -4,8 +4,6 @@ namespace MotorBikeShop.API.Models;
 
 public class ImportReceiptDetail
 {
-    public int Id { get; set; }
-
     public int ImportReceiptId { get; set; }
 
     public int ProductId { get; set; }

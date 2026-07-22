@@ -1,0 +1,44 @@
+# .NET build
+**/bin/
+**/obj/
+[Bb]uild/
+[Dd]ebug/
+[Rr]elease/
+artifacts/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# VS Code
+.vscode/
+
+# Test output
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+
+# NuGet
+packages/
+*.nupkg
+*.snupkg
+
+# Cache và file tạm
+*.log
+*.tmp
+*.cache
+Thumbs.db
+Desktop.ini
+.DS_Store
+.continue/
+
+# Thư mục tạo nhầm
+.gitignore-backup/
+
+# File tạm của Codex
+.codex-doc-review-*/
+create_learning_plan.ps1

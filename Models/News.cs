@@ -14,7 +14,18 @@ public class News
     [MaxLength(4000)]
     public string Content { get; set; } = string.Empty;
 
-    public DateTime PublishedAt { get; set; } = DateTime.UtcNow;
+    [MaxLength(500)]
+    public string? ImageUrl { get; set; }
+
+    [Required]
+    [MaxLength(50)]
+    public string Status { get; set; } = "Published";
+
+    [Required]
+    [MaxLength(50)]
+    public string ContentType { get; set; } = "News";
+
+    public DateTime? PublishedAt { get; set; }
 
     public Guid AuthorId { get; set; }
 

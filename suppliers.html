@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>motor chất - Nhà cung cấp &amp; Nhập hàng</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">motor <span class="brand-highlight">chất</span></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto align-items-lg-center">
+          <li class="nav-item"><a class="nav-link" href="tasks.html">Quản lý xe</a></li>
+          <li class="nav-item"><a class="nav-link active" href="suppliers.html">Nhà cung cấp</a></li>
+          <li class="nav-item"><a class="nav-link" href="users.html">Tài khoản</a></li>
+          <li class="nav-item"><a class="nav-link" href="about.html">Thống kê</a></li>
+          <li class="nav-item"><a class="nav-link" href="login.html">Đăng xuất</a></li>
+          <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
+            <button class="btn btn-outline-light dark-toggle" onclick="toggleDarkMode()"><i class="fa-solid fa-moon"></i></button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <section class="page-hero">
+    <div class="container">
+      <span class="hero-eyebrow"><i class="fa-solid fa-truck-field"></i> Khu vực quản lý cấp cao</span>
+      <h1>Nhà cung cấp &amp; Nhập hàng (Employee/Admin)</h1>
+    </div>
+  </section>
+
+  <main class="container pb-5">
+    <!-- SUPPLIERS -->
+    <div class="manage-shell">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0 fw-bold"><i class="fa-solid fa-truck me-2 text-brand"></i>Nhà cung cấp</h5>
+        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#supplierModal" onclick="openAddSupplierModal()">
+          <i class="fa-solid fa-plus me-1"></i>Thêm nhà cung cấp
+        </button>
+      </div>
+      <div class="table-shell">
+        <div class="table-responsive">
+          <table class="table align-middle table-sm">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Tên</th>
+                <th>Người liên hệ</th>
+                <th>SĐT</th>
+                <th>Email</th>
+                <th>Trạng thái</th>
+                <th>Hành động</th>
+              </tr>
+            </thead>
+            <tbody id="suppliersList"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- IMPORT RECEIPTS -->
+    <div class="manage-shell mt-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0 fw-bold"><i class="fa-solid fa-truck-ramp-box me-2 text-brand"></i>Phiếu nhập hàng</h5>
+        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#importModal" onclick="openAddImportModal()">
+          <i class="fa-solid fa-plus me-1"></i>Tạo phiếu nhập
+        </button>
+      </div>
+      <div class="table-shell">
+        <div class="table-responsive">
+          <table class="table align-middle table-sm">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Số phiếu</th>
+                <th>Nhà cung cấp</th>
+                <th>Ngày nhập</th>
+                <th>Tổng tiền</th>
+                <th>Trạng thái</th>
+                <th>Ghi chú</th>
+                <th>Người tạo</th>
+                <th>Hành động</th>
+              </tr>
+            </thead>
+            <tbody id="importsList"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Supplier Modal -->
+  <div class="modal fade" id="supplierModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header px-4 py-3">
+          <h5 class="modal-title mb-0" id="supplierModalTitle">Thêm nhà cung cấp</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <form id="supplierForm">
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Tên nhà cung cấp *</label>
+              <input type="text" class="form-control" id="supplierName" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Người liên hệ *</label>
+              <input type="text" class="form-control" id="supplierContact" required>
+            </div>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Số điện thoại *</label>
+                <input type="text" class="form-control" id="supplierPhone" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Email *</label>
+                <input type="email" class="form-control" id="supplierEmail" required>
+              </div>
+            </div>
+            <div class="mb-3 mt-3">
+              <label class="form-label fw-semibold">Địa chỉ</label>
+              <input type="text" class="form-control" id="supplierAddress">
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Trạng thái hợp tác *</label>
+              <select class="form-select" id="supplierStatus" required>
+                <option value="Active">Đang hợp tác</option>
+                <option value="Inactive">Ngừng hợp tác</option>
+              </select>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer px-4 py-3">
+          <button type="button" class="btn btn-soft" data-bs-dismiss="modal">Hủy</button>
+          <button type="button" class="btn btn-primary" onclick="saveSupplier()">Lưu</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import Modal -->
+  <div class="modal fade" id="importModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header px-4 py-3">
+          <h5 class="modal-title mb-0">Tạo phiếu nhập hàng</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Nhà cung cấp *</label>
+            <select class="form-select" id="importSupplier" required></select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Ghi chú</label>
+            <textarea class="form-control" id="importNote" rows="2" maxlength="1000"></textarea>
+          </div>
+          <div id="importDetailsWrap">
+            <div class="import-detail-row row g-2 mb-2">
+              <div class="col-5">
+                <select class="form-select import-product-select"></select>
+              </div>
+              <div class="col-3">
+                <input type="number" class="form-control import-qty" placeholder="Số lượng" min="1" value="1">
+              </div>
+              <div class="col-4">
+                <input type="number" class="form-control import-cost" placeholder="Đơn giá nhập" min="0">
+              </div>
+            </div>
+          </div>
+          <button type="button" class="btn btn-soft btn-sm" onclick="addImportDetailRow()"><i class="fa-solid fa-plus me-1"></i>Thêm dòng sản phẩm</button>
+        </div>
+        <div class="modal-footer px-4 py-3">
+          <button type="button" class="btn btn-soft" data-bs-dismiss="modal">Hủy</button>
+          <button type="button" class="btn btn-primary" onclick="saveImportReceipt()">Lưu phiếu nhập</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="py-4">
+    <div class="container text-center">
+      <p class="mb-1">&copy; 2026 motor chất. Điện thoại: 0987888888 | Email: motorchat@gmail.com</p>
+      <small>Được phát triển bởi Lê Cương, Minh Đức.</small>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/js/apiClient.js"></script>
+  <script src="assets/js/app.js"></script>
+  <script>
+    let currentEditingSupplierId = null;
+    let allProductsForImport = [];
+
+    function escHtml(str) {
+      return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    async function loadSuppliers() {
+      const listBody = document.getElementById('suppliersList');
+      try {
+        const suppliers = await Api.getSuppliers();
+        listBody.innerHTML = suppliers.length ? suppliers.map(s => `
+          <tr>
+            <td>${s.id}</td>
+            <td><strong>${escHtml(s.name)}</strong></td>
+            <td>${escHtml(s.contactPerson)}</td>
+            <td>${escHtml(s.phone)}</td>
+            <td>${escHtml(s.email)}</td>
+            <td><span class="badge bg-${s.status === 'Active' ? 'success' : 'secondary'}">${s.status === 'Active' ? 'Đang hợp tác' : 'Ngừng hợp tác'}</span></td>
+            <td>
+              <button class="btn btn-sm btn-primary" onclick="editSupplier(${s.id})"><i class="fa-solid fa-edit"></i></button>
+              <button class="btn btn-sm btn-danger" onclick="deleteSupplier(${s.id})"><i class="fa-solid fa-trash"></i></button>
+            </td>
+          </tr>
+        `).join('') : '<tr><td colspan="7" class="text-center text-muted py-3">Chưa có nhà cung cấp nào.</td></tr>';
+
+        const select = document.getElementById('importSupplier');
+        select.innerHTML = suppliers
+          .filter(s => s.status === 'Active')
+          .map(s => `<option value="${s.id}">${escHtml(s.name)}</option>`).join('');
+      } catch (err) {
+        listBody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-3">${apiErrorMessage(err)}</td></tr>`;
+      }
+    }
+
+    function openAddSupplierModal() {
+      currentEditingSupplierId = null;
+      document.getElementById('supplierModalTitle').textContent = 'Thêm nhà cung cấp';
+      document.getElementById('supplierForm').reset();
+    }
+
+    async function editSupplier(id) {
+      try {
+        const suppliers = await Api.getSuppliers();
+        const s = suppliers.find(x => x.id === id);
+        if (!s) return;
+        currentEditingSupplierId = id;
+        document.getElementById('supplierModalTitle').textContent = 'Sửa nhà cung cấp';
+        document.getElementById('supplierName').value = s.name;
+        document.getElementById('supplierContact').value = s.contactPerson;
+        document.getElementById('supplierPhone').value = s.phone;
+        document.getElementById('supplierEmail').value = s.email;
+        document.getElementById('supplierAddress').value = s.address || '';
+        document.getElementById('supplierStatus').value = s.status;
+        new bootstrap.Modal(document.getElementById('supplierModal')).show();
+      } catch (err) {
+        showToast('Lỗi: ' + apiErrorMessage(err), 'danger');
+      }
+    }
+
+    async function saveSupplier() {
+      const payload = {
+        name: document.getElementById('supplierName').value.trim(),
+        contactPerson: document.getElementById('supplierContact').value.trim(),
+        phone: document.getElementById('supplierPhone').value.trim(),
+        email: document.getElementById('supplierEmail').value.trim(),
+        address: document.getElementById('supplierAddress').value.trim(),
+        status: document.getElementById('supplierStatus').value
+      };
+
+      if (!payload.name || !payload.contactPerson || !payload.phone || !payload.email) {
+        showToast('Vui lòng nhập đầy đủ thông tin bắt buộc!', 'danger');
+        return;
+      }
+
+      try {
+        if (currentEditingSupplierId) {
+          await Api.updateSupplier(currentEditingSupplierId, payload);
+        } else {
+          await Api.createSupplier(payload);
+        }
+        bootstrap.Modal.getInstance(document.getElementById('supplierModal')).hide();
+        showToast('Lưu nhà cung cấp thành công!');
+        loadSuppliers();
+      } catch (err) {
+        showToast('Lưu thất bại: ' + apiErrorMessage(err), 'danger');
+      }
+    }
+
+    async function deleteSupplier(id) {
+      if (!confirmAction('Xóa nhà cung cấp này?')) return;
+      try {
+        await Api.deleteSupplier(id);
+        showToast('Xóa thành công!');
+        loadSuppliers();
+      } catch (err) {
+        showToast('Xóa thất bại: ' + apiErrorMessage(err), 'danger');
+      }
+    }
+
+    async function loadImports() {
+      const listBody = document.getElementById('importsList');
+      try {
+        const imports = await Api.getImports();
+        listBody.innerHTML = imports.length ? imports.map(ir => `
+          <tr>
+            <td>${ir.id}</td>
+            <td>${escHtml(ir.receiptNumber)}</td>
+            <td>${escHtml(ir.supplierName)}</td>
+            <td>${new Date(ir.importDate).toLocaleDateString('vi-VN')}</td>
+            <td>${formatCurrencyVnd(ir.totalAmount)}</td>
+            <td><span class="badge bg-${ir.status === 'Completed' ? 'success' : 'secondary'}">${escHtml(ir.status)}</span></td>
+            <td>${escHtml(ir.note || '-')}</td>
+            <td>${escHtml(ir.createdByName)}</td>
+            <td>${ir.status === 'Completed' ? `<button class="btn btn-sm btn-outline-danger" onclick="cancelImportReceipt(${ir.id})"><i class="fa-solid fa-ban me-1"></i>Hủy</button>` : '-'}</td>
+          </tr>
+        `).join('') : '<tr><td colspan="9" class="text-center text-muted py-3">Chưa có phiếu nhập nào.</td></tr>';
+      } catch (err) {
+        listBody.innerHTML = `<tr><td colspan="9" class="text-center text-danger py-3">${apiErrorMessage(err)}</td></tr>`;
+      }
+    }
+
+    async function cancelImportReceipt(id) {
+      if (!confirmAction('Hủy phiếu nhập này? Tồn kho của các sản phẩm sẽ bị trừ lại.')) return;
+      try {
+        await Api.cancelImport(id);
+        showToast('Đã hủy phiếu nhập và hoàn tác tồn kho.');
+        await Promise.all([loadImports(), loadProductsForImport()]);
+      } catch (err) {
+        showToast('Hủy phiếu nhập thất bại: ' + apiErrorMessage(err), 'danger');
+      }
+    }
+
+    async function loadProductsForImport() {
+      try {
+        const result = await Api.getProducts('?pageSize=200');
+        allProductsForImport = result.items;
+        document.querySelectorAll('.import-product-select').forEach(populateProductSelect);
+      } catch (err) {
+        showToast('Không tải được danh sách sản phẩm: ' + apiErrorMessage(err), 'danger');
+      }
+    }
+
+    function populateProductSelect(select) {
+      select.innerHTML = allProductsForImport.map(p => `<option value="${p.id}">${escHtml(p.name)}</option>`).join('');
+    }
+
+    function openAddImportModal() {
+      document.getElementById('importDetailsWrap').innerHTML = `
+        <div class="import-detail-row row g-2 mb-2">
+          <div class="col-5"><select class="form-select import-product-select"></select></div>
+          <div class="col-3"><input type="number" class="form-control import-qty" placeholder="Số lượng" min="1" value="1"></div>
+          <div class="col-4"><input type="number" class="form-control import-cost" placeholder="Đơn giá nhập" min="0"></div>
+        </div>`;
+      document.querySelectorAll('.import-product-select').forEach(populateProductSelect);
+    }
+
+    function addImportDetailRow() {
+      const wrap = document.getElementById('importDetailsWrap');
+      const row = document.createElement('div');
+      row.className = 'import-detail-row row g-2 mb-2';
+      row.innerHTML = `
+        <div class="col-5"><select class="form-select import-product-select"></select></div>
+        <div class="col-3"><input type="number" class="form-control import-qty" placeholder="Số lượng" min="1" value="1"></div>
+        <div class="col-4"><input type="number" class="form-control import-cost" placeholder="Đơn giá nhập" min="0"></div>`;
+      wrap.appendChild(row);
+      populateProductSelect(row.querySelector('.import-product-select'));
+    }
+
+    async function saveImportReceipt() {
+      const supplierId = Number(document.getElementById('importSupplier').value);
+      const note = document.getElementById('importNote').value.trim() || null;
+      const rows = document.querySelectorAll('.import-detail-row');
+      const details = Array.from(rows).map(row => ({
+        productId: Number(row.querySelector('.import-product-select').value),
+        quantity: Number(row.querySelector('.import-qty').value),
+        unitCost: Number(row.querySelector('.import-cost').value)
+      })).filter(d => d.productId && d.quantity > 0);
+
+      const productIds = details.map(d => d.productId);
+      if (new Set(productIds).size !== productIds.length) {
+        showToast('Mỗi sản phẩm chỉ được xuất hiện một lần trong phiếu nhập!', 'danger');
+        return;
+      }
+
+      if (!supplierId || !details.length) {
+        showToast('Vui lòng chọn nhà cung cấp và ít nhất 1 sản phẩm!', 'danger');
+        return;
+      }
+
+      try {
+        await Api.createImport({ supplierId, note, details });
+        bootstrap.Modal.getInstance(document.getElementById('importModal')).hide();
+        document.getElementById('importNote').value = '';
+        showToast('Tạo phiếu nhập thành công! Tồn kho đã được cập nhật.');
+        loadImports();
+      } catch (err) {
+        showToast('Tạo phiếu nhập thất bại: ' + apiErrorMessage(err), 'danger');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      if (!requireRole(['admin', 'staff'])) return;
+      loadSuppliers();
+      loadImports();
+      loadProductsForImport();
+    });
+  </script>
+</body>
+</html>

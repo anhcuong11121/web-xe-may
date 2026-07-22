@@ -1007,6 +1007,71 @@
   <div id="details-tabs" class="ab-hidden-safe"></div>
   <div id="tab-content" class="ab-hidden-safe"></div>
 
+  <!-- Panel dữ liệu thật + Đặt mua/Đặt cọc, chỉ hiện khi mở link có ?id= từ Trang chủ/Sản phẩm (dữ liệu thật từ API) -->
+  <section id="realProductPanel" class="container py-4" style="display:none;">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <div class="row g-4">
+          <div class="col-md-4">
+            <img id="rpImage" src="assets/img/banner-1.jpg" class="img-fluid rounded" alt="Ảnh sản phẩm" style="width:100%; max-height:260px; object-fit:cover;">
+          </div>
+          <div class="col-md-8">
+            <span class="badge bg-danger mb-2" id="rpBrand">Hãng xe</span>
+            <h2 id="rpName" class="fw-bold">Tên sản phẩm</h2>
+            <p class="fs-4 text-danger fw-bold mb-2" id="rpPrice">0 VNĐ</p>
+            <p class="text-muted" id="rpDescription">Mô tả sản phẩm...</p>
+            <div class="d-flex flex-wrap gap-2 mb-3" id="rpSpecs"></div>
+            <div class="mb-3">
+              <span class="badge" id="rpStock">Còn hàng</span>
+            </div>
+            <div class="border rounded p-3 mb-3">
+              <div class="fw-semibold mb-2">Thông tin nhận xe</div>
+              <div class="row g-2">
+                <div class="col-md-6"><input class="form-control" id="rpReceiverName" maxlength="100" placeholder="Họ tên người nhận" required></div>
+                <div class="col-md-6"><input type="tel" class="form-control" id="rpReceiverPhone" maxlength="20" placeholder="Số điện thoại" required></div>
+                <div class="col-12"><input class="form-control" id="rpDeliveryAddress" maxlength="500" placeholder="Địa chỉ nhận/liên hệ" required></div>
+                <div class="col-md-6"><input type="date" class="form-control" id="rpExpectedDeliveryDate" required></div>
+                <div class="col-md-6"><input class="form-control" id="rpOrderNote" maxlength="1000" placeholder="Ghi chú (không bắt buộc)"></div>
+              </div>
+            </div>
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+              <div class="d-flex align-items-center gap-2">
+                <label for="rpQuantity" class="mb-0 fw-semibold">Số lượng:</label>
+                <input type="number" id="rpQuantity" class="form-control" style="width:90px;" value="1" min="1">
+              </div>
+              <button class="btn btn-primary" id="rpOrderBtn"><i class="fa-solid fa-cart-shopping me-2"></i>Đặt mua xe</button>
+            </div>
+            <div id="rpOrderResult" class="mt-3"></div>
+
+            <!-- Panel đặt cọc, hiện sau khi đặt hàng thành công -->
+            <div id="rpDepositPanel" class="mt-3 p-3 border rounded bg-light" style="display:none;">
+              <h6 class="fw-bold mb-2"><i class="fa-solid fa-money-check-dollar me-2 text-brand"></i>Đặt cọc giữ xe</h6>
+              <div id="rpPaymentModeNotice" class="alert alert-warning py-2 small">Đây là thanh toán demo, không phát sinh giao dịch tiền thật.</div>
+              <div class="row g-2 align-items-end">
+                <div class="col-auto">
+                  <label class="form-label small mb-1">Số tiền cọc (VNĐ)</label>
+                  <input type="number" id="rpDepositAmount" class="form-control form-control-sm" style="width:160px;" value="2000000" min="1">
+                </div>
+                <div class="col-auto">
+                  <label class="form-label small mb-1">Hình thức thanh toán demo</label>
+                  <select id="rpDepositMethod" class="form-select form-select-sm">
+                    <option value="Fake">Mô phỏng thành công</option>
+                    <option value="Cash">Tiền mặt — nhân viên xác nhận</option>
+                    <option value="BankTransfer">Chuyển khoản — nhân viên xác nhận</option>
+                  </select>
+                </div>
+                <div class="col-auto">
+                  <button class="btn btn-outline-primary btn-sm" id="rpDepositBtn">Khởi tạo thanh toán</button>
+                </div>
+              </div>
+              <div id="rpDepositResult" class="mt-2"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <div class="ab-page">
     <section class="ab-hero-top">
       <div class="container">
@@ -1132,6 +1197,7 @@
     </div>
   </footer>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/js/apiClient.js"></script>
   <script src="assets/js/app.js"></script>
 
   <script>
@@ -2500,8 +2566,8 @@
       if (bikeName.includes("yzf-r15") || bikeName.includes("yzfr15") || bikeName.includes("r15")) return "yzfr15";
       if (bikeName.includes("rebel")) return "rebel1100";
       if (bikeName.includes("nx500") || bikeName.includes("nx 500")) return "nx500";
-      if (bikeName.includes("vinfast") || bikeName.includes("vin-evo") || bikeName.includes("evo")) return "vinevo";
       if (bikeName.includes("feliz")) return "feliz";
+      if (bikeName.includes("vinfast") || bikeName.includes("vin-evo") || bikeName.includes("evo")) return "vinevo";
       return "airblade";
     }
 
@@ -2842,6 +2908,189 @@
       bindFeatureControls();
       syncNavWithViewport();
     });
+  </script>
+
+  <!-- Script nối dữ liệu thật từ API khi mở trang qua ?id=<productId thật trong DB> -->
+  <script>
+    (function () {
+      const realProductId = new URLSearchParams(window.location.search).get('id');
+      if (!realProductId || typeof Api === 'undefined') return;
+
+      let currentRealProduct = null;
+      let currentRealOrderId = null;
+
+      async function loadRealProduct() {
+        const panel = document.getElementById('realProductPanel');
+        try {
+          const p = await Api.getProduct(realProductId);
+          Api.recordProductInterest(realProductId).catch(() => {});
+          currentRealProduct = p;
+
+          // Đồng bộ phần giới thiệu chi tiết đã thiết kế sẵn với sản phẩm thật từ API.
+          const productKey = getProductKeyFromBike(p);
+          applyProductConfig(productKey, p.name);
+          renderPricingUI();
+          renderSpecsTable();
+          renderFeatureThumbs();
+          if (currentSlides.length) renderSlide(0);
+
+          // Hiển thị nội dung giới thiệu trước, form liên hệ/đặt cọc ở cuối trang chi tiết.
+          const detailPage = document.querySelector('.ab-page');
+          const detailFooter = detailPage?.querySelector('footer');
+          if (detailFooter) detailFooter.before(panel);
+          else if (detailPage) detailPage.append(panel);
+          panel.style.display = '';
+
+          document.getElementById('rpBrand').textContent = p.brandName || 'Xe máy';
+          document.getElementById('rpName').textContent = p.name;
+          document.getElementById('rpPrice').textContent = formatCurrencyVnd(p.price);
+          document.getElementById('rpDescription').textContent = p.description;
+          document.getElementById('rpImage').src = !p.imageUrl
+            ? 'assets/img/banner-1.jpg'
+            : (p.imageUrl.startsWith('/assets/') ? p.imageUrl : API_BASE_URL + p.imageUrl);
+
+          const stockBadge = document.getElementById('rpStock');
+          if (p.stockQuantity > 0) {
+            stockBadge.className = 'badge bg-success';
+            stockBadge.textContent = `Còn hàng (${p.stockQuantity} xe)`;
+          } else {
+            stockBadge.className = 'badge bg-secondary';
+            stockBadge.textContent = 'Hết hàng';
+            document.getElementById('rpOrderBtn').disabled = true;
+          }
+
+          const specsWrap = document.getElementById('rpSpecs');
+          specsWrap.innerHTML = '';
+          if (p.specification) {
+            const specs = [
+              `Động cơ: ${p.specification.engineType}`,
+              `Nhiên liệu: ${p.specification.fuelType}`,
+              `Dung tích: ${p.specification.engineCapacityCc} cc`,
+              `Công suất: ${p.specification.horsePower} HP`
+            ];
+            if (p.specification.curbWeightKg != null) specs.push(`Khối lượng: ${p.specification.curbWeightKg} kg`);
+            if (p.specification.dimensions) specs.push(`Kích thước: ${p.specification.dimensions}`);
+            if (p.specification.fuelTankCapacityLiters != null) specs.push(`Bình xăng: ${p.specification.fuelTankCapacityLiters} lít`);
+            if (p.specification.maxPower) specs.push(`Công suất tối đa: ${p.specification.maxPower}`);
+            if (p.specification.fuelConsumptionLitersPer100Km != null) specs.push(`Tiêu thụ nhiên liệu: ${p.specification.fuelConsumptionLitersPer100Km} lít/100 km`);
+            if (p.specification.otherDetails) specs.push(`Thông số khác: ${p.specification.otherDetails}`);
+            specs.forEach(s => {
+              const badge = document.createElement('span');
+              badge.className = 'badge bg-light text-dark border';
+              badge.textContent = s;
+              specsWrap.appendChild(badge);
+            });
+          }
+
+          document.getElementById('rpQuantity').max = p.stockQuantity;
+        } catch (err) {
+          panel.style.display = '';
+          panel.querySelector('.card-body').innerHTML = `<div class="alert alert-danger mb-0">Không tải được sản phẩm: ${apiErrorMessage(err)}</div>`;
+        }
+      }
+
+      async function handleOrder() {
+        const resultDiv = document.getElementById('rpOrderResult');
+        if (!Session.isLoggedIn()) {
+          resultDiv.innerHTML = '<div class="alert alert-warning py-2 mb-0">Vui lòng đăng nhập bằng tài khoản Khách hàng để đặt mua xe.</div>';
+          setTimeout(() => window.location.href = 'login.html', 1200);
+          return;
+        }
+        if (roleToAppRole(Session.getRole()) !== 'customer') {
+          resultDiv.innerHTML = '<div class="alert alert-warning py-2 mb-0">Chỉ tài khoản Khách hàng mới đặt mua được xe.</div>';
+          return;
+        }
+
+        const quantity = Number(document.getElementById('rpQuantity').value) || 1;
+        const receiverName = document.getElementById('rpReceiverName').value.trim();
+        const receiverPhone = document.getElementById('rpReceiverPhone').value.trim();
+        const deliveryAddress = document.getElementById('rpDeliveryAddress').value.trim();
+        const expectedDeliveryDate = document.getElementById('rpExpectedDeliveryDate').value;
+        const note = document.getElementById('rpOrderNote').value.trim() || null;
+        if (!receiverName || !receiverPhone || !deliveryAddress || !expectedDeliveryDate) {
+          resultDiv.innerHTML = '<div class="alert alert-warning py-2 mb-0">Vui lòng nhập đầy đủ thông tin nhận xe.</div>';
+          return;
+        }
+        try {
+          const order = await Api.createOrder({
+            receiverName,
+            receiverPhone,
+            deliveryAddress,
+            expectedDeliveryDate,
+            note,
+            items: [{ productId: currentRealProduct.id, quantity }]
+          });
+          currentRealOrderId = order.id;
+          resultDiv.innerHTML = `<div class="alert alert-success py-2 mb-0">✅ Đặt hàng thành công! Mã đơn hàng #${order.id} - Tổng tiền: ${formatCurrencyVnd(order.totalAmount)}</div>`;
+          document.getElementById('rpDepositPanel').style.display = '';
+        } catch (err) {
+          resultDiv.innerHTML = `<div class="alert alert-danger py-2 mb-0">❌ ${apiErrorMessage(err)}</div>`;
+        }
+      }
+
+      async function handleDeposit() {
+        const resultDiv = document.getElementById('rpDepositResult');
+        const submitButton = document.getElementById('rpDepositBtn');
+        if (!currentRealOrderId) {
+          resultDiv.innerHTML = '<div class="alert alert-warning py-2 mb-0 small">Vui lòng đặt mua xe trước khi đặt cọc.</div>';
+          return;
+        }
+
+        const amount = Number(document.getElementById('rpDepositAmount').value);
+        const paymentMethod = document.getElementById('rpDepositMethod').value;
+        if (!Number.isFinite(amount) || amount <= 0) {
+          resultDiv.innerHTML = '<div class="alert alert-warning py-2 mb-0 small">Số tiền đặt cọc phải lớn hơn 0.</div>';
+          return;
+        }
+
+        let completedFakePayment = false;
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Đang xử lý';
+        try {
+          const attempt = await Api.initiatePayment({ orderId: currentRealOrderId, amount, paymentMethod });
+          const success = document.createElement('div');
+          if (paymentMethod === 'Fake') {
+            const confirmation = await Api.confirmFakePayment(attempt.id);
+            const deposit = confirmation.deposit;
+            completedFakePayment = true;
+            success.className = 'alert alert-success py-2 mb-0 small';
+            success.textContent = `✅ Đặt cọc thành công: ${formatCurrencyVnd(deposit.amount)} | Mã giao dịch: ${deposit.transactionCode} | Trạng thái: ${deposit.status}`;
+          } else {
+            const methodLabel = paymentMethod === 'BankTransfer' ? 'chuyển khoản' : 'tiền mặt';
+            success.className = 'alert alert-info py-2 mb-0 small';
+            success.textContent = `Đã tạo yêu cầu ${methodLabel}: ${formatCurrencyVnd(attempt.amount)} | Mã giao dịch: ${attempt.transactionCode} | Hết hạn: ${new Date(attempt.expiresAt).toLocaleString('vi-VN')}. Nhân viên sẽ xác nhận sau khi đối soát.`;
+          }
+          resultDiv.replaceChildren(success);
+        } catch (err) {
+          resultDiv.innerHTML = `<div class="alert alert-danger py-2 mb-0 small">❌ ${apiErrorMessage(err)}</div>`;
+        } finally {
+          submitButton.disabled = completedFakePayment;
+          submitButton.textContent = completedFakePayment ? 'Đã đặt cọc' : 'Khởi tạo thanh toán';
+        }
+      }
+
+      async function loadPaymentConfiguration() {
+        try {
+          const configuration = await Api.getPaymentConfiguration();
+          document.getElementById('rpPaymentModeNotice').textContent = configuration.notice;
+        } catch {
+          // Thông báo mặc định trong HTML vẫn thể hiện đúng chế độ demo.
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        const deliveryDateInput = document.getElementById('rpExpectedDeliveryDate');
+        const today = new Date();
+        const localDate = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+        deliveryDateInput.min = localDate;
+        deliveryDateInput.value = localDate;
+        document.getElementById('rpReceiverName').value = Session.getUser()?.fullName || '';
+        loadRealProduct();
+        loadPaymentConfiguration();
+        document.getElementById('rpOrderBtn').addEventListener('click', handleOrder);
+        document.getElementById('rpDepositBtn').addEventListener('click', handleDeposit);
+      });
+    })();
   </script>
 </body>
 </html>

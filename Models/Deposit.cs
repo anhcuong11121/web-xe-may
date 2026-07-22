@@ -18,5 +18,15 @@ public class Deposit
     [MaxLength(50)]
     public string PaymentMethod { get; set; } = string.Empty;
 
+    [Required]
+    [MaxLength(100)]
+    public string TransactionCode { get; set; } = string.Empty;
+
+    [Required]
+    [MaxLength(50)]
+    public string Status { get; set; } = "Completed";
+
+    public DateTime? PaidAt { get; set; }
+
     public virtual Order Order { get; set; } = null!;
 }

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>motor chất - Hồ sơ cá nhân</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <nav class="navbar navbar-dark"><div class="container"><a class="navbar-brand" href="index.html">motor chất</a><a class="btn btn-outline-light btn-sm" href="index.html">Trang chủ</a></div></nav>
+  <main class="container py-5">
+    <div class="row justify-content-center"><div class="col-md-7 col-lg-6">
+      <div class="card shadow-sm"><div class="card-body p-4">
+        <h2 class="mb-4">Hồ sơ cá nhân</h2>
+        <form id="profileForm">
+          <div class="mb-3"><label class="form-label" for="profileEmail">Email</label><input class="form-control" id="profileEmail" readonly></div>
+          <div class="mb-3"><label class="form-label" for="profileRole">Vai trò</label><input class="form-control" id="profileRole" readonly></div>
+          <div class="mb-3"><label class="form-label" for="profileFullName">Họ tên</label><input class="form-control" id="profileFullName" maxlength="100" required></div>
+          <div class="mb-3"><label class="form-label" for="profilePhone">Số điện thoại</label><input class="form-control" id="profilePhone" type="tel" maxlength="20" required></div>
+          <button class="btn btn-primary" type="submit">Lưu thay đổi</button>
+          <div id="profileMessage" class="mt-3"></div>
+        </form>
+      </div></div>
+    </div></div>
+  </main>
+  <script src="assets/js/apiClient.js"></script>
+  <script>
+    const message = document.getElementById('profileMessage');
+    async function loadProfile() {
+      if (!Session.isLoggedIn()) { window.location.href = 'login.html'; return; }
+      try {
+        const profile = await Api.profile();
+        document.getElementById('profileEmail').value = profile.email;
+        document.getElementById('profileRole').value = profile.role;
+        document.getElementById('profileFullName').value = profile.fullName;
+        document.getElementById('profilePhone').value = profile.phoneNumber || '';
+      } catch (error) {
+        message.innerHTML = `<div class="alert alert-danger">${apiErrorMessage(error)}</div>`;
+      }
+    }
+    document.getElementById('profileForm').addEventListener('submit', async event => {
+      event.preventDefault();
+      try {
+        const profile = await Api.updateProfile({
+          fullName: document.getElementById('profileFullName').value.trim(),
+          phoneNumber: document.getElementById('profilePhone').value.trim()
+        });
+        const sessionUser = Session.getUser();
+        if (sessionUser) {
+          sessionUser.fullName = profile.fullName;
+          localStorage.setItem(Session.KEY_USER, JSON.stringify(sessionUser));
+        }
+        message.innerHTML = '<div class="alert alert-success">Cập nhật hồ sơ thành công.</div>';
+      } catch (error) {
+        message.innerHTML = `<div class="alert alert-danger">${apiErrorMessage(error)}</div>`;
+      }
+    });
+    loadProfile();
+  </script>
+</body>
+</html>
