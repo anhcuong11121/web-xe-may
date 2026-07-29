@@ -173,16 +173,49 @@ const Api = {
   // Product (Giai đoạn 4)
   getProducts: (query = '') => apiRequest(`/api/products${query}`, { auth: false }),
   getProduct: (id) => apiRequest(`/api/products/${id}`, { auth: false }),
+  getProductCatalog: (id) => apiRequest(`/api/products/${id}/catalog`, { auth: false }),
+  getCatalogProducts: (query = '') => apiRequest(`/api/products/catalog${query}`, { auth: false }),
   recordProductInterest: (id) => apiRequest(`/api/products/${id}/interest`, { method: 'POST', auth: false }),
   searchProducts: (query = '') => apiRequest(`/api/products/search${query}`, { auth: false }),
   createProduct: (payload) => apiRequest('/api/products', { method: 'POST', body: payload }),
   updateProduct: (id, payload) => apiRequest(`/api/products/${id}`, { method: 'PUT', body: payload }),
   deleteProduct: (id) => apiRequest(`/api/products/${id}`, { method: 'DELETE' }),
-  uploadProductImage: (id, file) => {
+  getProductVariants: (productId, manage = false) =>
+    apiRequest(`/api/products/${productId}/variants${manage ? '/manage' : ''}`, { auth: manage }),
+  createProductVariant: (productId, payload) =>
+    apiRequest(`/api/products/${productId}/variants`, { method: 'POST', body: payload }),
+  updateProductVariant: (productId, variantId, payload) =>
+    apiRequest(`/api/products/${productId}/variants/${variantId}`, { method: 'PUT', body: payload }),
+  updateVariantSpecification: (productId, variantId, payload) =>
+    apiRequest(`/api/products/${productId}/variants/${variantId}/specification`, { method: 'PUT', body: payload }),
+  deleteProductVariant: (productId, variantId) =>
+    apiRequest(`/api/products/${productId}/variants/${variantId}`, { method: 'DELETE' }),
+  getProductSkus: (productId, variantId, manage = false) =>
+    apiRequest(`/api/products/${productId}/variants/${variantId}/skus${manage ? '/manage' : ''}`, { auth: manage }),
+  createProductSku: (productId, variantId, payload) =>
+    apiRequest(`/api/products/${productId}/variants/${variantId}/skus`, { method: 'POST', body: payload }),
+  updateProductSku: (productId, variantId, skuId, payload) =>
+    apiRequest(`/api/products/${productId}/variants/${variantId}/skus/${skuId}`, { method: 'PUT', body: payload }),
+  deleteProductSku: (productId, variantId, skuId) =>
+    apiRequest(`/api/products/${productId}/variants/${variantId}/skus/${skuId}`, { method: 'DELETE' }),
+  getProductSkuImages: (productId, variantId, skuId, manage = false) =>
+    apiRequest(`/api/products/${productId}/variants/${variantId}/skus/${skuId}/images${manage ? '/manage' : ''}`, { auth: manage }),
+  uploadProductSkuImage: (productId, variantId, skuId, file, metadata = {}) => {
     const formData = new FormData();
     formData.append('file', file);
-    return apiRequest(`/api/products/${id}/image`, { method: 'POST', body: formData, isFormData: true });
+    formData.append('altText', metadata.altText || '');
+    formData.append('displayOrder', String(metadata.displayOrder || 0));
+    formData.append('isPrimary', String(Boolean(metadata.isPrimary)));
+    return apiRequest(`/api/products/${productId}/variants/${variantId}/skus/${skuId}/images`, {
+      method: 'POST',
+      body: formData,
+      isFormData: true
+    });
   },
+  updateProductSkuImage: (productId, variantId, skuId, imageId, payload) =>
+    apiRequest(`/api/products/${productId}/variants/${variantId}/skus/${skuId}/images/${imageId}`, { method: 'PUT', body: payload }),
+  deleteProductSkuImage: (productId, variantId, skuId, imageId) =>
+    apiRequest(`/api/products/${productId}/variants/${variantId}/skus/${skuId}/images/${imageId}`, { method: 'DELETE' }),
 
   // Vehicle types
   getVehicleTypes: () => apiRequest('/api/vehicle-types', { auth: false }),
@@ -196,11 +229,6 @@ const Api = {
   createBrand: (payload) => apiRequest('/api/brands', { method: 'POST', body: payload }),
   updateBrand: (id, payload) => apiRequest(`/api/brands/${id}`, { method: 'PUT', body: payload }),
   deleteBrand: (id) => apiRequest(`/api/brands/${id}`, { method: 'DELETE' }),
-
-  // Specification (Giai đoạn 6)
-  getSpecification: (productId) => apiRequest(`/api/products/${productId}/specification`, { auth: false }),
-  saveSpecification: (productId, payload, exists) =>
-    apiRequest(`/api/products/${productId}/specification`, { method: exists ? 'PUT' : 'POST', body: payload }),
 
   // Customer Support (Giai đoạn 7)
   createSupport: (payload) => apiRequest('/api/support', { method: 'POST', body: payload }),

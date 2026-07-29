@@ -418,7 +418,7 @@ namespace MotorBikeShop.API.Migrations
                     b.Property<int>("ImportReceiptId")
                         .HasColumnType("int");
 
-                    b.Property<int>("ProductId")
+                    b.Property<int>("ProductSkuId")
                         .HasColumnType("int");
 
                     b.Property<int>("Quantity")
@@ -427,9 +427,9 @@ namespace MotorBikeShop.API.Migrations
                     b.Property<decimal>("UnitCost")
                         .HasColumnType("decimal(18,2)");
 
-                    b.HasKey("ImportReceiptId", "ProductId");
+                    b.HasKey("ImportReceiptId", "ProductSkuId");
 
-                    b.HasIndex("ProductId");
+                    b.HasIndex("ProductSkuId");
 
                     b.ToTable("ImportReceiptDetails");
                 });
@@ -543,23 +543,43 @@ namespace MotorBikeShop.API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("ColorNameSnapshot")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<int>("OrderId")
                         .HasColumnType("int");
 
-                    b.Property<int>("ProductId")
+                    b.Property<string>("ProductNameSnapshot")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("ProductSkuId")
                         .HasColumnType("int");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
+                    b.Property<string>("SkuCodeSnapshot")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
                     b.Property<decimal>("UnitPrice")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<string>("VariantNameSnapshot")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("ProductId");
+                    b.HasIndex("ProductSkuId");
 
-                    b.HasIndex("OrderId", "ProductId")
+                    b.HasIndex("OrderId", "ProductSkuId")
                         .IsUnique();
 
                     b.ToTable("OrderItems", t =>
@@ -641,35 +661,20 @@ namespace MotorBikeShop.API.Migrations
                     b.Property<int>("BrandId")
                         .HasColumnType("int");
 
-                    b.Property<string>("Color")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
-
-                    b.Property<string>("ImageUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
-
-                    b.Property<int>("StockQuantity")
-                        .HasColumnType("int");
 
                     b.Property<int?>("VehicleTypeId")
                         .HasColumnType("int");
@@ -681,6 +686,46 @@ namespace MotorBikeShop.API.Migrations
                     b.HasIndex("VehicleTypeId");
 
                     b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("MotorBikeShop.API.Models.ProductImage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AltText")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsPrimary")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("ProductSkuId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductSkuId")
+                        .IsUnique()
+                        .HasFilter("[IsPrimary] = 1");
+
+                    b.HasIndex("ProductSkuId", "DisplayOrder");
+
+                    b.ToTable("ProductImages", t =>
+                        {
+                            t.HasCheckConstraint("CK_ProductImages_DisplayOrder_NonNegative", "[DisplayOrder] >= 0");
+                        });
                 });
 
             modelBuilder.Entity("MotorBikeShop.API.Models.ProductInterest", b =>
@@ -702,6 +747,115 @@ namespace MotorBikeShop.API.Migrations
                     b.HasIndex("ProductId", "ViewedAt");
 
                     b.ToTable("ProductInterests");
+                });
+
+            modelBuilder.Entity("MotorBikeShop.API.Models.ProductSku", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ColorHexCode")
+                        .HasMaxLength(9)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(9)");
+
+                    b.Property<string>("ColorName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("ProductVariantId")
+                        .HasColumnType("int");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("SkuCode")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(64)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)")
+                        .HasDefaultValue("Active");
+
+                    b.Property<int>("StockQuantity")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SkuCode")
+                        .IsUnique();
+
+                    b.HasIndex("ProductVariantId", "ColorName")
+                        .IsUnique();
+
+                    b.HasIndex("ProductVariantId", "Status");
+
+                    b.ToTable("ProductSkus", t =>
+                        {
+                            t.HasCheckConstraint("CK_ProductSkus_Price_NonNegative", "[Price] >= 0");
+
+                            t.HasCheckConstraint("CK_ProductSkus_Status", "[Status] IN ('Active', 'Inactive', 'Discontinued')");
+
+                            t.HasCheckConstraint("CK_ProductSkus_StockQuantity_NonNegative", "[StockQuantity] >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("MotorBikeShop.API.Models.ProductVariant", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)")
+                        .HasDefaultValue("Active");
+
+                    b.Property<string>("VersionCode")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId", "Status");
+
+                    b.HasIndex("ProductId", "VersionCode")
+                        .IsUnique();
+
+                    b.ToTable("ProductVariants", t =>
+                        {
+                            t.HasCheckConstraint("CK_ProductVariants_Status", "[Status] IN ('Active', 'Inactive', 'Discontinued')");
+                        });
                 });
 
             modelBuilder.Entity("MotorBikeShop.API.Models.RefreshToken", b =>
@@ -735,65 +889,6 @@ namespace MotorBikeShop.API.Migrations
                     b.HasIndex("UserId", "ExpiresAt");
 
                     b.ToTable("RefreshTokens");
-                });
-
-            modelBuilder.Entity("MotorBikeShop.API.Models.Specification", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal?>("CurbWeightKg")
-                        .HasPrecision(8, 2)
-                        .HasColumnType("decimal(8,2)");
-
-                    b.Property<string>("Dimensions")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<int>("EngineCapacityCc")
-                        .HasColumnType("int");
-
-                    b.Property<string>("EngineType")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<decimal?>("FuelConsumptionLitersPer100Km")
-                        .HasPrecision(8, 2)
-                        .HasColumnType("decimal(8,2)");
-
-                    b.Property<decimal?>("FuelTankCapacityLiters")
-                        .HasPrecision(8, 2)
-                        .HasColumnType("decimal(8,2)");
-
-                    b.Property<string>("FuelType")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<int>("HorsePower")
-                        .HasColumnType("int");
-
-                    b.Property<string>("MaxPower")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("OtherDetails")
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProductId")
-                        .IsUnique();
-
-                    b.ToTable("Specifications");
                 });
 
             modelBuilder.Entity("MotorBikeShop.API.Models.Supplier", b =>
@@ -889,6 +984,56 @@ namespace MotorBikeShop.API.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("SupportRequests");
+                });
+
+            modelBuilder.Entity("MotorBikeShop.API.Models.VariantSpecification", b =>
+                {
+                    b.Property<int>("ProductVariantId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("CurbWeightKg")
+                        .HasPrecision(8, 2)
+                        .HasColumnType("decimal(8,2)");
+
+                    b.Property<string>("Dimensions")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("EngineCapacityCc")
+                        .HasColumnType("int");
+
+                    b.Property<string>("EngineType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<decimal?>("FuelConsumptionLitersPer100Km")
+                        .HasPrecision(8, 2)
+                        .HasColumnType("decimal(8,2)");
+
+                    b.Property<decimal?>("FuelTankCapacityLiters")
+                        .HasPrecision(8, 2)
+                        .HasColumnType("decimal(8,2)");
+
+                    b.Property<string>("FuelType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("HorsePower")
+                        .HasColumnType("int");
+
+                    b.Property<string>("MaxPower")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("OtherDetails")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.HasKey("ProductVariantId");
+
+                    b.ToTable("VariantSpecifications");
                 });
 
             modelBuilder.Entity("MotorBikeShop.API.Models.VehicleType", b =>
@@ -1024,15 +1169,15 @@ namespace MotorBikeShop.API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MotorBikeShop.API.Models.Product", "Product")
+                    b.HasOne("MotorBikeShop.API.Models.ProductSku", "ProductSku")
                         .WithMany("ImportReceiptDetails")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasForeignKey("ProductSkuId")
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("ImportReceipt");
 
-                    b.Navigation("Product");
+                    b.Navigation("ProductSku");
                 });
 
             modelBuilder.Entity("MotorBikeShop.API.Models.News", b =>
@@ -1072,15 +1217,15 @@ namespace MotorBikeShop.API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MotorBikeShop.API.Models.Product", "Product")
+                    b.HasOne("MotorBikeShop.API.Models.ProductSku", "ProductSku")
                         .WithMany("OrderItems")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasForeignKey("ProductSkuId")
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Order");
 
-                    b.Navigation("Product");
+                    b.Navigation("ProductSku");
                 });
 
             modelBuilder.Entity("MotorBikeShop.API.Models.PaymentAttempt", b =>
@@ -1119,10 +1264,43 @@ namespace MotorBikeShop.API.Migrations
                     b.Navigation("VehicleType");
                 });
 
+            modelBuilder.Entity("MotorBikeShop.API.Models.ProductImage", b =>
+                {
+                    b.HasOne("MotorBikeShop.API.Models.ProductSku", "ProductSku")
+                        .WithMany("Images")
+                        .HasForeignKey("ProductSkuId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ProductSku");
+                });
+
             modelBuilder.Entity("MotorBikeShop.API.Models.ProductInterest", b =>
                 {
                     b.HasOne("MotorBikeShop.API.Models.Product", "Product")
                         .WithMany("Interests")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("MotorBikeShop.API.Models.ProductSku", b =>
+                {
+                    b.HasOne("MotorBikeShop.API.Models.ProductVariant", "ProductVariant")
+                        .WithMany("Skus")
+                        .HasForeignKey("ProductVariantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ProductVariant");
+                });
+
+            modelBuilder.Entity("MotorBikeShop.API.Models.ProductVariant", b =>
+                {
+                    b.HasOne("MotorBikeShop.API.Models.Product", "Product")
+                        .WithMany("Variants")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1141,17 +1319,6 @@ namespace MotorBikeShop.API.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("MotorBikeShop.API.Models.Specification", b =>
-                {
-                    b.HasOne("MotorBikeShop.API.Models.Product", "Product")
-                        .WithOne("Specification")
-                        .HasForeignKey("MotorBikeShop.API.Models.Specification", "ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Product");
-                });
-
             modelBuilder.Entity("MotorBikeShop.API.Models.SupportRequest", b =>
                 {
                     b.HasOne("AppUser", "AssignedEmployee")
@@ -1168,6 +1335,17 @@ namespace MotorBikeShop.API.Migrations
                     b.Navigation("AssignedEmployee");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("MotorBikeShop.API.Models.VariantSpecification", b =>
+                {
+                    b.HasOne("MotorBikeShop.API.Models.ProductVariant", "ProductVariant")
+                        .WithOne("Specification")
+                        .HasForeignKey("MotorBikeShop.API.Models.VariantSpecification", "ProductVariantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ProductVariant");
                 });
 
             modelBuilder.Entity("AppUser", b =>
@@ -1210,14 +1388,25 @@ namespace MotorBikeShop.API.Migrations
 
             modelBuilder.Entity("MotorBikeShop.API.Models.Product", b =>
                 {
-                    b.Navigation("ImportReceiptDetails");
-
                     b.Navigation("Interests");
 
-                    b.Navigation("OrderItems");
+                    b.Navigation("Variants");
+                });
 
-                    b.Navigation("Specification")
-                        .IsRequired();
+            modelBuilder.Entity("MotorBikeShop.API.Models.ProductSku", b =>
+                {
+                    b.Navigation("Images");
+
+                    b.Navigation("ImportReceiptDetails");
+
+                    b.Navigation("OrderItems");
+                });
+
+            modelBuilder.Entity("MotorBikeShop.API.Models.ProductVariant", b =>
+                {
+                    b.Navigation("Skus");
+
+                    b.Navigation("Specification");
                 });
 
             modelBuilder.Entity("MotorBikeShop.API.Models.Supplier", b =>

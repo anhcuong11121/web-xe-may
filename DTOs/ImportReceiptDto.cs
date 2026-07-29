@@ -2,8 +2,11 @@ namespace MotorBikeShop.API.DTOs;
 
 public class ImportReceiptDetailDto
 {
-    public int ProductId { get; set; }
+    public int ProductSkuId { get; set; }
     public string ProductName { get; set; } = string.Empty;
+    public string VariantName { get; set; } = string.Empty;
+    public string ColorName { get; set; } = string.Empty;
+    public string SkuCode { get; set; } = string.Empty;
     public int Quantity { get; set; }
     public decimal UnitCost { get; set; }
     public decimal LineTotal => Quantity * UnitCost;

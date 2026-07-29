@@ -1020,6 +1020,16 @@
             <h2 id="rpName" class="fw-bold">Tên sản phẩm</h2>
             <p class="fs-4 text-danger fw-bold mb-2" id="rpPrice">0 VNĐ</p>
             <p class="text-muted" id="rpDescription">Mô tả sản phẩm...</p>
+            <div class="row g-2 mb-3" id="rpCatalogSelectors">
+              <div class="col-md-6">
+                <label for="rpVariantSelect" class="form-label fw-semibold mb-1">Phiên bản</label>
+                <select id="rpVariantSelect" class="form-select"></select>
+              </div>
+              <div class="col-md-6">
+                <label for="rpSkuSelect" class="form-label fw-semibold mb-1">Màu sắc / SKU</label>
+                <select id="rpSkuSelect" class="form-select"></select>
+              </div>
+            </div>
             <div class="d-flex flex-wrap gap-2 mb-3" id="rpSpecs"></div>
             <div class="mb-3">
               <span class="badge" id="rpStock">Còn hàng</span>
@@ -1046,22 +1056,21 @@
             <!-- Panel đặt cọc, hiện sau khi đặt hàng thành công -->
             <div id="rpDepositPanel" class="mt-3 p-3 border rounded bg-light" style="display:none;">
               <h6 class="fw-bold mb-2"><i class="fa-solid fa-money-check-dollar me-2 text-brand"></i>Đặt cọc giữ xe</h6>
-              <div id="rpPaymentModeNotice" class="alert alert-warning py-2 small">Đây là thanh toán demo, không phát sinh giao dịch tiền thật.</div>
               <div class="row g-2 align-items-end">
                 <div class="col-auto">
                   <label class="form-label small mb-1">Số tiền cọc (VNĐ)</label>
                   <input type="number" id="rpDepositAmount" class="form-control form-control-sm" style="width:160px;" value="2000000" min="1">
                 </div>
                 <div class="col-auto">
-                  <label class="form-label small mb-1">Hình thức thanh toán demo</label>
+                  <label class="form-label small mb-1">Hình thức thanh toán</label>
                   <select id="rpDepositMethod" class="form-select form-select-sm">
-                    <option value="Fake">Mô phỏng thành công</option>
+                    <option value="Fake">Xác nhận thanh toán</option>
                     <option value="Cash">Tiền mặt — nhân viên xác nhận</option>
                     <option value="BankTransfer">Chuyển khoản — nhân viên xác nhận</option>
                   </select>
                 </div>
                 <div class="col-auto">
-                  <button class="btn btn-outline-primary btn-sm" id="rpDepositBtn">Khởi tạo thanh toán</button>
+                  <button class="btn btn-outline-primary btn-sm" id="rpDepositBtn">Xác nhận đặt cọc</button>
                 </div>
               </div>
               <div id="rpDepositResult" class="mt-2"></div>
@@ -2494,6 +2503,7 @@
     let currentVariants = currentProductConfig.variants;
     let currentSlides = currentProductConfig.slides;
     let currentSpecs = currentProductConfig.specs || [];
+    let catalogSelectionChangedHandler = null;
 
     const variantList = document.getElementById("variantList");
     const colorList = document.getElementById("colorList");
@@ -2531,6 +2541,16 @@
     function formatPrice(value) {
       if (value === "Liên hệ") return "Liên hệ";
       return value + " <span>VNĐ</span>";
+    }
+
+    function escapeCatalogText(value) {
+      return String(value ?? "").replace(/[<>&"']/g, character => ({
+        "<": "&lt;",
+        ">": "&gt;",
+        "&": "&amp;",
+        "\"": "&quot;",
+        "'": "&#39;"
+      })[character]);
     }
 
     function getSelectedBike() {
@@ -2679,7 +2699,7 @@
     function renderVariantList() {
       variantList.innerHTML = currentVariants.map((item, index) => `
         <button class="ab-version-btn ${index === currentVariantIndex ? "active" : ""}" data-index="${index}">
-          ${item.label}
+          ${escapeCatalogText(item.label)}
         </button>
       `).join("");
 
@@ -2713,7 +2733,7 @@
       colorList.innerHTML = variant.colors.map((color, index) => `
         <div class="ab-color-option ${index === currentColorIndex ? "active" : ""}" data-index="${index}">
           <div class="ab-color-chip" style="background:${color.swatch};"></div>
-          <span class="ab-color-name">${color.name}</span>
+          <span class="ab-color-name">${escapeCatalogText(color.name)}</span>
         </div>
       `).join("");
 
@@ -2729,7 +2749,7 @@
     function updateStage() {
       const variant = currentVariants[currentVariantIndex];
       const color = variant.colors[currentColorIndex];
-      currentVariantLabel.innerHTML = `${variant.label} <i class="fa-solid fa-angle-up"></i>`;
+      currentVariantLabel.innerHTML = `${escapeCatalogText(variant.label)} <i class="fa-solid fa-angle-up"></i>`;
       priceValue.innerHTML = formatPrice(color.price);
 
       stageWrap.classList.add("is-changing");
@@ -2738,6 +2758,10 @@
         bikeImage.alt = currentProductConfig.heroModel + " - " + color.name;
         stageWrap.classList.remove("is-changing");
       }, 180);
+
+      if (typeof catalogSelectionChangedHandler === "function") {
+        catalogSelectionChangedHandler(variant, color);
+      }
     }
 
     function renderPricingUI() {
@@ -2917,20 +2941,144 @@
       if (!realProductId || typeof Api === 'undefined') return;
 
       let currentRealProduct = null;
+      let currentRealSku = null;
       let currentRealOrderId = null;
+
+      function resolveCatalogImage(url, fallback = 'assets/img/banner-1.jpg') {
+        if (!url) return fallback;
+        if (/^https?:\/\//i.test(url) || url.startsWith('assets/') || url.startsWith('/assets/')) {
+          return url;
+        }
+        return API_BASE_URL + (url.startsWith('/') ? url : '/' + url);
+      }
+
+      function specificationRows(specification) {
+        if (!specification) return [];
+        const rows = [
+          { label: 'Động cơ', value: specification.engineType || 'Chưa cập nhật' },
+          { label: 'Nhiên liệu', value: specification.fuelType || 'Chưa cập nhật' },
+          { label: 'Dung tích xi-lanh', value: `${specification.engineCapacityCc || 0} cc` },
+          { label: 'Công suất', value: `${specification.horsePower || 0} HP` }
+        ];
+        if (specification.curbWeightKg != null) rows.push({ label: 'Khối lượng', value: `${specification.curbWeightKg} kg` });
+        if (specification.dimensions) rows.push({ label: 'Kích thước', value: specification.dimensions });
+        if (specification.fuelTankCapacityLiters != null) rows.push({ label: 'Dung tích bình', value: `${specification.fuelTankCapacityLiters} lít` });
+        if (specification.maxPower) rows.push({ label: 'Công suất tối đa', value: specification.maxPower });
+        if (specification.fuelConsumptionLitersPer100Km != null) {
+          rows.push({ label: 'Mức tiêu thụ', value: `${specification.fuelConsumptionLitersPer100Km} lít/100 km` });
+        }
+        if (specification.otherDetails) rows.push({ label: 'Thông số khác', value: specification.otherDetails });
+        return rows;
+      }
+
+      function buildCatalogVariants(product) {
+        return (product.variants || [])
+          .filter(variant => (variant.skus || []).length > 0)
+          .map(variant => ({
+            label: variant.name,
+            sourceVariant: variant,
+            colors: variant.skus.map(sku => {
+              const primaryImage = (sku.images || []).find(image => image.isPrimary) || (sku.images || [])[0];
+              return {
+                name: sku.colorName,
+                swatch: sku.colorHexCode || '#6c757d',
+                price: Number(sku.price || 0).toLocaleString('vi-VN'),
+                image: resolveCatalogImage(primaryImage?.url || product.primaryImageUrl),
+                sourceSku: sku
+              };
+            })
+          }));
+      }
+
+      function replaceSelectOptions(select, options, selectedIndex) {
+        select.replaceChildren(...options.map((label, index) =>
+          new Option(label, String(index), false, index === selectedIndex)));
+      }
+
+      function renderRealSelection(variant, color) {
+        if (!variant?.sourceVariant || !color?.sourceSku || !currentRealProduct) return;
+        const sku = color.sourceSku;
+        const specification = variant.sourceVariant.specification;
+        currentRealSku = sku;
+
+        replaceSelectOptions(
+          document.getElementById('rpVariantSelect'),
+          currentVariants.map(item => item.label),
+          currentVariantIndex);
+        replaceSelectOptions(
+          document.getElementById('rpSkuSelect'),
+          variant.colors.map(item => `${item.name} — ${item.sourceSku.skuCode}`),
+          currentColorIndex);
+
+        document.getElementById('rpPrice').textContent = formatCurrencyVnd(sku.price);
+        document.getElementById('rpImage').src = color.image;
+        document.getElementById('rpImage').alt =
+          `${currentRealProduct.name} - ${variant.sourceVariant.name} - ${sku.colorName}`;
+
+        const stockBadge = document.getElementById('rpStock');
+        const orderButton = document.getElementById('rpOrderBtn');
+        const quantityInput = document.getElementById('rpQuantity');
+        if (sku.stockQuantity > 0) {
+          stockBadge.className = 'badge bg-success';
+          stockBadge.textContent = `Còn hàng (${sku.stockQuantity} xe)`;
+          orderButton.disabled = false;
+          quantityInput.max = sku.stockQuantity;
+          quantityInput.value = Math.min(Math.max(Number(quantityInput.value) || 1, 1), sku.stockQuantity);
+        } else {
+          stockBadge.className = 'badge bg-secondary';
+          stockBadge.textContent = 'Hết hàng';
+          orderButton.disabled = true;
+          quantityInput.max = 0;
+          quantityInput.value = 1;
+        }
+
+        const specsWrap = document.getElementById('rpSpecs');
+        specsWrap.replaceChildren();
+        specificationRows(specification).forEach(item => {
+          const badge = document.createElement('span');
+          badge.className = 'badge bg-light text-dark border';
+          badge.textContent = `${item.label}: ${item.value}`;
+          specsWrap.appendChild(badge);
+        });
+
+        currentSpecs = specificationRows(specification);
+        specsSection.hidden = currentSpecs.length === 0;
+        if (currentSpecs.length) {
+          specsHeading.textContent = `Thông số kỹ thuật ${currentRealProduct.name} - ${variant.sourceVariant.name}`;
+          renderSpecsTable();
+        }
+      }
+
+      function bindCatalogSelectors() {
+        document.getElementById('rpVariantSelect').addEventListener('change', event => {
+          currentVariantIndex = Number(event.target.value);
+          currentColorIndex = 0;
+          renderPricingUI();
+        });
+        document.getElementById('rpSkuSelect').addEventListener('change', event => {
+          currentColorIndex = Number(event.target.value);
+          renderPricingUI();
+        });
+      }
 
       async function loadRealProduct() {
         const panel = document.getElementById('realProductPanel');
         try {
-          const p = await Api.getProduct(realProductId);
+          const p = await Api.getProductCatalog(realProductId);
           Api.recordProductInterest(realProductId).catch(() => {});
           currentRealProduct = p;
 
           // Đồng bộ phần giới thiệu chi tiết đã thiết kế sẵn với sản phẩm thật từ API.
           const productKey = getProductKeyFromBike(p);
           applyProductConfig(productKey, p.name);
+          currentVariants = buildCatalogVariants(p);
+          if (!currentVariants.length) {
+            throw new Error('Sản phẩm chưa có phiên bản và SKU đang hoạt động.');
+          }
+          currentVariantIndex = 0;
+          currentColorIndex = 0;
+          catalogSelectionChangedHandler = renderRealSelection;
           renderPricingUI();
-          renderSpecsTable();
           renderFeatureThumbs();
           if (currentSlides.length) renderSlide(0);
 
@@ -2943,54 +3091,53 @@
 
           document.getElementById('rpBrand').textContent = p.brandName || 'Xe máy';
           document.getElementById('rpName').textContent = p.name;
-          document.getElementById('rpPrice').textContent = formatCurrencyVnd(p.price);
           document.getElementById('rpDescription').textContent = p.description;
-          document.getElementById('rpImage').src = !p.imageUrl
-            ? 'assets/img/banner-1.jpg'
-            : (p.imageUrl.startsWith('/assets/') ? p.imageUrl : API_BASE_URL + p.imageUrl);
-
-          const stockBadge = document.getElementById('rpStock');
-          if (p.stockQuantity > 0) {
-            stockBadge.className = 'badge bg-success';
-            stockBadge.textContent = `Còn hàng (${p.stockQuantity} xe)`;
-          } else {
-            stockBadge.className = 'badge bg-secondary';
-            stockBadge.textContent = 'Hết hàng';
-            document.getElementById('rpOrderBtn').disabled = true;
-          }
-
-          const specsWrap = document.getElementById('rpSpecs');
-          specsWrap.innerHTML = '';
-          if (p.specification) {
-            const specs = [
-              `Động cơ: ${p.specification.engineType}`,
-              `Nhiên liệu: ${p.specification.fuelType}`,
-              `Dung tích: ${p.specification.engineCapacityCc} cc`,
-              `Công suất: ${p.specification.horsePower} HP`
-            ];
-            if (p.specification.curbWeightKg != null) specs.push(`Khối lượng: ${p.specification.curbWeightKg} kg`);
-            if (p.specification.dimensions) specs.push(`Kích thước: ${p.specification.dimensions}`);
-            if (p.specification.fuelTankCapacityLiters != null) specs.push(`Bình xăng: ${p.specification.fuelTankCapacityLiters} lít`);
-            if (p.specification.maxPower) specs.push(`Công suất tối đa: ${p.specification.maxPower}`);
-            if (p.specification.fuelConsumptionLitersPer100Km != null) specs.push(`Tiêu thụ nhiên liệu: ${p.specification.fuelConsumptionLitersPer100Km} lít/100 km`);
-            if (p.specification.otherDetails) specs.push(`Thông số khác: ${p.specification.otherDetails}`);
-            specs.forEach(s => {
-              const badge = document.createElement('span');
-              badge.className = 'badge bg-light text-dark border';
-              badge.textContent = s;
-              specsWrap.appendChild(badge);
-            });
-          }
-
-          document.getElementById('rpQuantity').max = p.stockQuantity;
+          bindCatalogSelectors();
+          renderRealSelection(
+            currentVariants[currentVariantIndex],
+            currentVariants[currentVariantIndex].colors[currentColorIndex]);
         } catch (err) {
           panel.style.display = '';
           panel.querySelector('.card-body').innerHTML = `<div class="alert alert-danger mb-0">Không tải được sản phẩm: ${apiErrorMessage(err)}</div>`;
         }
       }
 
+      async function refreshCatalogAfterOrderFailure(selectedSkuId) {
+        try {
+          const product = await Api.getProductCatalog(realProductId);
+          currentRealProduct = product;
+          currentVariants = buildCatalogVariants(product);
+          if (!currentVariants.length) {
+            currentRealSku = null;
+            document.getElementById('rpOrderBtn').disabled = true;
+            document.getElementById('rpStock').className = 'badge bg-secondary';
+            document.getElementById('rpStock').textContent = 'Không còn SKU khả dụng';
+            return;
+          }
+
+          let nextVariantIndex = 0;
+          let nextColorIndex = 0;
+          currentVariants.some((variant, variantIndex) => {
+            const skuIndex = variant.colors.findIndex(color => color.sourceSku.id === selectedSkuId);
+            if (skuIndex < 0) return false;
+            nextVariantIndex = variantIndex;
+            nextColorIndex = skuIndex;
+            return true;
+          });
+          currentVariantIndex = nextVariantIndex;
+          currentColorIndex = nextColorIndex;
+          renderPricingUI();
+        } catch {
+          // Giữ thông báo lỗi đặt hàng ban đầu nếu việc làm mới catalog cũng thất bại.
+        }
+      }
+
       async function handleOrder() {
         const resultDiv = document.getElementById('rpOrderResult');
+        if (!currentRealSku) {
+          resultDiv.innerHTML = '<div class="alert alert-warning py-2 mb-0">Vui lòng chọn phiên bản và màu xe.</div>';
+          return;
+        }
         if (!Session.isLoggedIn()) {
           resultDiv.innerHTML = '<div class="alert alert-warning py-2 mb-0">Vui lòng đăng nhập bằng tài khoản Khách hàng để đặt mua xe.</div>';
           setTimeout(() => window.location.href = 'login.html', 1200);
@@ -3007,6 +3154,10 @@
         const deliveryAddress = document.getElementById('rpDeliveryAddress').value.trim();
         const expectedDeliveryDate = document.getElementById('rpExpectedDeliveryDate').value;
         const note = document.getElementById('rpOrderNote').value.trim() || null;
+        if (!Number.isInteger(quantity) || quantity < 1 || quantity > currentRealSku.stockQuantity) {
+          resultDiv.innerHTML = `<div class="alert alert-warning py-2 mb-0">Số lượng phải từ 1 đến ${currentRealSku.stockQuantity} xe của SKU đã chọn.</div>`;
+          return;
+        }
         if (!receiverName || !receiverPhone || !deliveryAddress || !expectedDeliveryDate) {
           resultDiv.innerHTML = '<div class="alert alert-warning py-2 mb-0">Vui lòng nhập đầy đủ thông tin nhận xe.</div>';
           return;
@@ -3018,13 +3169,16 @@
             deliveryAddress,
             expectedDeliveryDate,
             note,
-            items: [{ productId: currentRealProduct.id, quantity }]
+            items: [{ productSkuId: currentRealSku.id, quantity }]
           });
           currentRealOrderId = order.id;
           resultDiv.innerHTML = `<div class="alert alert-success py-2 mb-0">✅ Đặt hàng thành công! Mã đơn hàng #${order.id} - Tổng tiền: ${formatCurrencyVnd(order.totalAmount)}</div>`;
           document.getElementById('rpDepositPanel').style.display = '';
         } catch (err) {
-          resultDiv.innerHTML = `<div class="alert alert-danger py-2 mb-0">❌ ${apiErrorMessage(err)}</div>`;
+          const selectedSkuId = currentRealSku?.id;
+          const message = apiErrorMessage(err);
+          await refreshCatalogAfterOrderFailure(selectedSkuId);
+          resultDiv.innerHTML = `<div class="alert alert-danger py-2 mb-0">❌ ${message}<br><small>Tồn kho và trạng thái SKU vừa được cập nhật lại.</small></div>`;
         }
       }
 
@@ -3065,16 +3219,7 @@
           resultDiv.innerHTML = `<div class="alert alert-danger py-2 mb-0 small">❌ ${apiErrorMessage(err)}</div>`;
         } finally {
           submitButton.disabled = completedFakePayment;
-          submitButton.textContent = completedFakePayment ? 'Đã đặt cọc' : 'Khởi tạo thanh toán';
-        }
-      }
-
-      async function loadPaymentConfiguration() {
-        try {
-          const configuration = await Api.getPaymentConfiguration();
-          document.getElementById('rpPaymentModeNotice').textContent = configuration.notice;
-        } catch {
-          // Thông báo mặc định trong HTML vẫn thể hiện đúng chế độ demo.
+          submitButton.textContent = completedFakePayment ? 'Đã đặt cọc' : 'Xác nhận đặt cọc';
         }
       }
 
@@ -3086,7 +3231,6 @@
         deliveryDateInput.value = localDate;
         document.getElementById('rpReceiverName').value = Session.getUser()?.fullName || '';
         loadRealProduct();
-        loadPaymentConfiguration();
         document.getElementById('rpOrderBtn').addEventListener('click', handleOrder);
         document.getElementById('rpDepositBtn').addEventListener('click', handleDeposit);
       });

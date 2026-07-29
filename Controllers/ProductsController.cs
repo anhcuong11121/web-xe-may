@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MotorBikeShop.API.DTOs;
 using MotorBikeShop.API.Services;
@@ -35,6 +34,30 @@ public class ProductsController : ControllerBase
     {
         var result = await _productService.GetProductsAsync(query);
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Danh sách catalog theo mô hình Product - Variant - SKU.
+    /// Endpoint mới được thêm song song để giữ tương thích API legacy.
+    /// </summary>
+    [HttpGet("catalog")]
+    public async Task<ActionResult<PagedResult<ProductCatalogSummaryDto>>> GetProductCatalog(
+        [FromQuery] ProductQueryParameters query)
+    {
+        var result = await _productService.GetCatalogProductsAsync(query);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Chi tiết Product cùng các Variant, Specification, SKU và ảnh đang hoạt động.
+    /// </summary>
+    [HttpGet("{id:int}/catalog")]
+    public async Task<ActionResult<ProductCatalogDetailDto>> GetProductCatalogById(int id)
+    {
+        var product = await _productService.GetProductCatalogByIdAsync(id);
+        return product == null
+            ? NotFound(new { error = "Không tìm thấy sản phẩm." })
+            : Ok(product);
     }
 
     /// <summary>
@@ -112,21 +135,4 @@ public class ProductsController : ControllerBase
         return NoContent();
     }
 
-    /// <summary>
-    /// Nhân viên/Admin upload ảnh sản phẩm (multipart/form-data, field "file").
-    /// </summary>
-    [Authorize(Roles = "Employee,Admin")]
-    [HttpPost("{id:int}/image")]
-    public async Task<ActionResult<ProductDto>> UploadProductImage(int id, IFormFile file)
-    {
-        var result = await _productService.UploadProductImageAsync(id, file);
-        if (!result.Succeeded)
-        {
-            return result.Error == "Không tìm thấy sản phẩm."
-                ? NotFound(new { error = result.Error })
-                : BadRequest(new { error = result.Error });
-        }
-
-        return Ok(result.Data);
-    }
 }

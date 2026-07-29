@@ -26,12 +26,12 @@ public class PaymentsController : ControllerBase
         {
             Mode = "Demo",
             HasRealPaymentGateway = false,
-            Notice = "Hệ thống không kết nối cổng thanh toán thật. Fake được mô phỏng tự động; chuyển khoản và tiền mặt do nhân viên xác nhận thủ công.",
+            Notice = string.Empty,
             Methods = new List<PaymentMethodConfigurationDto>
             {
-                new() { Code = PaymentMethods.Demo, Name = "Thanh toán giả lập", ConfirmationType = "Simulated" },
-                new() { Code = PaymentMethods.BankTransfer, Name = "Chuyển khoản demo", ConfirmationType = "ManualConfirmation" },
-                new() { Code = PaymentMethods.Cash, Name = "Tiền mặt demo", ConfirmationType = "ManualConfirmation" }
+                new() { Code = PaymentMethods.Demo, Name = "Xác nhận thanh toán", ConfirmationType = "Simulated" },
+                new() { Code = PaymentMethods.BankTransfer, Name = "Chuyển khoản", ConfirmationType = "ManualConfirmation" },
+                new() { Code = PaymentMethods.Cash, Name = "Tiền mặt", ConfirmationType = "ManualConfirmation" }
             }
         });
     }

@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using MotorBikeShop.API.Data;
 using MotorBikeShop.API.DTOs;
@@ -9,16 +7,11 @@ namespace MotorBikeShop.API.Services;
 
 public class ProductService : IProductService
 {
-    private static readonly string[] AllowedImageExtensions = { ".jpg", ".png", ".webp" };
-    private const long MaxImageSizeBytes = 5 * 1024 * 1024; // 5MB
-
     private readonly ApplicationDbContext _context;
-    private readonly IWebHostEnvironment _environment;
 
-    public ProductService(ApplicationDbContext context, IWebHostEnvironment environment)
+    public ProductService(ApplicationDbContext context)
     {
         _context = context;
-        _environment = environment;
     }
 
     public async Task<PagedResult<ProductDto>> GetProductsAsync(ProductQueryParameters query)
@@ -26,7 +19,6 @@ public class ProductService : IProductService
         var productsQuery = _context.Products
             .Include(p => p.Brand)
             .Include(p => p.VehicleType)
-            .Include(p => p.Specification)
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(query.Keyword))
@@ -51,14 +43,15 @@ public class ProductService : IProductService
             productsQuery = productsQuery.Where(p => p.Status == status);
         }
 
-        if (query.MinPrice.HasValue)
+        if (query.MinPrice.HasValue || query.MaxPrice.HasValue)
         {
-            productsQuery = productsQuery.Where(p => p.Price >= query.MinPrice.Value);
-        }
-
-        if (query.MaxPrice.HasValue)
-        {
-            productsQuery = productsQuery.Where(p => p.Price <= query.MaxPrice.Value);
+            productsQuery = productsQuery.Where(product => product.Variants
+                .Where(variant => variant.Status == CatalogStatuses.Active)
+                .SelectMany(variant => variant.Skus)
+                .Any(sku =>
+                    sku.Status == CatalogStatuses.Active &&
+                    (!query.MinPrice.HasValue || sku.Price >= query.MinPrice.Value) &&
+                    (!query.MaxPrice.HasValue || sku.Price <= query.MaxPrice.Value)));
         }
 
         var pageNumber = query.PageNumber < 1 ? 1 : query.PageNumber;
@@ -86,10 +79,138 @@ public class ProductService : IProductService
         var product = await _context.Products
             .Include(p => p.Brand)
             .Include(p => p.VehicleType)
-            .Include(p => p.Specification)
             .FirstOrDefaultAsync(p => p.Id == id);
 
         return product == null ? null : MapToDto(product);
+    }
+
+    public async Task<PagedResult<ProductCatalogSummaryDto>> GetCatalogProductsAsync(ProductQueryParameters query)
+    {
+        var productsQuery = _context.Products
+            .AsNoTracking()
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(query.Keyword))
+        {
+            var keyword = query.Keyword.Trim();
+            productsQuery = productsQuery.Where(product =>
+                EF.Functions.Like(product.Name, $"%{keyword}%"));
+        }
+
+        if (query.BrandId.HasValue)
+        {
+            productsQuery = productsQuery.Where(product =>
+                product.BrandId == query.BrandId.Value);
+        }
+
+        if (query.VehicleTypeId.HasValue)
+        {
+            productsQuery = productsQuery.Where(product =>
+                product.VehicleTypeId == query.VehicleTypeId.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.Status))
+        {
+            var status = query.Status.Trim();
+            productsQuery = productsQuery.Where(product => product.Status == status);
+        }
+
+        if (query.MinPrice.HasValue || query.MaxPrice.HasValue)
+        {
+            productsQuery = productsQuery.Where(product => product.Variants
+                .Where(variant => variant.Status == CatalogStatuses.Active)
+                .SelectMany(variant => variant.Skus)
+                .Any(sku =>
+                    sku.Status == CatalogStatuses.Active &&
+                    (!query.MinPrice.HasValue || sku.Price >= query.MinPrice.Value) &&
+                    (!query.MaxPrice.HasValue || sku.Price <= query.MaxPrice.Value)));
+        }
+
+        var pageNumber = query.PageNumber < 1 ? 1 : query.PageNumber;
+        var pageSize = query.PageSize < 1 ? 10 : Math.Min(query.PageSize, 100);
+        var totalCount = await productsQuery.CountAsync();
+
+        var items = await productsQuery
+            .OrderByDescending(product => product.Id)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .Select(product => new ProductCatalogSummaryDto
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Description = product.Description,
+                Status = product.Status,
+                BrandId = product.BrandId,
+                BrandName = product.Brand.Name,
+                VehicleTypeId = product.VehicleTypeId,
+                VehicleTypeName = product.VehicleType == null ? null : product.VehicleType.Name,
+                MinimumPrice = product.Variants
+                    .Where(variant => variant.Status == CatalogStatuses.Active)
+                    .SelectMany(variant => variant.Skus)
+                    .Where(sku => sku.Status == CatalogStatuses.Active)
+                    .Min(sku => (decimal?)sku.Price),
+                MaximumPrice = product.Variants
+                    .Where(variant => variant.Status == CatalogStatuses.Active)
+                    .SelectMany(variant => variant.Skus)
+                    .Where(sku => sku.Status == CatalogStatuses.Active)
+                    .Max(sku => (decimal?)sku.Price),
+                MinimumEngineCapacityCc = product.Variants
+                    .Where(variant =>
+                        variant.Status == CatalogStatuses.Active &&
+                        variant.Specification != null)
+                    .Min(variant => (int?)variant.Specification!.EngineCapacityCc),
+                MaximumEngineCapacityCc = product.Variants
+                    .Where(variant =>
+                        variant.Status == CatalogStatuses.Active &&
+                        variant.Specification != null)
+                    .Max(variant => (int?)variant.Specification!.EngineCapacityCc),
+                TotalStock = product.Variants
+                    .Where(variant => variant.Status == CatalogStatuses.Active)
+                    .SelectMany(variant => variant.Skus)
+                    .Where(sku => sku.Status == CatalogStatuses.Active)
+                    .Sum(sku => (long?)sku.StockQuantity) ?? 0,
+                AvailableSkuCount = product.Variants
+                    .Where(variant => variant.Status == CatalogStatuses.Active)
+                    .SelectMany(variant => variant.Skus)
+                    .Count(sku => sku.Status == CatalogStatuses.Active && sku.StockQuantity > 0),
+                PrimaryImageUrl = product.Variants
+                    .Where(variant => variant.Status == CatalogStatuses.Active)
+                    .SelectMany(variant => variant.Skus)
+                    .Where(sku => sku.Status == CatalogStatuses.Active)
+                    .SelectMany(sku => sku.Images)
+                    .OrderByDescending(image => image.IsPrimary)
+                    .ThenBy(image => image.DisplayOrder)
+                    .ThenBy(image => image.ProductSkuId)
+                    .ThenBy(image => image.Id)
+                    .Select(image => image.Url)
+                    .FirstOrDefault()
+            })
+            .ToListAsync();
+
+        return new PagedResult<ProductCatalogSummaryDto>
+        {
+            Items = items,
+            TotalCount = totalCount,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
+    }
+
+    public async Task<ProductCatalogDetailDto?> GetProductCatalogByIdAsync(int id)
+    {
+        var product = await _context.Products
+            .AsNoTracking()
+            .Include(item => item.Brand)
+            .Include(item => item.VehicleType)
+            .Include(item => item.Variants)
+                .ThenInclude(variant => variant.Specification)
+            .Include(item => item.Variants)
+                .ThenInclude(variant => variant.Skus)
+                    .ThenInclude(sku => sku.Images)
+            .AsSplitQuery()
+            .FirstOrDefaultAsync(item => item.Id == id);
+
+        return product == null ? null : MapToCatalogDetailDto(product);
     }
 
     public async Task<bool> RecordInterestAsync(int id)
@@ -116,27 +237,11 @@ public class ProductService : IProductService
 
         var product = new Product
         {
-            Name = request.Name,
-            Description = request.Description,
-            Price = request.Price,
-            StockQuantity = request.StockQuantity,
-            Color = request.Color,
+            Name = request.Name.Trim(),
+            Description = request.Description.Trim(),
             Status = request.Status,
             BrandId = request.BrandId,
-            VehicleTypeId = request.VehicleTypeId,
-            Specification = new Specification
-            {
-                EngineType = request.Specification.EngineType,
-                FuelType = request.Specification.FuelType,
-                EngineCapacityCc = request.Specification.EngineCapacityCc,
-                HorsePower = request.Specification.HorsePower,
-                CurbWeightKg = request.Specification.CurbWeightKg,
-                Dimensions = request.Specification.Dimensions,
-                FuelTankCapacityLiters = request.Specification.FuelTankCapacityLiters,
-                MaxPower = request.Specification.MaxPower,
-                FuelConsumptionLitersPer100Km = request.Specification.FuelConsumptionLitersPer100Km,
-                OtherDetails = request.Specification.OtherDetails
-            }
+            VehicleTypeId = request.VehicleTypeId
         };
 
         _context.Products.Add(product);
@@ -156,7 +261,6 @@ public class ProductService : IProductService
         var product = await _context.Products
             .Include(p => p.Brand)
             .Include(p => p.VehicleType)
-            .Include(p => p.Specification)
             .FirstOrDefaultAsync(p => p.Id == id);
 
         if (product == null)
@@ -176,29 +280,10 @@ public class ProductService : IProductService
             return ServiceResult<ProductDto>.Fail("VehicleTypeId không tồn tại.");
         }
 
-        product.Name = request.Name;
-        product.Description = request.Description;
-        product.Price = request.Price;
-        product.StockQuantity = request.StockQuantity;
-        product.Color = request.Color;
+        product.Name = request.Name.Trim();
+        product.Description = request.Description.Trim();
         product.Status = request.Status;
         product.VehicleTypeId = request.VehicleTypeId;
-
-        if (product.Specification == null)
-        {
-            product.Specification = new Specification { ProductId = product.Id };
-        }
-
-        product.Specification.EngineType = request.Specification.EngineType;
-        product.Specification.FuelType = request.Specification.FuelType;
-        product.Specification.EngineCapacityCc = request.Specification.EngineCapacityCc;
-        product.Specification.HorsePower = request.Specification.HorsePower;
-        product.Specification.CurbWeightKg = request.Specification.CurbWeightKg;
-        product.Specification.Dimensions = request.Specification.Dimensions;
-        product.Specification.FuelTankCapacityLiters = request.Specification.FuelTankCapacityLiters;
-        product.Specification.MaxPower = request.Specification.MaxPower;
-        product.Specification.FuelConsumptionLitersPer100Km = request.Specification.FuelConsumptionLitersPer100Km;
-        product.Specification.OtherDetails = request.Specification.OtherDetails;
 
         product.BrandId = request.BrandId;
         await _context.SaveChangesAsync();
@@ -209,10 +294,28 @@ public class ProductService : IProductService
 
     public async Task<ServiceResult<bool>> DeleteProductAsync(int id)
     {
-        var product = await _context.Products.FindAsync(id);
+        var product = await _context.Products
+            .Include(item => item.Variants)
+                .ThenInclude(variant => variant.Skus)
+            .FirstOrDefaultAsync(item => item.Id == id);
         if (product == null)
         {
             return ServiceResult<bool>.Fail("Không tìm thấy sản phẩm.");
+        }
+
+        var skus = product.Variants.SelectMany(variant => variant.Skus).ToList();
+        if (skus.Any(sku => sku.StockQuantity > 0))
+        {
+            return ServiceResult<bool>.Fail(
+                "Không thể xóa sản phẩm khi SKU vẫn còn tồn kho.");
+        }
+
+        var skuIds = skus.Select(sku => sku.Id).ToList();
+        if (skuIds.Count > 0 &&
+            await _context.ProductImages.AnyAsync(image => skuIds.Contains(image.ProductSkuId)))
+        {
+            return ServiceResult<bool>.Fail(
+                "Hãy xóa toàn bộ ảnh của các SKU trước khi xóa sản phẩm.");
         }
 
         _context.Products.Remove(product);
@@ -230,52 +333,6 @@ public class ProductService : IProductService
         return ServiceResult<bool>.Success(true);
     }
 
-    public async Task<ServiceResult<ProductDto>> UploadProductImageAsync(int id, IFormFile file)
-    {
-        var product = await _context.Products
-            .Include(p => p.Brand)
-            .Include(p => p.VehicleType)
-            .Include(p => p.Specification)
-            .FirstOrDefaultAsync(p => p.Id == id);
-
-        if (product == null)
-        {
-            return ServiceResult<ProductDto>.Fail("Không tìm thấy sản phẩm.");
-        }
-
-        if (file == null || file.Length == 0)
-        {
-            return ServiceResult<ProductDto>.Fail("Vui lòng chọn file ảnh.");
-        }
-
-        if (file.Length > MaxImageSizeBytes)
-        {
-            return ServiceResult<ProductDto>.Fail("Kích thước ảnh vượt quá 5MB.");
-        }
-
-        var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
-        if (!AllowedImageExtensions.Contains(extension))
-        {
-            return ServiceResult<ProductDto>.Fail("Định dạng ảnh không hợp lệ (chỉ chấp nhận .jpg, .png và .webp).");
-        }
-
-        var uploadsFolder = Path.Combine(_environment.WebRootPath ?? "wwwroot", "uploads", "products");
-        Directory.CreateDirectory(uploadsFolder);
-
-        var fileName = $"{Guid.NewGuid()}{extension}";
-        var filePath = Path.Combine(uploadsFolder, fileName);
-
-        await using (var stream = new FileStream(filePath, FileMode.Create))
-        {
-            await file.CopyToAsync(stream);
-        }
-
-        product.ImageUrl = $"/uploads/products/{fileName}";
-        await _context.SaveChangesAsync();
-
-        return ServiceResult<ProductDto>.Success(MapToDto(product));
-    }
-
     private static ProductDto MapToDto(Product product)
     {
         return new ProductDto
@@ -283,28 +340,60 @@ public class ProductService : IProductService
             Id = product.Id,
             Name = product.Name,
             Description = product.Description,
-            Price = product.Price,
-            StockQuantity = product.StockQuantity,
-            Color = product.Color,
             Status = product.Status,
-            ImageUrl = product.ImageUrl,
+            BrandId = product.BrandId,
+            BrandName = product.Brand?.Name ?? string.Empty,
+            VehicleTypeId = product.VehicleTypeId,
+            VehicleTypeName = product.VehicleType?.Name
+        };
+    }
+
+    private static ProductCatalogDetailDto MapToCatalogDetailDto(Product product)
+    {
+        var activeVariants = product.Variants
+            .Where(variant => variant.Status == CatalogStatuses.Active)
+            .OrderBy(variant => variant.Id)
+            .ToList();
+        var activeSkus = activeVariants
+            .SelectMany(variant => variant.Skus)
+            .Where(sku => sku.Status == CatalogStatuses.Active)
+            .ToList();
+
+        return new ProductCatalogDetailDto
+        {
+            Id = product.Id,
+            Name = product.Name,
+            Description = product.Description,
+            Status = product.Status,
             BrandId = product.BrandId,
             BrandName = product.Brand?.Name ?? string.Empty,
             VehicleTypeId = product.VehicleTypeId,
             VehicleTypeName = product.VehicleType?.Name,
-            Specification = product.Specification == null ? null : new SpecificationDto
-            {
-                EngineType = product.Specification.EngineType,
-                FuelType = product.Specification.FuelType,
-                EngineCapacityCc = product.Specification.EngineCapacityCc,
-                HorsePower = product.Specification.HorsePower,
-                CurbWeightKg = product.Specification.CurbWeightKg,
-                Dimensions = product.Specification.Dimensions,
-                FuelTankCapacityLiters = product.Specification.FuelTankCapacityLiters,
-                MaxPower = product.Specification.MaxPower,
-                FuelConsumptionLitersPer100Km = product.Specification.FuelConsumptionLitersPer100Km,
-                OtherDetails = product.Specification.OtherDetails
-            }
+            MinimumPrice = activeSkus.Count == 0 ? null : activeSkus.Min(sku => sku.Price),
+            MaximumPrice = activeSkus.Count == 0 ? null : activeSkus.Max(sku => sku.Price),
+            MinimumEngineCapacityCc = activeVariants
+                .Where(variant => variant.Specification != null)
+                .Select(variant => (int?)variant.Specification!.EngineCapacityCc)
+                .Min(),
+            MaximumEngineCapacityCc = activeVariants
+                .Where(variant => variant.Specification != null)
+                .Select(variant => (int?)variant.Specification!.EngineCapacityCc)
+                .Max(),
+            TotalStock = activeSkus.Sum(sku => (long)sku.StockQuantity),
+            AvailableSkuCount = activeSkus.Count(sku => sku.StockQuantity > 0),
+            PrimaryImageUrl = activeSkus
+                .SelectMany(sku => sku.Images)
+                .OrderByDescending(image => image.IsPrimary)
+                .ThenBy(image => image.DisplayOrder)
+                .ThenBy(image => image.ProductSkuId)
+                .ThenBy(image => image.Id)
+                .Select(image => image.Url)
+                .FirstOrDefault(),
+            Variants = activeVariants
+                .Select(variant => ProductCatalogMapper.MapVariant(
+                    variant,
+                    includeInactiveSkus: false))
+                .ToList()
         };
     }
 }

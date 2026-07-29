@@ -90,8 +90,11 @@ public class DashboardService : IDashboardService
         if (to.HasValue) query = query.Where(item => item.Order.OrderDate < to.Value.Date.AddDays(1));
 
         var stats = await query
-            .Include(oi => oi.Product)
-            .GroupBy(oi => new { oi.ProductId, oi.Product.Name })
+            .GroupBy(oi => new
+            {
+                ProductId = oi.ProductSku.ProductVariant.ProductId,
+                oi.ProductSku.ProductVariant.Product.Name
+            })
             .Select(g => new ProductStatisticDto
             {
                 ProductId = g.Key.ProductId,
@@ -108,14 +111,27 @@ public class DashboardService : IDashboardService
     public Task<List<InventoryStatisticDto>> GetInventoryStatisticsAsync()
     {
         return _context.Products.AsNoTracking()
-            .OrderBy(product => product.StockQuantity)
-            .ThenBy(product => product.Name)
-            .Select(product => new InventoryStatisticDto
+            .Select(product => new
             {
-                ProductId = product.Id,
-                ProductName = product.Name,
-                StockQuantity = product.StockQuantity,
-                Status = product.StockQuantity == 0 ? "OutOfStock" : product.StockQuantity <= 5 ? "LowStock" : "InStock"
+                Product = product,
+                StockQuantity = product.Variants
+                    .Where(variant => variant.Status == CatalogStatuses.Active)
+                    .SelectMany(variant => variant.Skus)
+                    .Where(sku => sku.Status == CatalogStatuses.Active)
+                    .Sum(sku => (int?)sku.StockQuantity) ?? 0
+            })
+            .OrderBy(item => item.StockQuantity)
+            .ThenBy(item => item.Product.Name)
+            .Select(item => new InventoryStatisticDto
+            {
+                ProductId = item.Product.Id,
+                ProductName = item.Product.Name,
+                StockQuantity = item.StockQuantity,
+                Status = item.StockQuantity == 0
+                    ? "OutOfStock"
+                    : item.StockQuantity <= 5
+                        ? "LowStock"
+                        : "InStock"
             })
             .ToListAsync();
     }
@@ -161,7 +177,9 @@ public class DashboardService : IDashboardService
                 ProductId = product.Id,
                 ProductName = product.Name,
                 ViewCount = interestQuery.Count(interest => interest.ProductId == product.Id),
-                TotalQuantitySold = soldQuery.Where(item => item.ProductId == product.Id).Sum(item => (int?)item.Quantity) ?? 0
+                TotalQuantitySold = soldQuery
+                    .Where(item => item.ProductSku.ProductVariant.ProductId == product.Id)
+                    .Sum(item => (int?)item.Quantity) ?? 0
             })
             .Where(item => item.ViewCount > 0 || item.TotalQuantitySold > 0)
             .OrderByDescending(item => item.ViewCount)

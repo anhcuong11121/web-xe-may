@@ -18,8 +18,8 @@ public class OrdersController : ControllerBase
     }
 
     /// <summary>
-    /// Khách hàng đặt mua xe (UC09). Mỗi Order chứa một hoặc nhiều OrderItem;
-    /// OrderItem lưu ProductId, số lượng và đơn giá tại thời điểm đặt hàng.
+    /// Khách hàng đặt mua xe (UC09). Mỗi OrderItem nhận ProductSkuId và lưu
+    /// snapshot sản phẩm, phiên bản, màu, mã SKU cùng đơn giá tại thời điểm đặt.
     /// </summary>
     [Authorize(Roles = "Customer")]
     [HttpPost]

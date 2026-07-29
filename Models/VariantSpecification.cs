@@ -1,9 +1,12 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace MotorBikeShop.API.DTOs;
+namespace MotorBikeShop.API.Models;
 
-public class SpecificationCreateRequest
+public class VariantSpecification
 {
+    [Key]
+    public int ProductVariantId { get; set; }
+
     [Required]
     [MaxLength(100)]
     public string EngineType { get; set; } = string.Empty;
@@ -35,4 +38,6 @@ public class SpecificationCreateRequest
 
     [MaxLength(2000)]
     public string? OtherDetails { get; set; }
+
+    public virtual ProductVariant ProductVariant { get; set; } = null!;
 }

@@ -195,7 +195,7 @@
       if (p.brandName === 'VinFast' || text.includes('dien') || text.includes('electric')) return 'xe-dien';
       if (text.includes('con tay') || text.includes('sportbike') || text.includes('winner') ||
           text.includes('cbr') || text.includes('yzf') || text.includes('r15')) return 'xe-con-tay';
-      const cc = (p.specification && p.specification.engineCapacityCc) || 0;
+      const cc = p.maximumEngineCapacityCc || (p.specification && p.specification.engineCapacityCc) || 0;
       if (cc > 175 || text.includes('phan khoi lon') || text.includes('cruiser') ||
           text.includes('adventure') || text.includes('rebel') || text.includes('nx5')) return 'xe-pkl';
       if (text.includes('xe so') || text.includes('wave') || text.includes('ct125') ||
@@ -204,11 +204,12 @@
     }
 
     function buildProductImage(p) {
-      if (!p.imageUrl) return 'assets/img/banner-1.jpg';
-      if (/^https?:\/\//i.test(p.imageUrl)) return p.imageUrl;
-      return p.imageUrl.startsWith('/assets/')
-        ? p.imageUrl
-        : API_BASE_URL + p.imageUrl;
+      const imageUrl = p.primaryImageUrl;
+      if (!imageUrl) return 'assets/img/banner-1.jpg';
+      if (/^https?:\/\//i.test(imageUrl)) return imageUrl;
+      return imageUrl.startsWith('/assets/') || imageUrl.startsWith('assets/')
+        ? imageUrl
+        : API_BASE_URL + (imageUrl.startsWith('/') ? imageUrl : '/' + imageUrl);
     }
 
     async function loadPromotionBanners() {
@@ -240,7 +241,12 @@
     }
 
     function buildCard(p) {
-      const sold = p.stockQuantity <= 0;
+      const sold = p.totalStock <= 0;
+      const priceText = p.minimumPrice == null
+        ? 'Liên hệ'
+        : (p.maximumPrice != null && p.maximumPrice !== p.minimumPrice
+          ? `${formatCurrencyVnd(p.minimumPrice)} - ${formatCurrencyVnd(p.maximumPrice)}`
+          : formatCurrencyVnd(p.minimumPrice));
       return `
         <div class="col-lg-3 col-md-6">
           <div class="card product-card h-100${sold ? ' opacity-75' : ''}">
@@ -252,7 +258,7 @@
             <div class="card-body">
               <span class="product-tag">${esc(p.brandName || 'Xe máy')}</span>
               <h5 class="card-title">${esc(p.name)}</h5>
-              <p class="product-price">${formatCurrencyVnd(p.price)}</p>
+              <p class="product-price">${priceText}</p>
               <p class="card-text text-muted">${esc((p.description || '').substring(0, 80))}${(p.description || '').length > 80 ? '…' : ''}</p>
               <a href="chi-tiet-san-pham.html?id=${p.id}" class="btn btn-outline-primary">Xem thêm</a>
             </div>
@@ -264,7 +270,7 @@
       const container = document.getElementById('featuredProducts');
       if (!container) return;
       try {
-        const result = await Api.getProducts('?pageSize=4');
+        const result = await Api.getCatalogProducts('?pageSize=4');
         container.innerHTML = result.items.length
           ? result.items.map(buildCard).join('')
           : '<div class="col-12 text-center text-muted py-4">Chưa có sản phẩm nào. Đăng nhập bằng Employee/Admin để thêm sản phẩm mới.</div>';
@@ -310,7 +316,7 @@
       async function getAllProducts() {
         if (productsCache) return productsCache;
         try {
-          const result = await Api.getProducts('?pageSize=200');
+          const result = await Api.getCatalogProducts('?pageSize=100');
           productsCache = result.items;
         } catch {
           productsCache = [];
@@ -326,10 +332,10 @@
           if (q && !(p.name || '').toLowerCase().includes(q)) return false;
           if (filters.loaiXe && getLoaiXe(p) !== filters.loaiXe) return false;
           if (filters.hang && p.brandName !== filters.hang) return false;
-          if (filters.status === 'Available' && p.stockQuantity <= 0) return false;
-          if (filters.status === 'Sold' && p.stockQuantity > 0) return false;
+          if (filters.status === 'Available' && p.totalStock <= 0) return false;
+          if (filters.status === 'Sold' && p.totalStock > 0) return false;
           if (filters.phanKhoi) {
-            const cc = (p.specification && p.specification.engineCapacityCc) || 0;
+            const cc = p.maximumEngineCapacityCc || (p.specification && p.specification.engineCapacityCc) || 0;
             if (filters.phanKhoi === 'under175' && cc >= 175) return false;
             if (filters.phanKhoi === 'over175' && (cc < 175 || !cc)) return false;
           }

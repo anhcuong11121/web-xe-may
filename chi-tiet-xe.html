@@ -421,10 +421,12 @@
     }
 
     function getProductImage(product) {
-      if (!product.imageUrl) return 'assets/img/banner-1.jpg';
-      return product.imageUrl.startsWith('/assets/')
-        ? product.imageUrl
-        : API_BASE_URL + product.imageUrl;
+      const imageUrl = product.primaryImageUrl;
+      if (!imageUrl) return 'assets/img/banner-1.jpg';
+      if (/^https?:\/\//i.test(imageUrl)) return imageUrl;
+      return imageUrl.startsWith('/assets/') || imageUrl.startsWith('assets/')
+        ? imageUrl
+        : API_BASE_URL + (imageUrl.startsWith('/') ? imageUrl : '/' + imageUrl);
     }
 
     function escapeHtml(value) {
@@ -450,7 +452,7 @@
       container.innerHTML = '<div class="text-center py-5" style="grid-column:1/-1"><div class="spinner-border text-danger"></div></div>';
 
       try {
-        const result = await Api.getProducts('?pageNumber=1&pageSize=100');
+        const result = await Api.getCatalogProducts('?pageNumber=1&pageSize=100');
         const products = (result.items || []).filter(product => getProductCategory(product) === categoryId);
         if (!products.length) {
           showNoBikes();
@@ -458,12 +460,16 @@
         }
 
         container.innerHTML = products.map(product => {
-          const specification = product.specification || {};
-          const capacity = specification.engineCapacityCc
-            ? `${specification.engineCapacityCc}cc`
-            : (specification.fuelType || 'Chưa cập nhật');
-          const power = specification.maxPower ||
-            (specification.horsePower ? `${specification.horsePower} HP` : 'Chưa cập nhật');
+          const capacity = product.minimumEngineCapacityCc == null
+            ? 'Chưa cập nhật'
+            : (product.maximumEngineCapacityCc !== product.minimumEngineCapacityCc
+              ? `${product.minimumEngineCapacityCc}-${product.maximumEngineCapacityCc}cc`
+              : `${product.minimumEngineCapacityCc}cc`);
+          const price = product.minimumPrice == null
+            ? 'Liên hệ'
+            : (product.maximumPrice != null && product.maximumPrice !== product.minimumPrice
+              ? `${formatCurrencyVnd(product.minimumPrice)} - ${formatCurrencyVnd(product.maximumPrice)}`
+              : formatCurrencyVnd(product.minimumPrice));
           return `
           <article class="bike-card" role="link" tabindex="0"
                    onclick="viewProductDetail(${product.id})"
@@ -476,15 +482,15 @@
               <div class="bike-description">${escapeHtml(product.description)}</div>
               <div class="bike-features">
                 <span class="feature-tag">${escapeHtml(product.brandName)}</span>
-                <span class="feature-tag">${escapeHtml(product.color)}</span>
-                <span class="feature-tag">${product.stockQuantity > 0 ? 'Còn hàng' : 'Hết hàng'}</span>
+                <span class="feature-tag">${product.availableSkuCount} màu có hàng</span>
+                <span class="feature-tag">${product.totalStock > 0 ? 'Còn hàng' : 'Hết hàng'}</span>
               </div>
               <div class="bike-specs">
                 <div><strong>Dung tích:</strong> ${escapeHtml(capacity)}</div>
-                <div><strong>Công suất:</strong> ${escapeHtml(power)}</div>
+                <div><strong>Tồn kho:</strong> ${product.totalStock} xe</div>
               </div>
               <div class="bike-footer">
-                <div class="bike-price">${formatCurrencyVnd(product.price)}</div>
+                <div class="bike-price">${price}</div>
                 <button type="button" class="bike-btn"
                         onclick="event.stopPropagation(); viewProductDetail(${product.id})">
                   Xem thêm <i class="fa-solid fa-arrow-right ms-1"></i>

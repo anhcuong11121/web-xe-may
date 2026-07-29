@@ -68,6 +68,72 @@ public class DtoValidationTests
         Assert.Equal(4, Validate(query).Count);
     }
 
+    [Fact]
+    public void ProductVariantRequests_EnforceRequiredLengthsAndNonNegativeSpecification()
+    {
+        var request = new ProductVariantCreateRequest
+        {
+            Name = string.Empty,
+            VersionCode = new string('A', 65),
+            Status = new string('A', 33),
+            Specification = new VariantSpecificationRequest
+            {
+                EngineType = string.Empty,
+                FuelType = string.Empty,
+                EngineCapacityCc = -1,
+                HorsePower = -1
+            }
+        };
+
+        Assert.Equal(3, Validate(request).Count);
+        Assert.Equal(4, Validate(request.Specification).Count);
+    }
+
+    [Fact]
+    public void ProductSkuRequests_ValidateInputAndDoNotExposeStockMutation()
+    {
+        var createRequest = new ProductSkuCreateRequest
+        {
+            SkuCode = string.Empty,
+            ColorName = string.Empty,
+            ColorHexCode = new string('A', 10),
+            Price = -1,
+            Status = string.Empty
+        };
+        var updateRequest = new ProductSkuUpdateRequest
+        {
+            ColorName = string.Empty,
+            Price = -1,
+            Status = string.Empty,
+            RowVersion = string.Empty
+        };
+
+        Assert.Equal(5, Validate(createRequest).Count);
+        Assert.Equal(4, Validate(updateRequest).Count);
+        Assert.Null(typeof(ProductSkuCreateRequest).GetProperty("StockQuantity"));
+        Assert.Null(typeof(ProductSkuUpdateRequest).GetProperty("StockQuantity"));
+        Assert.Null(typeof(ProductSkuUpdateRequest).GetProperty("SkuCode"));
+    }
+
+    [Fact]
+    public void ProductImageRequests_ValidateFileMetadata()
+    {
+        var uploadRequest = new ProductImageUploadRequest
+        {
+            File = null!,
+            AltText = new string('A', 201),
+            DisplayOrder = -1
+        };
+        var updateRequest = new ProductImageUpdateRequest
+        {
+            AltText = new string('A', 201),
+            DisplayOrder = -1
+        };
+
+        Assert.Equal(3, Validate(uploadRequest).Count);
+        Assert.Equal(2, Validate(updateRequest).Count);
+    }
+
     private static List<ValidationResult> Validate(object value)
     {
         var results = new List<ValidationResult>();

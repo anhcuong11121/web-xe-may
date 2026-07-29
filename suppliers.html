@@ -198,7 +198,7 @@
   <script src="assets/js/app.js"></script>
   <script>
     let currentEditingSupplierId = null;
-    let allProductsForImport = [];
+    let allSkusForImport = [];
 
     function escHtml(str) {
       return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -332,16 +332,28 @@
 
     async function loadProductsForImport() {
       try {
-        const result = await Api.getProducts('?pageSize=200');
-        allProductsForImport = result.items;
+        const result = await Api.getCatalogProducts('?pageSize=100');
+        const catalogs = await Promise.all(
+          result.items.map(product => Api.getProductCatalog(product.id)));
+        allSkusForImport = catalogs.flatMap(product =>
+          product.variants.flatMap(variant =>
+            variant.skus.map(sku => ({
+              productSkuId: sku.id,
+              productName: product.name,
+              variantName: variant.name,
+              colorName: sku.colorName,
+              skuCode: sku.skuCode
+            }))));
         document.querySelectorAll('.import-product-select').forEach(populateProductSelect);
       } catch (err) {
-        showToast('Không tải được danh sách sản phẩm: ' + apiErrorMessage(err), 'danger');
+        showToast('Không tải được danh sách SKU: ' + apiErrorMessage(err), 'danger');
       }
     }
 
     function populateProductSelect(select) {
-      select.innerHTML = allProductsForImport.map(p => `<option value="${p.id}">${escHtml(p.name)}</option>`).join('');
+      select.innerHTML = allSkusForImport.map(item =>
+        `<option value="${item.productSkuId}">${escHtml(item.productName)} — ${escHtml(item.variantName)} — ${escHtml(item.colorName)} (${escHtml(item.skuCode)})</option>`
+      ).join('');
     }
 
     function openAddImportModal() {
@@ -371,14 +383,14 @@
       const note = document.getElementById('importNote').value.trim() || null;
       const rows = document.querySelectorAll('.import-detail-row');
       const details = Array.from(rows).map(row => ({
-        productId: Number(row.querySelector('.import-product-select').value),
+        productSkuId: Number(row.querySelector('.import-product-select').value),
         quantity: Number(row.querySelector('.import-qty').value),
         unitCost: Number(row.querySelector('.import-cost').value)
-      })).filter(d => d.productId && d.quantity > 0);
+      })).filter(d => d.productSkuId && d.quantity > 0);
 
-      const productIds = details.map(d => d.productId);
-      if (new Set(productIds).size !== productIds.length) {
-        showToast('Mỗi sản phẩm chỉ được xuất hiện một lần trong phiếu nhập!', 'danger');
+      const skuIds = details.map(d => d.productSkuId);
+      if (new Set(skuIds).size !== skuIds.length) {
+        showToast('Mỗi SKU chỉ được xuất hiện một lần trong phiếu nhập!', 'danger');
         return;
       }
 

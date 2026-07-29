@@ -21,7 +21,11 @@ public class ImportReceiptService : IImportReceiptService
         var receipts = await _context.ImportReceipts
             .Include(ir => ir.Supplier)
             .Include(ir => ir.CreatedBy)
-            .Include(ir => ir.ImportReceiptDetails).ThenInclude(d => d.Product)
+            .Include(ir => ir.ImportReceiptDetails)
+                .ThenInclude(d => d.ProductSku)
+                    .ThenInclude(sku => sku.ProductVariant)
+                        .ThenInclude(variant => variant.Product)
+            .AsSplitQuery()
             .OrderByDescending(ir => ir.ImportDate)
             .ToListAsync();
 
@@ -33,7 +37,11 @@ public class ImportReceiptService : IImportReceiptService
         var receipt = await _context.ImportReceipts
             .Include(ir => ir.Supplier)
             .Include(ir => ir.CreatedBy)
-            .Include(ir => ir.ImportReceiptDetails).ThenInclude(d => d.Product)
+            .Include(ir => ir.ImportReceiptDetails)
+                .ThenInclude(d => d.ProductSku)
+                    .ThenInclude(sku => sku.ProductVariant)
+                        .ThenInclude(variant => variant.Product)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(ir => ir.Id == id);
 
         return receipt == null ? null : MapToDto(receipt);
@@ -47,21 +55,21 @@ public class ImportReceiptService : IImportReceiptService
         }
 
         if (request.Details.Any(detail =>
-                detail.ProductId <= 0 || detail.Quantity <= 0 || detail.UnitCost < 0))
+                detail.ProductSkuId <= 0 || detail.Quantity <= 0 || detail.UnitCost < 0))
         {
             return ServiceResult<ImportReceiptDto>.Fail(
-                "Sản phẩm, số lượng hoặc đơn giá trong phiếu nhập không hợp lệ.");
+                "SKU, số lượng hoặc đơn giá trong phiếu nhập không hợp lệ.");
         }
 
-        var duplicateProductIds = request.Details
-            .GroupBy(d => d.ProductId)
+        var duplicateSkuIds = request.Details
+            .GroupBy(d => d.ProductSkuId)
             .Where(g => g.Count() > 1)
             .Select(g => g.Key)
             .ToList();
-        if (duplicateProductIds.Count > 0)
+        if (duplicateSkuIds.Count > 0)
         {
             return ServiceResult<ImportReceiptDto>.Fail(
-                $"Mỗi sản phẩm chỉ được xuất hiện một lần trong phiếu nhập. ProductId bị trùng: {string.Join(", ", duplicateProductIds)}.");
+                $"Mỗi SKU chỉ được xuất hiện một lần trong phiếu nhập. ProductSkuId bị trùng: {string.Join(", ", duplicateSkuIds)}.");
         }
 
         var isRelationalDatabase = _context.Database.IsRelational();
@@ -88,15 +96,42 @@ public class ImportReceiptService : IImportReceiptService
             return ServiceResult<ImportReceiptDto>.Fail("Nhà cung cấp không tồn tại hoặc đã ngừng hợp tác.");
         }
 
-        var productIds = request.Details.Select(d => d.ProductId).Distinct().ToList();
-        var productQuery = _context.Products.Where(p => productIds.Contains(p.Id));
-        var products = isRelationalDatabase
-            ? await productQuery.AsNoTracking().ToListAsync()
-            : await productQuery.ToListAsync();
+        var skuIds = request.Details
+            .Select(detail => detail.ProductSkuId)
+            .OrderBy(id => id)
+            .ToList();
+        var skuQuery = _context.ProductSkus
+            .Include(sku => sku.ProductVariant)
+                .ThenInclude(variant => variant.Product)
+            .Where(sku => skuIds.Contains(sku.Id));
+        var skus = isRelationalDatabase
+            ? await skuQuery.AsNoTracking().ToListAsync()
+            : await skuQuery.ToListAsync();
 
-        if (products.Count != productIds.Count)
+        if (skus.Count != skuIds.Count)
         {
-            return ServiceResult<ImportReceiptDto>.Fail("Có sản phẩm không tồn tại trong phiếu nhập.");
+            return ServiceResult<ImportReceiptDto>.Fail("Có SKU không tồn tại trong phiếu nhập.");
+        }
+
+        var unavailableSku = skus.FirstOrDefault(sku =>
+            sku.Status != CatalogStatuses.Active ||
+            sku.ProductVariant.Status != CatalogStatuses.Active);
+        if (unavailableSku != null)
+        {
+            return ServiceResult<ImportReceiptDto>.Fail(
+                $"SKU '{unavailableSku.SkuCode}' hiện không hoạt động.");
+        }
+
+        var detailBySkuId = request.Details.ToDictionary(
+            detail => detail.ProductSkuId);
+        foreach (var sku in skus)
+        {
+            var quantity = detailBySkuId[sku.Id].Quantity;
+            if (sku.StockQuantity > int.MaxValue - quantity)
+            {
+                return ServiceResult<ImportReceiptDto>.Fail(
+                    $"Tồn kho SKU '{sku.SkuCode}' sẽ vượt giới hạn cho phép.");
+            }
         }
 
         var receipt = new ImportReceipt
@@ -115,60 +150,91 @@ public class ImportReceiptService : IImportReceiptService
 
         foreach (var detail in request.Details)
         {
-            var product = products.First(p => p.Id == detail.ProductId);
-
+            var sku = skus.First(candidate => candidate.Id == detail.ProductSkuId);
             receipt.ImportReceiptDetails.Add(new ImportReceiptDetail
             {
-                ProductId = detail.ProductId,
+                ProductSkuId = sku.Id,
                 Quantity = detail.Quantity,
                 UnitCost = detail.UnitCost
             });
 
             totalAmount += detail.Quantity * detail.UnitCost;
-            if (!isRelationalDatabase)
-            {
-                product.StockQuantity += detail.Quantity;
-            }
         }
 
         receipt.TotalAmount = totalAmount;
 
         if (isRelationalDatabase)
         {
-            foreach (var detail in request.Details)
+            foreach (var detail in request.Details.OrderBy(item => item.ProductSkuId))
             {
                 var maximumCurrentStock = int.MaxValue - detail.Quantity;
-                var updated = await _context.Products
-                    .Where(product =>
-                        product.Id == detail.ProductId &&
-                        product.StockQuantity <= maximumCurrentStock)
+                var updated = await _context.ProductSkus
+                    .Where(sku =>
+                        sku.Id == detail.ProductSkuId &&
+                        sku.Status == CatalogStatuses.Active &&
+                        sku.ProductVariant.Status == CatalogStatuses.Active &&
+                        sku.StockQuantity <= maximumCurrentStock)
                     .ExecuteUpdateAsync(setters => setters.SetProperty(
-                        product => product.StockQuantity,
-                        product => product.StockQuantity + detail.Quantity));
+                        sku => sku.StockQuantity,
+                        sku => sku.StockQuantity + detail.Quantity));
                 if (updated == 0)
                 {
                     await transaction!.RollbackAsync();
                     return ServiceResult<ImportReceiptDto>.Fail(
-                        "Không thể cập nhật tồn kho vì số lượng vượt giới hạn cho phép.");
+                        "Không thể cập nhật tồn kho SKU vì số lượng vượt giới hạn cho phép.");
                 }
             }
-        }
 
-        _context.ImportReceipts.Add(receipt);
-        await _context.SaveChangesAsync();
-        if (transaction != null)
+        }
+        else
         {
-            await transaction.CommitAsync();
+            foreach (var sku in skus)
+            {
+                sku.StockQuantity += detailBySkuId[sku.Id].Quantity;
+            }
+
         }
 
-        await _context.Entry(receipt).Reference(r => r.Supplier).LoadAsync();
-        await _context.Entry(receipt).Reference(r => r.CreatedBy).LoadAsync();
-        foreach (var detail in receipt.ImportReceiptDetails)
+        try
         {
-            await _context.Entry(detail).Reference(d => d.Product).LoadAsync();
+            _context.ImportReceipts.Add(receipt);
+            await _context.SaveChangesAsync();
+            if (transaction != null)
+            {
+                await transaction.CommitAsync();
+            }
+        }
+        catch (DbUpdateException)
+        {
+            if (transaction != null)
+            {
+                await transaction.RollbackAsync();
+            }
+            else
+            {
+                foreach (var sku in skus)
+                {
+                    sku.StockQuantity -= detailBySkuId[sku.Id].Quantity;
+                }
+
+            }
+
+            _context.ChangeTracker.Clear();
+            return ServiceResult<ImportReceiptDto>.Fail(
+                "Không thể tạo phiếu nhập; toàn bộ thay đổi tồn kho đã được hoàn tác.");
         }
 
-        return ServiceResult<ImportReceiptDto>.Success(MapToDto(receipt));
+        var createdReceipt = await _context.ImportReceipts
+            .AsNoTracking()
+            .Include(item => item.Supplier)
+            .Include(item => item.CreatedBy)
+            .Include(item => item.ImportReceiptDetails)
+                .ThenInclude(detail => detail.ProductSku)
+                    .ThenInclude(sku => sku.ProductVariant)
+                        .ThenInclude(variant => variant.Product)
+            .AsSplitQuery()
+            .SingleAsync(item => item.Id == receipt.Id);
+        return ServiceResult<ImportReceiptDto>.Success(MapToDto(createdReceipt));
     }
 
     public async Task<ServiceResult<ImportReceiptDto>> CancelAsync(int id)
@@ -184,7 +250,11 @@ public class ImportReceiptService : IImportReceiptService
         var receipt = await _context.ImportReceipts
             .Include(item => item.Supplier)
             .Include(item => item.CreatedBy)
-            .Include(item => item.ImportReceiptDetails).ThenInclude(detail => detail.Product)
+            .Include(item => item.ImportReceiptDetails)
+                .ThenInclude(detail => detail.ProductSku)
+                    .ThenInclude(sku => sku.ProductVariant)
+                        .ThenInclude(variant => variant.Product)
+            .AsSplitQuery()
             .SingleOrDefaultAsync(item => item.Id == id);
         if (receipt == null)
         {
@@ -203,31 +273,43 @@ public class ImportReceiptService : IImportReceiptService
                 $"Không thể hủy phiếu nhập ở trạng thái {receipt.Status}.");
         }
 
-        foreach (var detail in receipt.ImportReceiptDetails)
+        var skuDetails = receipt.ImportReceiptDetails
+            .OrderBy(detail => detail.ProductSkuId)
+            .ToList();
+        if (skuDetails.Any(detail =>
+                detail.ProductSku.StockQuantity < detail.Quantity))
         {
-            if (isRelationalDatabase)
+            return ServiceResult<ImportReceiptDto>.Fail(
+                "Không thể hủy vì tồn kho hiện tại không đủ để hoàn tác phiếu nhập.");
+        }
+
+        if (isRelationalDatabase)
+        {
+            foreach (var detail in skuDetails)
             {
-                var updated = await _context.Products
-                    .Where(product => product.Id == detail.ProductId && product.StockQuantity >= detail.Quantity)
+                var updated = await _context.ProductSkus
+                    .Where(sku =>
+                        sku.Id == detail.ProductSkuId &&
+                        sku.StockQuantity >= detail.Quantity)
                     .ExecuteUpdateAsync(setters => setters.SetProperty(
-                        product => product.StockQuantity,
-                        product => product.StockQuantity - detail.Quantity));
+                        sku => sku.StockQuantity,
+                        sku => sku.StockQuantity - detail.Quantity));
                 if (updated == 0)
                 {
                     await transaction!.RollbackAsync();
                     return ServiceResult<ImportReceiptDto>.Fail(
-                        $"Không thể hủy vì tồn kho sản phẩm '{detail.Product.Name}' không đủ để hoàn tác phiếu nhập.");
+                        $"Không thể hủy vì tồn kho SKU '{detail.ProductSku.SkuCode}' không đủ để hoàn tác phiếu nhập.");
                 }
             }
-            else
+
+        }
+        else
+        {
+            foreach (var detail in skuDetails)
             {
-                if (detail.Product.StockQuantity < detail.Quantity)
-                {
-                    return ServiceResult<ImportReceiptDto>.Fail(
-                        $"Không thể hủy vì tồn kho sản phẩm '{detail.Product.Name}' không đủ để hoàn tác phiếu nhập.");
-                }
-                detail.Product.StockQuantity -= detail.Quantity;
+                detail.ProductSku.StockQuantity -= detail.Quantity;
             }
+
         }
 
         receipt.Status = "Cancelled";
@@ -252,8 +334,11 @@ public class ImportReceiptService : IImportReceiptService
             CreatedByName = receipt.CreatedBy?.FullName ?? string.Empty,
             Details = receipt.ImportReceiptDetails.Select(d => new ImportReceiptDetailDto
             {
-                ProductId = d.ProductId,
-                ProductName = d.Product?.Name ?? string.Empty,
+                ProductSkuId = d.ProductSkuId,
+                ProductName = d.ProductSku.ProductVariant.Product.Name,
+                VariantName = d.ProductSku.ProductVariant.Name,
+                ColorName = d.ProductSku.ColorName,
+                SkuCode = d.ProductSku.SkuCode,
                 Quantity = d.Quantity,
                 UnitCost = d.UnitCost
             }).ToList()

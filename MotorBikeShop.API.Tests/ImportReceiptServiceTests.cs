@@ -15,7 +15,7 @@ public class ImportReceiptServiceTests
         await using var connection = new SqliteConnection("Filename=:memory:");
         await connection.OpenAsync();
         var options = new DbContextOptionsBuilder<ApplicationDbContext>().UseSqlite(connection).Options;
-        await using var context = new ApplicationDbContext(options);
+        await using var context = new SqliteTestDbContext(options);
         await context.Database.EnsureCreatedAsync();
         var employeeId = await SeedCatalogAsync(context);
         context.ChangeTracker.Clear();
@@ -26,7 +26,7 @@ public class ImportReceiptServiceTests
 
         Assert.True(cancelled.Succeeded);
         Assert.Equal("Cancelled", cancelled.Data!.Status);
-        Assert.Equal(3, (await context.Products.AsNoTracking().SingleAsync()).StockQuantity);
+        Assert.Equal(3, (await context.ProductSkus.AsNoTracking().SingleAsync()).StockQuantity);
         Assert.Single(await context.ImportReceipts.AsNoTracking().ToListAsync());
     }
 
@@ -36,18 +36,19 @@ public class ImportReceiptServiceTests
         await using var connection = new SqliteConnection("Filename=:memory:");
         await connection.OpenAsync();
         var options = new DbContextOptionsBuilder<ApplicationDbContext>().UseSqlite(connection).Options;
-        await using var context = new ApplicationDbContext(options);
+        await using var context = new SqliteTestDbContext(options);
         await context.Database.EnsureCreatedAsync();
         var employeeId = await SeedCatalogAsync(context);
         context.ChangeTracker.Clear();
         var service = new ImportReceiptService(context);
         var created = await service.CreateAsync(employeeId, CreateRequest(quantity: 2));
-        await context.Products.ExecuteUpdateAsync(setters => setters.SetProperty(product => product.StockQuantity, 1));
+        await context.ProductSkus.ExecuteUpdateAsync(setters =>
+            setters.SetProperty(sku => sku.StockQuantity, 1));
 
         var result = await service.CancelAsync(created.Data!.Id);
 
         Assert.False(result.Succeeded);
-        Assert.Equal(1, (await context.Products.AsNoTracking().SingleAsync()).StockQuantity);
+        Assert.Equal(1, (await context.ProductSkus.AsNoTracking().SingleAsync()).StockQuantity);
         Assert.Equal("Completed", (await context.ImportReceipts.AsNoTracking().SingleAsync()).Status);
     }
 
@@ -68,7 +69,7 @@ public class ImportReceiptServiceTests
         Assert.True(first.Succeeded);
         Assert.False(second.Succeeded);
         Assert.Single(context.ImportReceipts);
-        Assert.Equal(5, (await context.Products.FindAsync(1))!.StockQuantity);
+        Assert.Equal(5, (await context.ProductSkus.FindAsync(1))!.StockQuantity);
     }
 
     [Fact]
@@ -99,7 +100,7 @@ public class ImportReceiptServiceTests
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
             .UseSqlite(connection)
             .Options;
-        await using var context = new ApplicationDbContext(options);
+        await using var context = new SqliteTestDbContext(options);
         await context.Database.EnsureCreatedAsync();
         var employeeId = await SeedCatalogAsync(context);
         context.ChangeTracker.Clear();
@@ -108,9 +109,82 @@ public class ImportReceiptServiceTests
         var result = await service.CreateAsync(employeeId, CreateRequest(quantity: 2));
 
         Assert.True(result.Succeeded);
-        Assert.Equal(5, (await context.Products.AsNoTracking().SingleAsync()).StockQuantity);
+        Assert.Equal(5, (await context.ProductSkus.AsNoTracking().SingleAsync()).StockQuantity);
         Assert.Single(await context.ImportReceipts.AsNoTracking().ToListAsync());
         Assert.Equal(20_000_000m, result.Data!.TotalAmount);
+        Assert.Equal("SKU-IMPORT-RED", result.Data.Details.Single().SkuCode);
+    }
+
+    [Fact]
+    public async Task CreateAsync_OnlyIncrementsSelectedSku()
+    {
+        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        await using var context = new ApplicationDbContext(options);
+        var employeeId = await SeedCatalogAsync(context);
+        var variant = await context.ProductVariants
+            .Include(item => item.Product)
+            .SingleAsync();
+        context.ProductSkus.Add(new ProductSku
+        {
+            Id = 2,
+            ProductVariantId = variant.Id,
+            SkuCode = "SKU-IMPORT-BLACK",
+            ColorName = "Black",
+            Price = 51_000_000,
+            StockQuantity = 3,
+            Status = CatalogStatuses.Active,
+            RowVersion = BitConverter.GetBytes(2L)
+        });
+        await context.SaveChangesAsync();
+        var service = new ImportReceiptService(context);
+
+        var result = await service.CreateAsync(employeeId, CreateRequest(quantity: 2));
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(5, (await context.ProductSkus.FindAsync(1))!.StockQuantity);
+        Assert.Equal(3, (await context.ProductSkus.FindAsync(2))!.StockQuantity);
+    }
+
+    [Fact]
+    public async Task CreateAsync_InactiveSkuIsRejectedWithoutChangingStock()
+    {
+        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        await using var context = new ApplicationDbContext(options);
+        var employeeId = await SeedCatalogAsync(context);
+        (await context.ProductSkus.FindAsync(1))!.Status = CatalogStatuses.Inactive;
+        await context.SaveChangesAsync();
+        var service = new ImportReceiptService(context);
+
+        var result = await service.CreateAsync(employeeId, CreateRequest(quantity: 2));
+
+        Assert.False(result.Succeeded);
+        Assert.Empty(context.ImportReceipts);
+        Assert.Equal(3, (await context.ProductSkus.FindAsync(1))!.StockQuantity);
+    }
+
+    [Fact]
+    public async Task CreateAsync_SaveFailureRollsBackSkuStock()
+    {
+        await using var connection = new SqliteConnection("Filename=:memory:");
+        await connection.OpenAsync();
+        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseSqlite(connection)
+            .Options;
+        await using var context = new SqliteTestDbContext(options);
+        await context.Database.EnsureCreatedAsync();
+        await SeedCatalogAsync(context);
+        context.ChangeTracker.Clear();
+        var service = new ImportReceiptService(context);
+
+        var result = await service.CreateAsync(Guid.NewGuid(), CreateRequest(quantity: 2));
+
+        Assert.False(result.Succeeded);
+        Assert.Empty(await context.ImportReceipts.AsNoTracking().ToListAsync());
+        Assert.Equal(3, (await context.ProductSkus.AsNoTracking().SingleAsync()).StockQuantity);
     }
 
     [Theory]
@@ -129,7 +203,7 @@ public class ImportReceiptServiceTests
 
         Assert.False(result.Succeeded);
         Assert.Empty(context.ImportReceipts);
-        Assert.Equal(3, (await context.Products.FindAsync(1))!.StockQuantity);
+        Assert.Equal(3, (await context.ProductSkus.FindAsync(1))!.StockQuantity);
     }
 
     private static ImportReceiptCreateRequest CreateRequest(
@@ -140,7 +214,7 @@ public class ImportReceiptServiceTests
         SupplierId = 1,
         Details = new List<ImportReceiptDetailCreateRequest>
         {
-            new() { ProductId = 1, Quantity = quantity, UnitCost = 10_000_000 }
+            new() { ProductSkuId = 1, Quantity = quantity, UnitCost = 10_000_000 }
         }
     };
 
@@ -163,18 +237,54 @@ public class ImportReceiptServiceTests
             Status = "Active"
         });
         context.Brands.Add(new Brand { Id = 1, Name = "Test Brand" });
-        context.Products.Add(new Product
+        var product = new Product
         {
             Id = 1,
             Name = "Test Motorbike",
             Description = "Test motorbike description",
-            Price = 50_000_000,
-            StockQuantity = 3,
-            Color = "Red",
             Status = "Available",
             BrandId = 1
+        };
+        product.Variants.Add(new ProductVariant
+        {
+            Id = 1,
+            ProductId = 1,
+            Name = "Bản tiêu chuẩn",
+            VersionCode = "STANDARD",
+            Status = CatalogStatuses.Active,
+            Skus =
+            {
+                new ProductSku
+                {
+                    Id = 1,
+                    ProductVariantId = 1,
+                    SkuCode = "SKU-IMPORT-RED",
+                    ColorName = "Red",
+                    Price = 50_000_000,
+                    StockQuantity = 3,
+                    Status = CatalogStatuses.Active,
+                    RowVersion = BitConverter.GetBytes(1L)
+                }
+            }
         });
+        context.Products.Add(product);
         await context.SaveChangesAsync();
         return employeeId;
+    }
+
+    private sealed class SqliteTestDbContext : ApplicationDbContext
+    {
+        public SqliteTestDbContext(DbContextOptions<ApplicationDbContext> options)
+            : base(options)
+        {
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<ProductSku>()
+                .Property(sku => sku.RowVersion)
+                .ValueGeneratedNever();
+        }
     }
 }

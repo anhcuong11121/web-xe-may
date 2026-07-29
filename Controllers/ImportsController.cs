@@ -18,7 +18,7 @@ public class ImportsController : ControllerBase
     }
 
     /// <summary>
-    /// Tạo phiếu nhập hàng, tự động cộng tồn kho cho từng sản phẩm.
+    /// Tạo phiếu nhập hàng, tự động cộng tồn kho cho từng SKU màu.
     /// </summary>
     [HttpPost]
     public async Task<ActionResult<ImportReceiptDto>> CreateImportReceipt([FromBody] ImportReceiptCreateRequest request)

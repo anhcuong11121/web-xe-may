@@ -39,18 +39,19 @@ public class OrderService : IOrderService
             return ServiceResult<OrderDto>.Fail("Đơn hàng phải có ít nhất 1 sản phẩm.");
         }
 
-        if (request.Items.Any(item => item.ProductId <= 0 || item.Quantity <= 0))
+        if (request.Items.Any(item => item.ProductSkuId <= 0 || item.Quantity <= 0))
         {
-            return ServiceResult<OrderDto>.Fail("Sản phẩm và số lượng trong đơn hàng không hợp lệ.");
+            return ServiceResult<OrderDto>.Fail("SKU và số lượng trong đơn hàng không hợp lệ.");
         }
 
         var normalizedItems = request.Items
-            .GroupBy(item => item.ProductId)
+            .GroupBy(item => item.ProductSkuId)
             .Select(group => new
             {
-                ProductId = group.Key,
+                ProductSkuId = group.Key,
                 Quantity = group.Sum(item => (long)item.Quantity)
             })
+            .OrderBy(item => item.ProductSkuId)
             .ToList();
 
         if (normalizedItems.Any(item => item.Quantity > int.MaxValue))
@@ -58,7 +59,7 @@ public class OrderService : IOrderService
             return ServiceResult<OrderDto>.Fail("Tổng số lượng sản phẩm vượt giới hạn cho phép.");
         }
 
-        var productIds = normalizedItems.Select(item => item.ProductId).ToList();
+        var skuIds = normalizedItems.Select(item => item.ProductSkuId).ToList();
         var isRelationalDatabase = _context.Database.IsRelational();
         IDbContextTransaction? transaction = null;
         if (isRelationalDatabase)
@@ -67,22 +68,33 @@ public class OrderService : IOrderService
         }
 
         await using var transactionScope = transaction;
-        var productQuery = _context.Products.Where(product => productIds.Contains(product.Id));
-        var products = isRelationalDatabase
-            ? await productQuery.AsNoTracking().ToListAsync()
-            : await productQuery.ToListAsync();
+        var skuQuery = _context.ProductSkus
+            .Include(sku => sku.ProductVariant)
+                .ThenInclude(variant => variant.Product)
+            .Where(sku => skuIds.Contains(sku.Id));
+        var skus = isRelationalDatabase
+            ? await skuQuery.AsNoTracking().ToListAsync()
+            : await skuQuery.ToListAsync();
 
-        if (products.Count != productIds.Count)
+        if (skus.Count != skuIds.Count)
         {
-            return ServiceResult<OrderDto>.Fail("Có sản phẩm không tồn tại trong đơn hàng.");
+            return ServiceResult<OrderDto>.Fail("Có SKU không tồn tại trong đơn hàng.");
         }
 
         foreach (var item in normalizedItems)
         {
-            var product = products.First(p => p.Id == item.ProductId);
-            if (product.StockQuantity < item.Quantity)
+            var sku = skus.First(candidate => candidate.Id == item.ProductSkuId);
+            if (sku.Status != CatalogStatuses.Active ||
+                sku.ProductVariant.Status != CatalogStatuses.Active)
             {
-                return ServiceResult<OrderDto>.Fail($"Sản phẩm '{product.Name}' không đủ tồn kho (còn {product.StockQuantity}).");
+                return ServiceResult<OrderDto>.Fail(
+                    $"SKU '{sku.SkuCode}' hiện không được bán.");
+            }
+
+            if (sku.StockQuantity < item.Quantity)
+            {
+                return ServiceResult<OrderDto>.Fail(
+                    $"SKU '{sku.SkuCode}' không đủ tồn kho (còn {sku.StockQuantity}).");
             }
         }
 
@@ -91,18 +103,23 @@ public class OrderService : IOrderService
             foreach (var item in normalizedItems)
             {
                 var quantity = (int)item.Quantity;
-                var updated = await _context.Products
-                    .Where(product => product.Id == item.ProductId && product.StockQuantity >= quantity)
+                var updated = await _context.ProductSkus
+                    .Where(sku =>
+                        sku.Id == item.ProductSkuId &&
+                        sku.Status == CatalogStatuses.Active &&
+                        sku.ProductVariant.Status == CatalogStatuses.Active &&
+                        sku.StockQuantity >= quantity)
                     .ExecuteUpdateAsync(setters => setters.SetProperty(
-                        product => product.StockQuantity,
-                        product => product.StockQuantity - quantity));
+                        sku => sku.StockQuantity,
+                        sku => sku.StockQuantity - quantity));
                 if (updated == 0)
                 {
                     await transaction!.RollbackAsync();
                     return ServiceResult<OrderDto>.Fail(
-                        "Tồn kho vừa thay đổi bởi đơn hàng khác. Vui lòng kiểm tra và thử lại.");
+                        "Tồn kho SKU vừa thay đổi bởi đơn hàng khác. Vui lòng kiểm tra và thử lại.");
                 }
             }
+
         }
 
         var order = new Order
@@ -121,38 +138,53 @@ public class OrderService : IOrderService
 
         foreach (var item in normalizedItems)
         {
-            var product = products.First(p => p.Id == item.ProductId);
+            var sku = skus.First(candidate => candidate.Id == item.ProductSkuId);
+            var variant = sku.ProductVariant;
+            var product = variant.Product;
             var quantity = (int)item.Quantity;
             var orderItem = new OrderItem
             {
-                ProductId = product.Id,
+                ProductSkuId = sku.Id,
+                ProductNameSnapshot = product.Name,
+                VariantNameSnapshot = variant.Name,
+                ColorNameSnapshot = sku.ColorName,
+                SkuCodeSnapshot = sku.SkuCode,
                 Quantity = quantity,
-                UnitPrice = product.Price
+                UnitPrice = sku.Price
             };
 
             order.OrderItems.Add(orderItem);
-            totalAmount += product.Price * quantity;
+            totalAmount += sku.Price * quantity;
             if (!isRelationalDatabase)
             {
-                product.StockQuantity -= quantity;
+                sku.StockQuantity -= quantity;
             }
         }
 
         order.TotalAmount = totalAmount;
 
-        _context.Orders.Add(order);
-        await _context.SaveChangesAsync();
-        if (transaction != null)
+        try
         {
-            await transaction.CommitAsync();
+            _context.Orders.Add(order);
+            await _context.SaveChangesAsync();
+            if (transaction != null)
+            {
+                await transaction.CommitAsync();
+            }
+        }
+        catch (DbUpdateException)
+        {
+            if (transaction != null)
+            {
+                await transaction.RollbackAsync();
+            }
+
+            _context.ChangeTracker.Clear();
+            return ServiceResult<OrderDto>.Fail(
+                "Không thể tạo đơn hàng; toàn bộ thay đổi tồn kho đã được hoàn tác.");
         }
 
         await _context.Entry(order).Reference(o => o.User).LoadAsync();
-        foreach (var orderItem in order.OrderItems)
-        {
-            await _context.Entry(orderItem).Reference(oi => oi.Product).LoadAsync();
-        }
-
         return ServiceResult<OrderDto>.Success(MapToDto(order));
     }
 
@@ -162,7 +194,8 @@ public class OrderService : IOrderService
             .Include(o => o.User)
             .Include(o => o.ProcessedBy)
             .Include(o => o.Deposit)
-            .Include(o => o.OrderItems).ThenInclude(oi => oi.Product)
+            .Include(o => o.OrderItems)
+            .AsSplitQuery()
             .AsQueryable();
 
         if (currentUserRole is not ("Employee" or "Admin"))
@@ -180,7 +213,8 @@ public class OrderService : IOrderService
             .Include(o => o.User)
             .Include(o => o.ProcessedBy)
             .Include(o => o.Deposit)
-            .Include(o => o.OrderItems).ThenInclude(oi => oi.Product)
+            .Include(o => o.OrderItems)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(o => o.Id == id);
 
         if (order == null)
@@ -210,7 +244,8 @@ public class OrderService : IOrderService
             .Include(o => o.User)
             .Include(o => o.ProcessedBy)
             .Include(o => o.Deposit)
-            .Include(o => o.OrderItems).ThenInclude(oi => oi.Product);
+            .Include(o => o.OrderItems).ThenInclude(oi => oi.ProductSku)
+            .AsSplitQuery();
         var order = isRelationalDatabase
             ? await orderQuery.AsNoTracking().FirstOrDefaultAsync(o => o.Id == request.OrderId)
             : await orderQuery.FirstOrDefaultAsync(o => o.Id == request.OrderId);
@@ -256,15 +291,27 @@ public class OrderService : IOrderService
                         .SetProperty(attempt => attempt.CompletedAt, cancelledAt)
                         .SetProperty(attempt => attempt.FailureReason, "Đơn hàng đã bị hủy."));
 
-                foreach (var itemGroup in order.OrderItems.GroupBy(item => item.ProductId))
+                foreach (var itemGroup in order.OrderItems
+                             .GroupBy(item => item.ProductSkuId)
+                             .OrderBy(group => group.Key))
                 {
                     var restoredQuantity = itemGroup.Sum(item => item.Quantity);
-                    await _context.Products
-                        .Where(product => product.Id == itemGroup.Key)
+                    var maximumCurrentStock = int.MaxValue - restoredQuantity;
+                    var restored = await _context.ProductSkus
+                        .Where(sku =>
+                            sku.Id == itemGroup.Key &&
+                            sku.StockQuantity <= maximumCurrentStock)
                         .ExecuteUpdateAsync(setters => setters.SetProperty(
-                            product => product.StockQuantity,
-                            product => product.StockQuantity + restoredQuantity));
+                            sku => sku.StockQuantity,
+                            sku => sku.StockQuantity + restoredQuantity));
+                    if (restored == 0)
+                    {
+                        await transaction!.RollbackAsync();
+                        return ServiceResult<OrderDto>.Fail(
+                            "Không thể hoàn tồn SKU vì số lượng vượt giới hạn cho phép.");
+                    }
                 }
+
             }
 
             await transaction!.CommitAsync();
@@ -273,7 +320,7 @@ public class OrderService : IOrderService
                 .Include(o => o.User)
                 .Include(o => o.ProcessedBy)
                 .Include(o => o.Deposit)
-                .Include(o => o.OrderItems).ThenInclude(oi => oi.Product)
+                .Include(o => o.OrderItems)
                 .FirstAsync(o => o.Id == request.OrderId);
             return ServiceResult<OrderDto>.Success(MapToDto(updatedOrder));
         }
@@ -295,7 +342,7 @@ public class OrderService : IOrderService
 
             foreach (var item in order.OrderItems)
             {
-                item.Product.StockQuantity += item.Quantity;
+                item.ProductSku.StockQuantity += item.Quantity;
             }
         }
 
@@ -337,8 +384,11 @@ public class OrderService : IOrderService
             },
             Items = order.OrderItems.Select(oi => new OrderItemDto
             {
-                ProductId = oi.ProductId,
-                ProductName = oi.Product?.Name ?? string.Empty,
+                ProductSkuId = oi.ProductSkuId,
+                ProductName = oi.ProductNameSnapshot,
+                VariantName = oi.VariantNameSnapshot,
+                ColorName = oi.ColorNameSnapshot,
+                SkuCode = oi.SkuCodeSnapshot,
                 Quantity = oi.Quantity,
                 UnitPrice = oi.UnitPrice
             }).ToList()

@@ -5,7 +5,7 @@ namespace MotorBikeShop.API.DTOs;
 public class OrderItemCreateRequest
 {
     [Range(1, int.MaxValue)]
-    public int ProductId { get; set; }
+    public int ProductSkuId { get; set; }
 
     [Range(1, int.MaxValue)]
     public int Quantity { get; set; }

@@ -99,9 +99,9 @@
         <div class="tab-pane fade show active" id="products-content" role="tabpanel">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <h5 class="mb-0"><i class="fa-solid fa-motorcycle me-2 text-brand"></i>Quản lý sản phẩm</h5>
-            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#productModal" onclick="openAddProductModal()">
+            <a class="btn btn-primary btn-sm" href="tasks.html">
               <i class="fa-solid fa-plus me-1"></i>Thêm sản phẩm
-            </button>
+            </a>
           </div>
           <div class="table-responsive">
             <table class="table align-middle table-sm">
@@ -309,73 +309,6 @@
           <button type="submit" form="consultationResponseForm" class="btn btn-primary" id="consultationSendButton">
             <i class="fa-solid fa-paper-plane me-1"></i>Gửi phản hồi
           </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal fade" id="productModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header px-4 py-3">
-          <h5 class="modal-title mb-0" id="productModalTitle">Thêm sản phẩm</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body p-4">
-          <form id="productForm">
-            <div class="mb-3">
-              <label for="productTitle" class="form-label fw-semibold">Tên xe *</label>
-              <input type="text" class="form-control" id="productTitle" placeholder="Ví dụ: Honda Vision" required>
-            </div>
-            <div class="mb-3">
-              <label for="productDescription" class="form-label fw-semibold">Mô tả *</label>
-              <textarea class="form-control" id="productDescription" rows="3" placeholder="Nhập mô tả" required></textarea>
-            </div>
-            <div class="row g-3">
-              <div class="col-md-6">
-                <label for="productYear" class="form-label fw-semibold">Giá (VNĐ) *</label>
-                <input type="number" class="form-control" id="productYear" min="0" placeholder="35000000" required>
-              </div>
-              <div class="col-md-6">
-                <label for="productBrand" class="form-label fw-semibold">Hãng *</label>
-                <select class="form-select" id="productBrand" required></select>
-              </div>
-            </div>
-            <div class="mb-3 mt-3">
-              <label for="productStock" class="form-label fw-semibold">Tồn kho *</label>
-              <input type="number" class="form-control" id="productStock" min="0" placeholder="10" required>
-            </div>
-            <div class="row g-3">
-              <div class="col-md-4">
-                <label for="productColor" class="form-label fw-semibold">Màu sắc *</label>
-                <input type="text" class="form-control" id="productColor" maxlength="100" required>
-              </div>
-              <div class="col-md-4">
-                <label for="productStatus" class="form-label fw-semibold">Trạng thái *</label>
-                <select class="form-select" id="productStatus" required>
-                  <option value="Available">Đang bán</option>
-                  <option value="Unavailable">Ngừng bán</option>
-                </select>
-              </div>
-              <div class="col-md-4">
-                <label for="productVehicleType" class="form-label fw-semibold">Loại xe</label>
-                <select class="form-select" id="productVehicleType"><option value="">Chưa phân loại</option></select>
-              </div>
-            </div>
-            <div class="border rounded p-3 mt-3">
-              <div class="fw-semibold mb-2">Thông số kỹ thuật bắt buộc</div>
-              <div class="row g-2">
-                <div class="col-md-6"><input class="form-control" id="specEngineType" placeholder="Loại động cơ" required></div>
-                <div class="col-md-6"><input class="form-control" id="specFuelType" placeholder="Loại nhiên liệu" required></div>
-                <div class="col-md-6"><input type="number" class="form-control" id="specEngineCapacity" min="0" placeholder="Dung tích xy-lanh (cc)" required></div>
-                <div class="col-md-6"><input type="number" class="form-control" id="specHorsePower" min="0" placeholder="Mã lực (HP)" required></div>
-              </div>
-            </div>
-          </form>
-        </div>
-        <div class="modal-footer px-4 py-3">
-          <button type="button" class="btn btn-soft" data-bs-dismiss="modal">Hủy</button>
-          <button type="button" class="btn btn-primary" onclick="saveProduct()">Lưu</button>
         </div>
       </div>
     </div>

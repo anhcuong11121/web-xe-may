@@ -1,6 +1,5 @@
 // staff.js - Logic quản lý cho nhân viên (Employee) - dùng API thật
 
-let currentEditingProductId = null;
 let paymentsPage = 1;
 let paymentsTotalPages = 0;
 const paymentsPageSize = 20;
@@ -9,8 +8,6 @@ let customersTotalPages = 0;
 const customersPageSize = 20;
 
 document.addEventListener('DOMContentLoaded', () => {
-  loadBrandsForStaff();
-  loadVehicleTypesForStaff();
   loadStaffProducts();
   loadConsultations();
   loadStaffOrders();
@@ -34,31 +31,6 @@ function escHtml(str) {
 }
 
 // ── PRODUCTS ────────────────────────────────────────────
-async function loadBrandsForStaff() {
-  try {
-    const brands = await Api.getBrands();
-    const select = document.getElementById('productBrand');
-    if (select) {
-      select.innerHTML = brands.map(b => `<option value="${b.id}">${escHtml(b.name)}</option>`).join('');
-    }
-  } catch (err) {
-    showToast('Không tải được hãng xe: ' + apiErrorMessage(err), 'danger');
-  }
-}
-
-async function loadVehicleTypesForStaff() {
-  try {
-    const vehicleTypes = await Api.getVehicleTypes();
-    const select = document.getElementById('productVehicleType');
-    if (select) {
-      select.innerHTML = '<option value="">Chưa phân loại</option>' +
-        vehicleTypes.map(v => `<option value="${v.id}">${escHtml(v.name)}</option>`).join('');
-    }
-  } catch (err) {
-    showToast('Không tải được loại xe: ' + apiErrorMessage(err), 'danger');
-  }
-}
-
 async function loadCustomers() {
   const listBody = document.getElementById('customersList');
   if (!listBody) return;
@@ -98,118 +70,22 @@ async function loadStaffProducts() {
   if (!listBody) return;
 
   try {
-    const result = await Api.getProducts('?pageSize=100');
+    const result = await Api.getCatalogProducts('?pageSize=100');
     listBody.innerHTML = result.items.length ? result.items.map(p => `
       <tr>
         <td>${p.id}</td>
         <td><strong>${escHtml(p.name)}</strong></td>
         <td>${escHtml((p.description || '').substring(0, 50))}...</td>
-        <td>${formatCurrencyVnd(p.price)}</td>
+        <td>${p.minimumPrice == null ? 'Liên hệ' : (p.maximumPrice !== p.minimumPrice ? `${formatCurrencyVnd(p.minimumPrice)} - ${formatCurrencyVnd(p.maximumPrice)}` : formatCurrencyVnd(p.minimumPrice))}</td>
         <td><span class="badge bg-info">${escHtml(p.brandName || '-')}</span></td>
-        <td><span class="badge bg-${p.stockQuantity > 0 ? 'success' : 'warning'}">${p.stockQuantity > 0 ? p.stockQuantity + ' xe' : 'Hết hàng'}</span></td>
+        <td><span class="badge bg-${p.totalStock > 0 ? 'success' : 'warning'}">${p.totalStock > 0 ? p.totalStock + ' xe' : 'Hết hàng'}</span></td>
         <td>
-          <button class="btn btn-sm btn-primary" onclick="editProduct(${p.id})"><i class="fa-solid fa-edit"></i></button>
-          <button class="btn btn-sm btn-danger" onclick="deleteProduct(${p.id})"><i class="fa-solid fa-trash"></i></button>
+          <a class="btn btn-sm btn-primary" href="tasks.html?catalog=${p.id}"><i class="fa-solid fa-layer-group me-1"></i>Phiên bản/SKU</a>
         </td>
       </tr>
     `).join('') : '<tr><td colspan="7" class="text-center text-muted py-3">Chưa có sản phẩm nào.</td></tr>';
   } catch (err) {
     listBody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-3">${apiErrorMessage(err)}</td></tr>`;
-  }
-}
-
-function openAddProductModal() {
-  currentEditingProductId = null;
-  document.getElementById('productModalTitle').textContent = 'Thêm sản phẩm';
-  document.getElementById('productForm').reset();
-}
-
-async function editProduct(id) {
-  try {
-    const p = await Api.getProduct(id);
-    currentEditingProductId = id;
-    document.getElementById('productModalTitle').textContent = 'Sửa sản phẩm';
-    document.getElementById('productTitle').value = p.name;
-    document.getElementById('productDescription').value = p.description;
-    document.getElementById('productYear').value = p.price;
-    document.getElementById('productBrand').value = p.brandId;
-    document.getElementById('productStock').value = p.stockQuantity;
-    document.getElementById('productColor').value = p.color;
-    document.getElementById('productStatus').value = p.status;
-    document.getElementById('productVehicleType').value = p.vehicleTypeId || '';
-    document.getElementById('specEngineType').value = p.specification?.engineType || '';
-    document.getElementById('specFuelType').value = p.specification?.fuelType || '';
-    document.getElementById('specEngineCapacity').value = p.specification?.engineCapacityCc ?? '';
-    document.getElementById('specHorsePower').value = p.specification?.horsePower ?? '';
-
-    const modal = new bootstrap.Modal(document.getElementById('productModal'));
-    modal.show();
-  } catch (err) {
-    showToast('Không tải được sản phẩm: ' + apiErrorMessage(err), 'danger');
-  }
-}
-
-async function saveProduct() {
-  const name = document.getElementById('productTitle').value.trim();
-  const description = document.getElementById('productDescription').value.trim();
-  const price = Number(document.getElementById('productYear').value);
-  const brandId = Number(document.getElementById('productBrand').value);
-  const stockQuantity = Number(document.getElementById('productStock').value);
-  const color = document.getElementById('productColor').value.trim();
-  const status = document.getElementById('productStatus').value;
-  const vehicleTypeValue = document.getElementById('productVehicleType').value;
-  const vehicleTypeId = vehicleTypeValue ? Number(vehicleTypeValue) : null;
-  const specification = {
-    engineType: document.getElementById('specEngineType').value.trim(),
-    fuelType: document.getElementById('specFuelType').value.trim(),
-    engineCapacityCc: Number(document.getElementById('specEngineCapacity').value),
-    horsePower: Number(document.getElementById('specHorsePower').value)
-  };
-
-  if (!name || description.length < 10) {
-    showToast('Vui lòng nhập đầy đủ thông tin (mô tả tối thiểu 10 ký tự)!', 'danger');
-    return;
-  }
-  if (!brandId) {
-    showToast('Vui lòng chọn hãng xe!', 'danger');
-    return;
-  }
-
-  if (!color) {
-    showToast('Vui lòng nhập màu sắc!', 'danger');
-    return;
-  }
-  if (!specification.engineType || !specification.fuelType) {
-    showToast('Vui lòng nhập đầy đủ thông số kỹ thuật bắt buộc!', 'danger');
-    return;
-  }
-
-  const payload = { name, description, price, stockQuantity, color, status, brandId, vehicleTypeId, specification };
-
-  try {
-    if (currentEditingProductId) {
-      await Api.updateProduct(currentEditingProductId, payload);
-    } else {
-      await Api.createProduct(payload);
-    }
-
-    document.getElementById('productForm').reset();
-    bootstrap.Modal.getInstance(document.getElementById('productModal')).hide();
-    loadStaffProducts();
-    showToast('Lưu sản phẩm thành công!', 'success');
-  } catch (err) {
-    showToast('Lưu thất bại: ' + apiErrorMessage(err), 'danger');
-  }
-}
-
-async function deleteProduct(id) {
-  if (!confirm('Bạn chắc chắn muốn xóa sản phẩm này?')) return;
-  try {
-    await Api.deleteProduct(id);
-    loadStaffProducts();
-    showToast('Xóa sản phẩm thành công!', 'success');
-  } catch (err) {
-    showToast('Xóa thất bại: ' + apiErrorMessage(err), 'danger');
   }
 }
 
@@ -366,7 +242,7 @@ async function loadStaffOrders() {
       <tr>
         <td>${o.id}</td>
         <td>${escHtml(o.receiverName || o.userFullName)}<div class="small text-muted">${escHtml(o.receiverPhone || '')}</div></td>
-        <td>${escHtml(o.items.map(i => i.productName).join(', '))}</td>
+        <td>${escHtml(o.items.map(i => `${i.productName} — ${i.variantName} — ${i.colorName} (${i.skuCode}) x${i.quantity}`).join(', '))}</td>
         <td>${new Date(o.orderDate).toLocaleDateString('vi-VN')}</td>
         <td>
           <select class="form-select form-select-sm" onchange="updateOrderStatusStaff(${o.id}, this.value)">

@@ -26,14 +26,44 @@ public class DashboardServiceTests
         var customer = new AppUser { Id = Guid.NewGuid(), UserName = "business-stats@example.com", FullName = "Customer" };
         var product = new Product
         {
-            Name = "Low Stock Bike", Description = "Test product", Price = 500m,
-            StockQuantity = 3, Color = "Red", Status = "Available",
+            Name = "Low Stock Bike", Description = "Test product", Status = "Available",
             Brand = new Brand { Name = "Test Brand" }
         };
+        product.Variants.Add(new ProductVariant
+        {
+            Name = "Bản tiêu chuẩn",
+            VersionCode = "STANDARD",
+            Status = CatalogStatuses.Active
+        });
+        context.Users.Add(customer);
+        context.Products.Add(product);
+        await context.SaveChangesAsync();
+        await context.Database.ExecuteSqlInterpolatedAsync(
+            $"""
+             INSERT INTO ProductSkus
+                 (ProductVariantId, SkuCode, ColorName, Price, StockQuantity, Status, RowVersion)
+             VALUES
+                 ({product.Variants.Single().Id}, {"SKU-STATS-RED"}, {"Red"}, {500m}, {3}, {CatalogStatuses.Active}, {BitConverter.GetBytes(1L)})
+             """);
         var order = new Order
         {
-            User = customer, OrderDate = new DateTime(2026, 7, 15), Status = "Completed", TotalAmount = 1000m,
-            OrderItems = { new OrderItem { Product = product, Quantity = 2, UnitPrice = 500m } }
+            UserId = customer.Id,
+            OrderDate = new DateTime(2026, 7, 15),
+            Status = "Completed",
+            TotalAmount = 1000m,
+            OrderItems =
+            {
+                new OrderItem
+                {
+                    ProductSkuId = 1,
+                    ProductNameSnapshot = product.Name,
+                    VariantNameSnapshot = "Bản tiêu chuẩn",
+                    ColorNameSnapshot = "Red",
+                    SkuCodeSnapshot = "SKU-STATS-RED",
+                    Quantity = 2,
+                    UnitPrice = 500m
+                }
+            }
         };
         context.Orders.Add(order);
         await context.SaveChangesAsync();

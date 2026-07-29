@@ -12,7 +12,6 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, Microsoft.AspNetC
 
     public DbSet<Brand> Brands => Set<Brand>();
     public DbSet<Product> Products => Set<Product>();
-    public DbSet<Specification> Specifications => Set<Specification>();
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
     public DbSet<Deposit> Deposits => Set<Deposit>();
@@ -27,6 +26,10 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, Microsoft.AspNetC
     public DbSet<VehicleType> VehicleTypes => Set<VehicleType>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<ProductInterest> ProductInterests => Set<ProductInterest>();
+    public DbSet<ProductVariant> ProductVariants => Set<ProductVariant>();
+    public DbSet<VariantSpecification> VariantSpecifications => Set<VariantSpecification>();
+    public DbSet<ProductSku> ProductSkus => Set<ProductSku>();
+    public DbSet<ProductImage> ProductImages => Set<ProductImage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -78,15 +81,115 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, Microsoft.AspNetC
             .HasForeignKey(p => p.VehicleTypeId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<Specification>()
-            .HasOne(s => s.Product)
-            .WithOne(p => p.Specification)
-            .HasForeignKey<Specification>(s => s.ProductId)
+        modelBuilder.Entity<ProductVariant>()
+            .HasOne(variant => variant.Product)
+            .WithMany(product => product.Variants)
+            .HasForeignKey(variant => variant.ProductId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<Specification>().Property(s => s.CurbWeightKg).HasPrecision(8, 2);
-        modelBuilder.Entity<Specification>().Property(s => s.FuelTankCapacityLiters).HasPrecision(8, 2);
-        modelBuilder.Entity<Specification>().Property(s => s.FuelConsumptionLitersPer100Km).HasPrecision(8, 2);
+        modelBuilder.Entity<ProductVariant>()
+            .HasIndex(variant => new { variant.ProductId, variant.VersionCode })
+            .IsUnique();
+
+        modelBuilder.Entity<ProductVariant>()
+            .HasIndex(variant => new { variant.ProductId, variant.Status });
+
+        modelBuilder.Entity<ProductVariant>()
+            .Property(variant => variant.VersionCode)
+            .IsUnicode(false);
+
+        modelBuilder.Entity<ProductVariant>()
+            .Property(variant => variant.Status)
+            .HasDefaultValue(CatalogStatuses.Active);
+
+        modelBuilder.Entity<ProductVariant>()
+            .ToTable(table => table.HasCheckConstraint(
+                "CK_ProductVariants_Status",
+                "[Status] IN ('Active', 'Inactive', 'Discontinued')"));
+
+        modelBuilder.Entity<VariantSpecification>()
+            .HasOne(specification => specification.ProductVariant)
+            .WithOne(variant => variant.Specification)
+            .HasForeignKey<VariantSpecification>(specification => specification.ProductVariantId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<VariantSpecification>()
+            .Property(specification => specification.CurbWeightKg)
+            .HasPrecision(8, 2);
+
+        modelBuilder.Entity<VariantSpecification>()
+            .Property(specification => specification.FuelTankCapacityLiters)
+            .HasPrecision(8, 2);
+
+        modelBuilder.Entity<VariantSpecification>()
+            .Property(specification => specification.FuelConsumptionLitersPer100Km)
+            .HasPrecision(8, 2);
+
+        modelBuilder.Entity<ProductSku>()
+            .HasOne(sku => sku.ProductVariant)
+            .WithMany(variant => variant.Skus)
+            .HasForeignKey(sku => sku.ProductVariantId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ProductSku>()
+            .HasIndex(sku => sku.SkuCode)
+            .IsUnique();
+
+        modelBuilder.Entity<ProductSku>()
+            .HasIndex(sku => new { sku.ProductVariantId, sku.ColorName })
+            .IsUnique();
+
+        modelBuilder.Entity<ProductSku>()
+            .HasIndex(sku => new { sku.ProductVariantId, sku.Status });
+
+        modelBuilder.Entity<ProductSku>()
+            .Property(sku => sku.SkuCode)
+            .IsUnicode(false);
+
+        modelBuilder.Entity<ProductSku>()
+            .Property(sku => sku.ColorHexCode)
+            .IsUnicode(false);
+
+        modelBuilder.Entity<ProductSku>()
+            .Property(sku => sku.Price)
+            .HasPrecision(18, 2);
+
+        modelBuilder.Entity<ProductSku>()
+            .Property(sku => sku.Status)
+            .HasDefaultValue(CatalogStatuses.Active);
+
+        modelBuilder.Entity<ProductSku>()
+            .Property(sku => sku.RowVersion)
+            .IsRowVersion();
+
+        modelBuilder.Entity<ProductSku>()
+            .ToTable(table =>
+            {
+                table.HasCheckConstraint("CK_ProductSkus_Price_NonNegative", "[Price] >= 0");
+                table.HasCheckConstraint("CK_ProductSkus_StockQuantity_NonNegative", "[StockQuantity] >= 0");
+                table.HasCheckConstraint(
+                    "CK_ProductSkus_Status",
+                    "[Status] IN ('Active', 'Inactive', 'Discontinued')");
+            });
+
+        modelBuilder.Entity<ProductImage>()
+            .HasOne(image => image.ProductSku)
+            .WithMany(sku => sku.Images)
+            .HasForeignKey(image => image.ProductSkuId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ProductImage>()
+            .HasIndex(image => new { image.ProductSkuId, image.DisplayOrder });
+
+        modelBuilder.Entity<ProductImage>()
+            .HasIndex(image => image.ProductSkuId)
+            .IsUnique()
+            .HasFilter("[IsPrimary] = 1");
+
+        modelBuilder.Entity<ProductImage>()
+            .ToTable(table => table.HasCheckConstraint(
+                "CK_ProductImages_DisplayOrder_NonNegative",
+                "[DisplayOrder] >= 0"));
 
         modelBuilder.Entity<Order>()
             .HasOne(o => o.User)
@@ -94,9 +197,9 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, Microsoft.AspNetC
             .HasForeignKey(o => o.UserId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Một đơn có nhiều dòng hàng; mỗi sản phẩm chỉ xuất hiện một lần trong cùng đơn.
+        // Một đơn có nhiều dòng hàng; mỗi SKU chỉ xuất hiện một lần trong cùng đơn.
         modelBuilder.Entity<OrderItem>()
-            .HasIndex(item => new { item.OrderId, item.ProductId })
+            .HasIndex(item => new { item.OrderId, item.ProductSkuId })
             .IsUnique();
 
         modelBuilder.Entity<OrderItem>()
@@ -122,10 +225,10 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, Microsoft.AspNetC
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<OrderItem>()
-            .HasOne(oi => oi.Product)
-            .WithMany(p => p.OrderItems)
-            .HasForeignKey(oi => oi.ProductId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .HasOne(item => item.ProductSku)
+            .WithMany(sku => sku.OrderItems)
+            .HasForeignKey(item => item.ProductSkuId)
+            .OnDelete(DeleteBehavior.NoAction);
 
         modelBuilder.Entity<Deposit>()
             .HasOne(d => d.Order)
@@ -196,7 +299,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, Microsoft.AspNetC
             .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<ImportReceiptDetail>()
-            .HasKey(ird => new { ird.ImportReceiptId, ird.ProductId });
+            .HasKey(ird => new { ird.ImportReceiptId, ird.ProductSkuId });
 
         modelBuilder.Entity<ImportReceiptDetail>()
             .HasOne(ird => ird.ImportReceipt)
@@ -205,10 +308,10 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, Microsoft.AspNetC
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<ImportReceiptDetail>()
-            .HasOne(ird => ird.Product)
-            .WithMany(p => p.ImportReceiptDetails)
-            .HasForeignKey(ird => ird.ProductId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .HasOne(detail => detail.ProductSku)
+            .WithMany(sku => sku.ImportReceiptDetails)
+            .HasForeignKey(detail => detail.ProductSkuId)
+            .OnDelete(DeleteBehavior.NoAction);
 
     }
 }
